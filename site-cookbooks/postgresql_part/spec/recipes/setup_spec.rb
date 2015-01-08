@@ -4,6 +4,7 @@ require 'chefspec'
 describe 'postgresql_part::default' do
   let(:chef_run) { ChefSpec::SoloRunner.new }
 
+  pgsql_version = "9.4"
   port = '5432'
   dba_passwd = 'password'
   app_user = 'app_user'
@@ -18,8 +19,9 @@ describe 'postgresql_part::default' do
   }
 
   before do
-    stub_command('ls /var/lib/pgsql/9.3/data/recovery.conf')
+    stub_command("ls /var/lib/pgsql/#{pgsql_version}/data/recovery.conf")
 
+    chef_run.node.set['postgresql']['version'] = pgsql_version
     chef_run.node.set['postgresql']['config']['port'] = port
     chef_run.node.set['postgresql']['password']['postgres'] = dba_passwd
     chef_run.node.set['postgresql_part']['application']['user'] = app_user
