@@ -4,7 +4,7 @@ require 'chefspec'
 describe 'postgresql_part::configure' do
   let(:chef_run) { ChefSpec::SoloRunner.new }
 
-  pgsql_dir = '/var/lib/pgsql/9.3/data'
+  pgsql_version = '9.4'
   ap_ip = '172.0.0.1'
   pg_hda = [
     { 'type' => 'local', 'db' => 'all', 'user' => 'postgres', 'addr' => nil, 'method' => 'ident' },
@@ -16,18 +16,18 @@ describe 'postgresql_part::configure' do
   ]
 
   before do
+    chef_run.node.set['postgresql']['version'] = pgsql_version
     chef_run.node.set['cloudconductor']['servers'] = {
       ap_server: {
         roles: 'ap',
         private_ip: ap_ip
       }
     }
-    chef_run.node.set['postgresql']['dir'] = pgsql_dir
     chef_run.converge(described_recipe)
   end
 
   it 'create pg_dba.conf' do
-    expect(chef_run).to create_template("#{pgsql_dir}/pg_hba.conf").with(
+    expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/pg_hba.conf").with(
       source: 'pg_hba.conf.erb',
       mode: '0644',
       owner: 'postgres',
@@ -46,6 +46,6 @@ describe 'postgresql_part::configure' do
     service = chef_run.service('postgresql')
     expect(service).to do_nothing
     expect(service.service_name).to eq(service_name)
-    expect(chef_run.template("#{pgsql_dir}/pg_hba.conf")).to notify('service[postgresql]').to(:reload).delayed
+    expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/pg_hba.conf")).to notify('service[postgresql]').to(:reload).delayed
   end
 end
