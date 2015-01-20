@@ -30,3 +30,23 @@ end
 bash 'chown_tomcat_home' do
   code "chown #{node['tomcat']['user']}:#{node['tomcat']['group']} #{node['tomcat']['home']}"
 end
+
+# Install PostgreSQL-Client
+if node['tomcat_part']['database']['type'] == 'postgresql'
+  include_recipe 'postgresql::client'
+  include_recipe 'postgresql::ruby'
+
+end
+
+# Configuration for session replication.
+case node['tomcat_part']['session_replication']
+when 'jdbcStore'
+  bash 'modify_catalina_properties' do
+    not_if <<-EOF
+grep "org.apache.catalina.STRICT_SERVLET_COMPLIANCE" #{node['tomcat']['home']}/conf/catalina.properties
+EOF
+    code <<-EOF
+echo "org.apache.catalina.STRICT_SERVLET_COMPLIANCE=true" >> #{node['tomcat']['home']}/conf/catalina.properties
+EOF
+  end
+end

@@ -59,3 +59,5 @@ else
   default['tomcat']['lib_dir'] = "#{node['tomcat']['home']}/lib"
   default['tomcat']['endorsed_dir'] = "#{node['tomcat']['lib_dir']}/endorsed"
 end
+
+Chef::Config[:yum_timeout] = 1800

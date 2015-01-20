@@ -3,6 +3,13 @@ if node['cloudconductor']['servers']
   node.set['tomcat_part']['database']['host'] = db_servers.map { |_, s| s['private_ip'] }.first
 end
 
+if node['tomcat_part']['pgpool2'] == true
+  node.set['tomcat_part']['database']['host'] = 'localhost'
+  node.set['tomcat_part']['database']['port'] = 9999
+  node.set['tomcat_part']['session_db']['host'] = 'localhost'
+  node.set['tomcat_part']['session_db']['port'] = 9999
+end
+
 applications = node['cloudconductor']['applications'].select { |_app_name, app| app['type'] == 'dynamic' }
 applications.each do |app_name, app|
   case app['protocol']
@@ -24,15 +31,23 @@ applications.each do |app_name, app|
       group node['tomcat']['group']
     end
   end
-  template "#{node['tomcat']['context_dir']}/#{app_name}.xml" do
-    source 'context.xml.erb'
-    mode '0644'
-    owner node['tomcat']['user']
-    group node['tomcat']['group']
-    variables(
-      database: node['tomcat_part']['database'],
-      password: generate_password('database'),
-      datasource: node['tomcat_part']['datasource']
-    )
+
+  database_spec = {
+    'type' => node['tomcat_part']['database']['type'],
+    'name' => app_name,
+    'user' => app_name,
+    'host' => node['tomcat_part']['database']['host'],
+    'port' => node['tomcat_part']['database']['port']
+  }
+
+  if node['tomcat_part']['session_replication'] == 'jdbcStore'
+    tomcat_part_tables "#{app_name}_session" do
+    end
+  end
+
+  tomcat_part_context "#{app_name}" do
+    use_db true
+    database database_spec
+    sessionTableName "#{app_name}_session"
   end
 end

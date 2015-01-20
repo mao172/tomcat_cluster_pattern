@@ -9,3 +9,6 @@ default['tomcat_part']['database']['port'] = 5432
 default['tomcat_part']['jdbc']['postgresql'] = 'http://jdbc.postgresql.org/download/postgresql-9.3-1102.jdbc41.jar'
 default['tomcat_part']['jdbc']['mysql'] = 'http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-5.1.33.tar.gz'
 default['tomcat_part']['jdbc']['oracle'] = 'http://download.oracle.com/otn/utilities_drivers/jdbc/121020/ojdbc7.jar'
+
+# When used pgpool-II then value is true.
+default['tomcat_part']['pgpool2'] = true
