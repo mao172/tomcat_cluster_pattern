@@ -1,3 +1,6 @@
+# determine the worker name　for mod_jk configuration
+target_worker = ModJkConfigure.worker_name(node)
+
 # set workers.properties
 tomcat_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('ap') }
 tomcat_servers = tomcat_servers.map do |hostname, server|
@@ -15,6 +18,7 @@ template "#{node['apache']['conf_dir']}/workers.properties" do
   owner node['apache']['user']
   group node['apache']['group']
   variables(
+    worker_name: target_worker,
     tomcat_servers: tomcat_servers,
     sticky_session: node['apache_part']['sticky_session']
   )
