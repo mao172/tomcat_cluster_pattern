@@ -21,7 +21,7 @@ module ConsulHelper
     CONSUL_AGENT_SERVICES_URL = "#{CONSUL_AGENT_URL}/services"
     CONSUL_AGENT_SERVICE_REGISTER_URL = "#{CONSUL_AGENT_URL}/service/register"
 
-    def services()
+    def services
       begin
         response = JSON.parse(RestClient.get(CONSUL_AGENT_SERVICES_URL))
       rescue
@@ -33,9 +33,7 @@ module ConsulHelper
     def service(service_id)
       services = self.services
 
-      unless services.has_key?(service_id)
-        raise "no regist service of #{service_id}"
-      end
+      fail "no regist service of #{service_id}" unless services.key?(service_id)
 
       services[service_id]
     end
@@ -44,7 +42,7 @@ module ConsulHelper
       RestClient.put(CONSUL_AGENT_SERVICE_REGISTER_URL, hash.to_json)
     end
 
-    def add_service_tag(service_id,tag)
+    def add_service_tag(service_id, tag)
       service = self.service(service_id)
 
       if service['Tags'].nil?
@@ -54,8 +52,8 @@ module ConsulHelper
       end
 
       service['Name'] = service['Service'].to_s
-      
-      regist_service(service) 
+
+      regist_service(service)
     end
   end
 end

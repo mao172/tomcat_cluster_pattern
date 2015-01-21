@@ -17,19 +17,19 @@ describe ConsulHelper::Consul do
   describe '#services' do
     describe 'service registerd' do
       it 'return parsed services from consul' do
-        response = '{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080},"db":{"ID":"db","Service":"db","Tags":null,"Port":5432}}'
+        response = '{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080}}'
 
         consul = ConsulHelper::Consul.new
 
         allow(RestClient).to receive(:get).with(ConsulHelper::Consul::CONSUL_AGENT_SERVICES_URL).and_return(response)
 
         expect(consul.services).to eq(JSON.parse(response))
-      end 
+      end
     end
     describe 'service not registerd' do
       it 'return empty hash' do
         allow(RestClient).to receive(:get).with(ConsulHelper::Consul::CONSUL_AGENT_SERVICES_URL).and_return('{}')
-  
+
         consul = ConsulHelper::Consul.new
         expect(consul.services).to eq({})
       end
@@ -38,7 +38,8 @@ describe ConsulHelper::Consul do
 
   describe '#service' do
     before do
-      response = '{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080},"db":{"ID":"db","Service":"db","Tags":null,"Port":5432}}'
+      response = ['{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080},',
+                  '"db":{"ID":"db","Service":"db","Tags":null,"Port":5432}}'].join
       allow(RestClient).to receive(:get).with(ConsulHelper::Consul::CONSUL_AGENT_SERVICES_URL).and_return(response)
     end
 
@@ -52,16 +53,16 @@ describe ConsulHelper::Consul do
     describe 'id is not registerd service id' do
       it 'raise error' do
         consul = ConsulHelper::Consul.new
-        expect{consul.service('www')}.to raise_error('no regist service of www')
-      end 
+        expect { consul.service('www') }.to raise_error('no regist service of www')
+      end
     end
-    
+
     describe 'service not registerd' do
       it 'raise error' do
         allow(RestClient).to receive(:get).with(ConsulHelper::Consul::CONSUL_AGENT_SERVICES_URL).and_return('{}')
-  
+
         consul = ConsulHelper::Consul.new
-        expect{consul.service('db')}.to raise_error('no regist service of db')
+        expect { consul.service('db') }.to raise_error('no regist service of db')
       end
     end
   end
@@ -70,7 +71,7 @@ describe ConsulHelper::Consul do
     it 'register' do
       regist_hash = JSON.parse('{"ID":"ap","Name":"ap","Tags":"primary","Port":8080}')
       expect(RestClient).to receive(:put).with(ConsulHelper::Consul::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_hash.to_json)
-      
+
       consul = ConsulHelper::Consul.new
       consul.send(:regist_service, regist_hash)
     end
@@ -116,9 +117,9 @@ describe ConsulHelper::Consul do
     describe 'service id is not registerd' do
       it 'raise error' do
         allow(RestClient).to receive(:get).with(ConsulHelper::Consul::CONSUL_AGENT_SERVICES_URL).and_return('{}')
-  
+
         consul = ConsulHelper::Consul.new
-        expect{consul.service('db')}.to raise_error('no regist service of db')
+        expect { consul.service('db') }.to raise_error('no regist service of db')
       end
     end
   end
