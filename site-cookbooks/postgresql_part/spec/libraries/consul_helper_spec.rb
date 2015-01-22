@@ -124,3 +124,42 @@ describe ConsulHelper::ConsulAgent do
     end
   end
 end
+describe ConsulHelper::ConsulCatalog do
+  describe '#deregister' do
+    it 'put json to deregister api' do
+      regist_hash = JSON.parse('{"Node":"node_name","ServiceID":"service_id"}')
+      expect(RestClient).to receive(:put).with(ConsulHelper::ConsulCatalog::CONSUL_CATALOG_DEREGISTER_URL, regist_hash.to_json)
+
+      catalog = ConsulHelper::ConsulCatalog.new
+      catalog.send(:deregister, regist_hash)
+    end
+  end
+  describe '#service_deregist' do
+    describe 'received deregist service, node and datacenter' do
+      it 'call deregister method and send to hash' do
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect(catalog).to receive(:deregister).with(Datacenter: 'datacenter', Node: 'node_name', ServiceID: 'service_id')
+        catalog.send(:service_deregist, Datacenter: 'datacenter', Node: 'node_name', ServiceID: 'service_id')
+      end
+    end
+    describe 'received deregist service and node' do
+      it 'call deregister method and send to hash' do
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect(catalog).to receive(:deregister).with(Node: 'node_name', ServiceID: 'service_id')
+        catalog.send(:service_deregist, Node: 'node_name', ServiceID: 'service_id')
+      end
+    end
+    describe 'received deregist service only' do
+      it 'raise error' do
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect { catalog.service_deregist(service: 'service_id') }.to raise_error(ArgumentError)
+      end
+    end
+    describe 'received deregist node only' do
+      it 'raise error' do
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect { catalog.service_deregist(Node: 'node_name') }.to raise_error(ArgumentError)
+      end
+    end
+  end
+end

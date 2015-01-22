@@ -56,4 +56,18 @@ module ConsulHelper
       regist_service(service)
     end
   end
+  class ConsulCatalog
+    CONSUL_CATALOG_URL = 'http://127.0.0.1:8500/v1/catalog'
+    CONSUL_CATALOG_DEREGISTER_URL = "#{CONSUL_CATALOG_URL}/deregister"
+
+    def deregister(hash)
+      RestClient.put(CONSUL_CATALOG_DEREGISTER_URL, hash.to_json)
+    end
+
+    def service_deregist(args = {})
+      fail ArgumentError unless args.key?(:Node) && args.key?(:ServiceID)
+
+      deregister(args)
+    end
+  end
 end
