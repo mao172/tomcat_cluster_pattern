@@ -128,6 +128,35 @@ describe ConsulHelper::Helper do
       end
     end
   end
+  describe 'serch_node_possession_tag' do
+    describe 'there is node to possession of a tag' do
+      it 'return node of possession of a tag array' do
+        service = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":["primary"],"ServicePort":5432},',
+                   '{"Node":"consul2","Address":"172.17.0.50","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
+
+        response = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
+                    '"ServiceName":"db","ServiceTags":["primary"],"ServicePort":5432}]'].join
+
+        allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
+        helper = ConsulHelper::Helper.new
+        expect(helper.serch_node_possession_tag(service: 'db', tag: 'primary')).to eq(JSON.parse(response))
+      end
+    end
+    describe 'there is no node to possession of a tag' do
+      it 'return node of possession of a tag array' do
+        service = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":null,"ServicePort":5432},',
+                   '{"Node":"consul2","Address":"172.17.0.50","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
+
+        allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
+        helper = ConsulHelper::Helper.new
+        expect(helper.serch_node_possession_tag(service: 'db', tag: 'primary')).to eq([])
+      end
+    end
+  end
 end
 
 describe ConsulHelper::ConsulAgent do

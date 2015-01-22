@@ -46,6 +46,12 @@ module ConsulHelper
       service_nodes = catalog.service(service_id)
       service_nodes.delete_if { |item| item['Node'] == my_name }
     end
+
+    def serch_node_possession_tag(arg = {})
+      catalog = ConsulCatalog.new
+      service_nodes = catalog.service(arg[:service])
+      service_nodes.delete_if { |item| item['ServiceTags'].nil? || !item['ServiceTags'].include?(arg[:tag]) }
+    end
   end
   class ConsulAgent
     CONSUL_AGENT_URL = 'http://127.0.0.1:8500/v1/agent'
