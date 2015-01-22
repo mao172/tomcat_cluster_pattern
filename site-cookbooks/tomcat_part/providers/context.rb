@@ -10,6 +10,16 @@ action :create do
   case new_resource.session_replication
   when 'jdbcStore' then
 
+    session_table = {
+      'name'     => new_resource.sessionTableName,
+      'idCol'    => new_resource.session_table.idCol,
+      'appCol'   => new_resource.session_table.appCol,
+      'dataCol'  => new_resource.session_table.dataCol,
+      'lastAccessedCol'   => new_resource.session_table.lastAccessedCol,
+      'maxInactiveCol'    => new_resource.session_table.maxInactiveCol,
+      'validCol' => new_resource.session_table.validCol
+    }
+
     template "#{node['tomcat']['context_dir']}/#{app_name}.xml" do
       source 'jdbcstore/context.xml.erb'
       mode '0644'
@@ -22,7 +32,7 @@ action :create do
         password: generate_password('database'),
         datasource: new_resource.datasource,
         session_db: new_resource.session_db,
-        session_table: new_resource.session_table
+        session_table: session_table
       )
     end
 

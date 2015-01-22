@@ -186,6 +186,8 @@ describe 'tomcat_part::deploy' do
         end
 
         it 'when not using pgpool-II' do
+          session_table['name'] = "#{app_name}_session"
+
           expect(chef_run).to create_template("#{context_dir}/#{app_name}.xml").with(
             source: 'jdbcstore/context.xml.erb',
             mode: '0644',
@@ -212,6 +214,8 @@ describe 'tomcat_part::deploy' do
 
           session_db['host'] = 'localhost'
           session_db['port'] = 9999
+
+          session_table['name'] = "#{app_name}_session"
 
           expect(chef_run).to create_template("#{context_dir}/#{app_name}.xml").with(
             source: 'jdbcstore/context.xml.erb',
