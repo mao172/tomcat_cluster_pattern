@@ -5,6 +5,7 @@ yum_repository 'jpackage' do
   action :create
 end
 
+include_recipe 'java'
 include_recipe 'tomcat'
 
 # Install JDBC Driver
