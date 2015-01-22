@@ -16,6 +16,28 @@ require 'rest-client'
 require 'json'
 
 module ConsulHelper
+  class Helper
+    def add_service_tag(service_id, tag)
+      agent = ConsulAgent.new
+      service = agent.service(service_id)
+
+      if service['Tags'].nil?
+        service['Tags'] = [tag.to_s]
+      elsif !service['Tags'].include?(tag)
+        service['Tags'].push(tag)
+      end
+
+      service['Name'] = service['Service'].to_s
+
+      agent.regist_service(service)
+    end
+    def service_deregist(args = {})
+      fail ArgumentError unless args.key?(:Node) && args.key?(:ServiceID)
+
+      catalog = ConsulCatalog.new
+      catalog.deregister(args)
+    end
+  end
   class ConsulAgent
     CONSUL_AGENT_URL = 'http://127.0.0.1:8500/v1/agent'
     CONSUL_AGENT_SERVICES_URL = "#{CONSUL_AGENT_URL}/services"
@@ -41,20 +63,6 @@ module ConsulHelper
     def regist_service(hash)
       RestClient.put(CONSUL_AGENT_SERVICE_REGISTER_URL, hash.to_json)
     end
-
-    def add_service_tag(service_id, tag)
-      service = self.service(service_id)
-
-      if service['Tags'].nil?
-        service['Tags'] = [tag.to_s]
-      elsif !service['Tags'].include?(tag)
-        service['Tags'].push(tag)
-      end
-
-      service['Name'] = service['Service'].to_s
-
-      regist_service(service)
-    end
   end
   class ConsulCatalog
     CONSUL_CATALOG_URL = 'http://127.0.0.1:8500/v1/catalog'
@@ -62,12 +70,6 @@ module ConsulHelper
 
     def deregister(hash)
       RestClient.put(CONSUL_CATALOG_DEREGISTER_URL, hash.to_json)
-    end
-
-    def service_deregist(args = {})
-      fail ArgumentError unless args.key?(:Node) && args.key?(:ServiceID)
-
-      deregister(args)
     end
   end
 end
