@@ -16,7 +16,7 @@ require 'rest-client'
 require 'json'
 
 module ConsulHelper
-  class Consul
+  class ConsulAgent
     CONSUL_AGENT_URL = 'http://127.0.0.1:8500/v1/agent'
     CONSUL_AGENT_SERVICES_URL = "#{CONSUL_AGENT_URL}/services"
     CONSUL_AGENT_SERVICE_REGISTER_URL = "#{CONSUL_AGENT_URL}/service/register"
