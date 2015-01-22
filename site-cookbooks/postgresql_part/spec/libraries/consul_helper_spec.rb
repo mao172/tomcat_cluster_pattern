@@ -17,8 +17,8 @@ describe ConsulHelper::Helper do
   describe '#add_service_tag' do
     describe 'tag of registerd service is nill' do
       it 'register add tag' do
-        response_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>nil,"Port"=>8080}
-        regist_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["primary"],"Port"=>8080,"Name"=>"ap"}
+        response_hash = { 'ID' => 'ap', 'Service' => 'ap', 'Tags' => nil, 'Port' => 8080 }
+        regist_hash = { 'ID' => 'ap', 'Service' => 'ap', 'Tags' => ['primary'], 'Port' => 8080, 'Name' => 'ap' }
 
         allow_any_instance_of(ConsulHelper::ConsulAgent).to receive(:service).with('ap').and_return(response_hash)
         expect_any_instance_of(ConsulHelper::ConsulAgent).to receive(:regist_service).with(regist_hash)
@@ -30,8 +30,8 @@ describe ConsulHelper::Helper do
 
     describe 'tag is not included on registerd service' do
       it 'register add tag' do
-        response_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["primary", "backuped"],"Port"=>8080}
-        regist_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["primary","backuped"],"Port"=>8080,"Name"=>"ap"}
+        response_hash = { 'ID' => 'ap', 'Service' => 'ap', 'Tags' => %w(primary backuped), 'Port' => 8080 }
+        regist_hash = { 'ID' => 'ap', 'Service' => 'ap', 'Tags' => %w(primary backuped), 'Port' => 8080, 'Name' => 'ap' }
 
         allow_any_instance_of(ConsulHelper::ConsulAgent).to receive(:service).with('ap').and_return(response_hash)
         expect_any_instance_of(ConsulHelper::ConsulAgent).to receive(:regist_service).with(regist_hash)
@@ -43,8 +43,8 @@ describe ConsulHelper::Helper do
 
     describe 'tag is included on registerd service' do
       it 'register not changed tag' do
-        response_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["backuped"],"Port"=>8080}
-        regist_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["backuped","primary"],"Port"=>8080,"Name"=>"ap"}
+        response_hash = { 'ID' => 'ap', 'Service' => 'ap', 'Tags' => ['backuped'], 'Port' => 8080 }
+        regist_hash = { 'ID' => 'ap', 'Service' => 'ap', 'Tags' => %w(backuped primary), 'Port' => 8080, 'Name' => 'ap' }
 
         allow_any_instance_of(ConsulHelper::ConsulAgent).to receive(:service).with('ap').and_return(response_hash)
         expect_any_instance_of(ConsulHelper::ConsulAgent).to receive(:regist_service).with(regist_hash)
@@ -65,7 +65,8 @@ describe ConsulHelper::Helper do
   describe '#service_deregist' do
     describe 'received deregist service, node and datacenter' do
       it 'call deregister method and send to hash' do
-        expect_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:deregister).with(Datacenter: 'datacenter', Node: 'node_name', ServiceID: 'service_id')
+        expect_any_instance_of(ConsulHelper::ConsulCatalog)
+          .to receive(:deregister).with(Datacenter: 'datacenter', Node: 'node_name', ServiceID: 'service_id')
 
         helper = ConsulHelper::Helper.new
         helper.send(:service_deregist, Datacenter: 'datacenter', Node: 'node_name', ServiceID: 'service_id')
@@ -73,7 +74,8 @@ describe ConsulHelper::Helper do
     end
     describe 'received deregist service and node' do
       it 'call deregister method and send to hash' do
-        expect_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:deregister).with(Node: 'node_name', ServiceID: 'service_id')
+        expect_any_instance_of(ConsulHelper::ConsulCatalog)
+          .to receive(:deregister).with(Node: 'node_name', ServiceID: 'service_id')
 
         helper = ConsulHelper::Helper.new
         helper.send(:service_deregist, Node: 'node_name', ServiceID: 'service_id')
@@ -93,6 +95,24 @@ describe ConsulHelper::Helper do
 
         helper = ConsulHelper::Helper.new
         expect { helper.service_deregist(Node: 'node_name') }.to raise_error(ArgumentError)
+      end
+    end
+  end
+  describe '#other_service_node' do
+    describe 'ther is other node' do
+      it 'return empty array' do
+        service = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":null,"ServicePort":5432},',
+                   '{"Node":"consul2","Address":"172.17.0.50","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
+        response = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
+                    '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
+
+        allow_any_instance_of(ConsulHelper::ConsulAgent).to receive(:my_nodename).and_return('consul2')
+        allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
+
+        helper = ConsulHelper::Helper.new
+        expect(helper.other_service_node('db')).to eq(JSON.parse(response))
       end
     end
   end
@@ -129,7 +149,7 @@ describe ConsulHelper::ConsulAgent do
       it 'return service' do
         consul = ConsulHelper::ConsulAgent.new
         allow(consul).to receive(:services).and_return(JSON.parse(response))
-        expect(consul.service('ap')).to eq({"ID"=>"ap","Service"=>"ap","Tags"=>nil,"Port"=>8080})
+        expect(consul.service('ap')).to eq('ID' => 'ap', 'Service' => 'ap', 'Tags' => nil, 'Port' => 8080)
       end
     end
 
@@ -143,7 +163,6 @@ describe ConsulHelper::ConsulAgent do
 
     describe 'service not registerd' do
       it 'raise error' do
-
         consul = ConsulHelper::ConsulAgent.new
         allow(consul).to receive(:services).and_return(JSON.parse('{}'))
         expect { consul.service('db') }.to raise_error('no regist service of db')
@@ -153,7 +172,7 @@ describe ConsulHelper::ConsulAgent do
 
   describe '#regist_service' do
     it 'register' do
-      regist_hash = {"ID"=>"ap","Name"=>"ap","Tags"=>"primary","Port"=>8080}
+      regist_hash = { 'ID' => 'ap', 'Name' => 'ap', 'Tags' => 'primary', 'Port' => 8080 }
 
       expect(RestClient).to receive(:put).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_hash.to_json)
 
@@ -161,16 +180,76 @@ describe ConsulHelper::ConsulAgent do
       consul.send(:regist_service, regist_hash)
     end
   end
+  describe '#self' do
+    it 'get own node info' do
+      response = ['{"Config":{"Bootstrap":true,"BootstrapExpect":0,"Server":true,"Datacenter":"local","DataDir":"/tmp/consul",',
+                  '"DNSRecursor":"","DNSConfig":{"NodeTTL":0,"ServiceTTL":null,"AllowStale":false,"MaxStale":5000000000},',
+                  '"Domain":"consul.","LogLevel":"INFO","NodeName":"consul1","ClientAddr":"127.0.0.1","BindAddr":"0.0.0.0",',
+                  '"AdvertiseAddr":"172.17.0.49","Ports":{"DNS":8600,"HTTP":8500,"RPC":8400,"SerfLan":8301,"SerfWan":8302,',
+                  '"Server":8300}}}'].join
+
+      allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SELF_URL).and_return(response)
+
+      consul = ConsulHelper::ConsulAgent.new
+      expect(consul.self).to eq(JSON.parse(response))
+    end
+  end
+  describe '#my_nodename' do
+    it 'get my node name' do
+      response = ['{"Config":{"Bootstrap":true,"BootstrapExpect":0,"Server":true,"Datacenter":"local","DataDir":"/tmp/consul",',
+                  '"DNSRecursor":"","DNSConfig":{"NodeTTL":0,"ServiceTTL":null,"AllowStale":false,"MaxStale":5000000000},',
+                  '"Domain":"consul.","LogLevel":"INFO","NodeName":"consul1","ClientAddr":"127.0.0.1","BindAddr":"0.0.0.0",',
+                  '"AdvertiseAddr":"172.17.0.49","Ports":{"DNS":8600,"HTTP":8500,"RPC":8400,"SerfLan":8301,"SerfWan":8302,',
+                  '"Server":8300}}}'].join
+
+      consul = ConsulHelper::ConsulAgent.new
+      allow(consul).to receive(:self).and_return(JSON.parse(response))
+      expect(consul.my_nodename).to eq('consul1')
+    end
+  end
 end
 
 describe ConsulHelper::ConsulCatalog do
   describe '#deregister' do
     it 'put json to deregister api' do
-      regist_hash = {"Node"=>"node_name","ServiceID"=>"service_id"}
+      regist_hash = { 'Node' => 'node_name', 'ServiceID' => 'service_id' }
       expect(RestClient).to receive(:put).with(ConsulHelper::ConsulCatalog::CONSUL_CATALOG_DEREGISTER_URL, regist_hash.to_json)
 
       catalog = ConsulHelper::ConsulCatalog.new
       catalog.send(:deregister, regist_hash)
+    end
+  end
+  describe '#service' do
+    describe 'service is registerd' do
+      it 'return parsed service from consul' do
+        response = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
+                    '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
+
+        expect(RestClient)
+          .to receive(:get).with("#{ConsulHelper::ConsulCatalog::CONSUL_CATALOG_SERVICE_URL}/db").and_return(response)
+
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect(catalog.service('db')).to eq(JSON.parse(response))
+      end
+    end
+    describe 'service is not registerd' do
+      it 'return empty array' do
+        expect(RestClient).to receive(:get).with("#{ConsulHelper::ConsulCatalog::CONSUL_CATALOG_SERVICE_URL}/db").and_return('[]')
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect(catalog.service('db')).to eq(JSON.parse('[]'))
+      end
+    end
+    describe 'receive service id is nil' do
+      it 'raise ArgumentError' do
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect { catalog.service }.to raise_error(ArgumentError)
+      end
+    end
+    describe 'receive service id is empty' do
+      it 'raise ArgumentError' do
+        catalog = ConsulHelper::ConsulCatalog.new
+        expect { catalog.service('') }.to raise_error(ArgumentError)
+      end
     end
   end
 end

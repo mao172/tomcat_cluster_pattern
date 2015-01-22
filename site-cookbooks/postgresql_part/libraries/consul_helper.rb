@@ -31,17 +31,27 @@ module ConsulHelper
 
       agent.regist_service(service)
     end
+
     def service_deregist(args = {})
       fail ArgumentError unless args.key?(:Node) && args.key?(:ServiceID)
 
       catalog = ConsulCatalog.new
       catalog.deregister(args)
     end
+
+    def other_service_node(service_id)
+      agent = ConsulAgent.new
+      my_name = agent.my_nodename
+      catalog = ConsulCatalog.new
+      service_nodes = catalog.service(service_id)
+      service_nodes.delete_if { |item| item['Node'] == my_name }
+    end
   end
   class ConsulAgent
     CONSUL_AGENT_URL = 'http://127.0.0.1:8500/v1/agent'
     CONSUL_AGENT_SERVICES_URL = "#{CONSUL_AGENT_URL}/services"
     CONSUL_AGENT_SERVICE_REGISTER_URL = "#{CONSUL_AGENT_URL}/service/register"
+    CONSUL_AGENT_SELF_URL = "#{CONSUL_AGENT_URL}/self"
 
     def services
       begin
@@ -63,13 +73,33 @@ module ConsulHelper
     def regist_service(hash)
       RestClient.put(CONSUL_AGENT_SERVICE_REGISTER_URL, hash.to_json)
     end
+
+    def self
+      JSON.parse(RestClient.get(CONSUL_AGENT_SELF_URL))
+    end
+
+    def my_nodename
+      self.self['Config']['NodeName']
+    end
   end
   class ConsulCatalog
     CONSUL_CATALOG_URL = 'http://127.0.0.1:8500/v1/catalog'
     CONSUL_CATALOG_DEREGISTER_URL = "#{CONSUL_CATALOG_URL}/deregister"
+    CONSUL_CATALOG_SERVICE_URL = "#{CONSUL_CATALOG_URL}/service"
 
     def deregister(hash)
       RestClient.put(CONSUL_CATALOG_DEREGISTER_URL, hash.to_json)
+    end
+
+    def service(service_id)
+      fail ArgumentError if service_id.nil? || service_id.empty?
+      begin
+        response = JSON.parse(RestClient.get("#{CONSUL_CATALOG_SERVICE_URL}/#{service_id}"))
+      rescue
+        response = {}
+      end
+
+      response
     end
   end
 end
