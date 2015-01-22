@@ -100,7 +100,7 @@ describe ConsulHelper::Helper do
   end
   describe '#other_service_node' do
     describe 'ther is other node' do
-      it 'return empty array' do
+      it 'return other node array' do
         service = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
                    '"ServiceName":"db","ServiceTags":null,"ServicePort":5432},',
                    '{"Node":"consul2","Address":"172.17.0.50","ServiceID":"db",',
@@ -113,6 +113,18 @@ describe ConsulHelper::Helper do
 
         helper = ConsulHelper::Helper.new
         expect(helper.other_service_node('db')).to eq(JSON.parse(response))
+      end
+    end
+    describe 'ther is no other node' do
+      it 'return empty array' do
+        service = ['[{"Node":"consul2","Address":"172.17.0.50","ServiceID":"db",',
+                   '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
+
+        allow_any_instance_of(ConsulHelper::ConsulAgent).to receive(:my_nodename).and_return('consul2')
+        allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
+
+        helper = ConsulHelper::Helper.new
+        expect(helper.other_service_node('db')).to eq(JSON.parse('[]'))
       end
     end
   end
