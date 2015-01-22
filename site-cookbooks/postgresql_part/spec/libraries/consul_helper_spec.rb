@@ -37,31 +37,30 @@ describe ConsulHelper::ConsulAgent do
   end
 
   describe '#service' do
-    before do
-      response = ['{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080},',
-                  '"db":{"ID":"db","Service":"db","Tags":null,"Port":5432}}'].join
-      allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return(response)
-    end
+    response = ['{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080},',
+                '"db":{"ID":"db","Service":"db","Tags":null,"Port":5432}}'].join
 
     describe 'id is a registerd service id' do
       it 'return service' do
         consul = ConsulHelper::ConsulAgent.new
-        expect(consul.service('ap')).to eq(JSON.parse('{"ID":"ap","Service":"ap","Tags":null,"Port":8080}'))
+        allow(consul).to receive(:services).and_return(JSON.parse(response))
+        expect(consul.service('ap')).to eq({"ID"=>"ap","Service"=>"ap","Tags"=>nil,"Port"=>8080})
       end
     end
 
     describe 'id is not registerd service id' do
       it 'raise error' do
         consul = ConsulHelper::ConsulAgent.new
+        allow(consul).to receive(:services).and_return(JSON.parse(response))
         expect { consul.service('www') }.to raise_error('no regist service of www')
       end
     end
 
     describe 'service not registerd' do
       it 'raise error' do
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return('{}')
 
         consul = ConsulHelper::ConsulAgent.new
+        allow(consul).to receive(:services).and_return(JSON.parse('{}'))
         expect { consul.service('db') }.to raise_error('no regist service of db')
       end
     end
@@ -69,7 +68,8 @@ describe ConsulHelper::ConsulAgent do
 
   describe '#regist_service' do
     it 'register' do
-      regist_hash = JSON.parse('{"ID":"ap","Name":"ap","Tags":"primary","Port":8080}')
+      regist_hash = {"ID"=>"ap","Name"=>"ap","Tags"=>"primary","Port"=>8080}
+
       expect(RestClient).to receive(:put).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_hash.to_json)
 
       consul = ConsulHelper::ConsulAgent.new
@@ -78,47 +78,50 @@ describe ConsulHelper::ConsulAgent do
   end
 
   describe '#add_service_tag' do
-    describe 'tag of resigerd service is nill' do
+    describe 'tag of registerd service is nill' do
       it 'register add tag' do
-        response = '{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080}}'
-        regist_json = '{"ID":"ap","Service":"ap","Tags":["primary"],"Port":8080,"Name":"ap"}'
-
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return(response)
-        expect(RestClient).to receive(:put).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_json)
+        response_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>nil,"Port"=>8080}
+        regist_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["primary"],"Port"=>8080,"Name"=>"ap"}
         consul = ConsulHelper::ConsulAgent.new
+
+        allow(consul).to receive(:service).with('ap').and_return(response_hash)
+        expect(consul).to receive(:regist_service).with(regist_hash)
+
         consul.send(:add_service_tag, 'ap', 'primary')
       end
     end
 
     describe 'tag is not included on registerd service' do
       it 'register add tag' do
-        response = '{"ap":{"ID":"ap","Service":"ap","Tags":["primary", "backuped"],"Port":8080}}'
-        regist_json = '{"ID":"ap","Service":"ap","Tags":["primary","backuped"],"Port":8080,"Name":"ap"}'
-
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return(response)
-        expect(RestClient).to receive(:put).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_json)
+        response_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["primary", "backuped"],"Port"=>8080}
+        regist_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["primary","backuped"],"Port"=>8080,"Name"=>"ap"}
         consul = ConsulHelper::ConsulAgent.new
+
+        allow(consul).to receive(:service).with('ap').and_return(response_hash)
+        expect(consul).to receive(:regist_service).with(regist_hash)
+
         consul.send(:add_service_tag, 'ap', 'primary')
       end
     end
 
     describe 'tag is included on registerd service' do
       it 'register not changed tag' do
-        response = '{"ap":{"ID":"ap","Service":"ap","Tags":["backuped"],"Port":8080}}'
-        regist_json = '{"ID":"ap","Service":"ap","Tags":["backuped","primary"],"Port":8080,"Name":"ap"}'
+        response_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["backuped"],"Port"=>8080}
+        regist_hash = {"ID"=>"ap","Service"=>"ap","Tags"=>["backuped","primary"],"Port"=>8080,"Name"=>"ap"}
 
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return(response)
-        expect(RestClient).to receive(:put).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_json)
         consul = ConsulHelper::ConsulAgent.new
+
+        allow(consul).to receive(:service).with('ap').and_return(response_hash)
+        expect(consul).to receive(:regist_service).with(regist_hash)
+
         consul.send(:add_service_tag, 'ap', 'primary')
       end
     end
 
     describe 'service id is not registerd' do
       it 'raise error' do
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return('{}')
-
         consul = ConsulHelper::ConsulAgent.new
+        allow(consul).to receive(:service).with('db').and_raise('no regist service of db')
         expect { consul.service('db') }.to raise_error('no regist service of db')
       end
     end
@@ -127,7 +130,7 @@ end
 describe ConsulHelper::ConsulCatalog do
   describe '#deregister' do
     it 'put json to deregister api' do
-      regist_hash = JSON.parse('{"Node":"node_name","ServiceID":"service_id"}')
+      regist_hash = {"Node"=>"node_name","ServiceID"=>"service_id"}
       expect(RestClient).to receive(:put).with(ConsulHelper::ConsulCatalog::CONSUL_CATALOG_DEREGISTER_URL, regist_hash.to_json)
 
       catalog = ConsulHelper::ConsulCatalog.new
