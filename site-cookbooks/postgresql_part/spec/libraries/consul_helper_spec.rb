@@ -166,17 +166,16 @@ describe ConsulHelper::ConsulAgent do
         response = '{"ap":{"ID":"ap","Service":"ap","Tags":null,"Port":8080}}'
 
         consul = ConsulHelper::ConsulAgent.new
-
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return(response)
+        allow(RestClient).to receive(:get).with(consul.consul_agent_services_url).and_return(response)
 
         expect(consul.services).to eq(JSON.parse(response))
       end
     end
     describe 'service not registerd' do
       it 'return empty hash' do
-        allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICES_URL).and_return('{}')
-
         consul = ConsulHelper::ConsulAgent.new
+        allow(RestClient).to receive(:get).with(consul.consul_agent_services_url).and_return('{}')
+
         expect(consul.services).to eq({})
       end
     end
@@ -215,9 +214,9 @@ describe ConsulHelper::ConsulAgent do
     it 'register' do
       regist_hash = { 'ID' => 'ap', 'Name' => 'ap', 'Tags' => 'primary', 'Port' => 8080 }
 
-      expect(RestClient).to receive(:put).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SERVICE_REGISTER_URL, regist_hash.to_json)
-
       consul = ConsulHelper::ConsulAgent.new
+      expect(RestClient).to receive(:put).with(consul.consul_agent_service_register_url, regist_hash.to_json)
+
       consul.send(:regist_service, regist_hash)
     end
   end
@@ -229,9 +228,9 @@ describe ConsulHelper::ConsulAgent do
                   '"AdvertiseAddr":"172.17.0.49","Ports":{"DNS":8600,"HTTP":8500,"RPC":8400,"SerfLan":8301,"SerfWan":8302,',
                   '"Server":8300}}}'].join
 
-      allow(RestClient).to receive(:get).with(ConsulHelper::ConsulAgent::CONSUL_AGENT_SELF_URL).and_return(response)
-
       consul = ConsulHelper::ConsulAgent.new
+      allow(RestClient).to receive(:get).with(consul.consul_agent_self_url).and_return(response)
+
       expect(consul.self).to eq(JSON.parse(response))
     end
   end
@@ -254,9 +253,10 @@ describe ConsulHelper::ConsulCatalog do
   describe '#deregister' do
     it 'put json to deregister api' do
       regist_hash = { 'Node' => 'node_name', 'ServiceID' => 'service_id' }
-      expect(RestClient).to receive(:put).with(ConsulHelper::ConsulCatalog::CONSUL_CATALOG_DEREGISTER_URL, regist_hash.to_json)
 
       catalog = ConsulHelper::ConsulCatalog.new
+      expect(RestClient).to receive(:put).with(catalog.consul_catalog_deregister_url, regist_hash.to_json)
+
       catalog.send(:deregister, regist_hash)
     end
   end
@@ -266,17 +266,17 @@ describe ConsulHelper::ConsulCatalog do
         response = ['[{"Node":"consul1","Address":"172.17.0.49","ServiceID":"db",',
                     '"ServiceName":"db","ServiceTags":null,"ServicePort":5432}]'].join
 
-        expect(RestClient)
-          .to receive(:get).with("#{ConsulHelper::ConsulCatalog::CONSUL_CATALOG_SERVICE_URL}/db").and_return(response)
-
         catalog = ConsulHelper::ConsulCatalog.new
+        expect(RestClient)
+          .to receive(:get).with("#{catalog.consul_catalog_service_url}/db").and_return(response)
+
         expect(catalog.service('db')).to eq(JSON.parse(response))
       end
     end
     describe 'service is not registerd' do
       it 'return empty array' do
-        expect(RestClient).to receive(:get).with("#{ConsulHelper::ConsulCatalog::CONSUL_CATALOG_SERVICE_URL}/db").and_return('[]')
         catalog = ConsulHelper::ConsulCatalog.new
+        expect(RestClient).to receive(:get).with("#{catalog.consul_catalog_service_url}/db").and_return('[]')
         expect(catalog.service('db')).to eq(JSON.parse('[]'))
       end
     end

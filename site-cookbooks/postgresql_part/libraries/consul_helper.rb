@@ -54,14 +54,18 @@ module ConsulHelper
     end
   end
   class ConsulAgent
-    CONSUL_AGENT_URL = 'http://127.0.0.1:8500/v1/agent'
-    CONSUL_AGENT_SERVICES_URL = "#{CONSUL_AGENT_URL}/services"
-    CONSUL_AGENT_SERVICE_REGISTER_URL = "#{CONSUL_AGENT_URL}/service/register"
-    CONSUL_AGENT_SELF_URL = "#{CONSUL_AGENT_URL}/self"
+    @consul_agent_url = 'http://127.0.0.1:8500/v1/agent'
+    @consul_agent_services_url = "#{@consul_agent_url}/services"
+    @consul_agent_service_register_url = "#{@consul_agent_url}/service/register"
+    @consul_agent_self_url = "#{@consul_agent_url}/self"
+
+    attr_reader :consul_agent_services_url,
+                :consul_agent_service_register_url,
+                :consul_agent_self_url
 
     def services
       begin
-        response = JSON.parse(RestClient.get(CONSUL_AGENT_SERVICES_URL))
+        response = JSON.parse(RestClient.get(@consul_agent_services_url))
       rescue
         response = {}
       end
@@ -77,11 +81,11 @@ module ConsulHelper
     end
 
     def regist_service(hash)
-      RestClient.put(CONSUL_AGENT_SERVICE_REGISTER_URL, hash.to_json)
+      RestClient.put(@consul_agent_service_register_url, hash.to_json)
     end
 
     def self
-      JSON.parse(RestClient.get(CONSUL_AGENT_SELF_URL))
+      JSON.parse(RestClient.get(@consul_agent_self_url))
     end
 
     def my_nodename
@@ -89,18 +93,21 @@ module ConsulHelper
     end
   end
   class ConsulCatalog
-    CONSUL_CATALOG_URL = 'http://127.0.0.1:8500/v1/catalog'
-    CONSUL_CATALOG_DEREGISTER_URL = "#{CONSUL_CATALOG_URL}/deregister"
-    CONSUL_CATALOG_SERVICE_URL = "#{CONSUL_CATALOG_URL}/service"
+    @consul_catalog_url = 'http://127.0.0.1:8500/v1/catalog'
+    @consul_catalog_deregister_url = "#{@consul_catalog_url}/deregister"
+    @consul_catalog_service_url = "#{@consul_catalog_url}/service"
+
+    attr_reader :consul_catalog_deregister_url,
+                :consul_catalog_service_url
 
     def deregister(hash)
-      RestClient.put(CONSUL_CATALOG_DEREGISTER_URL, hash.to_json)
+      RestClient.put(@consul_catalog_deregister_url, hash.to_json)
     end
 
     def service(service_id)
       fail ArgumentError if service_id.nil? || service_id.empty?
       begin
-        response = JSON.parse(RestClient.get("#{CONSUL_CATALOG_SERVICE_URL}/#{service_id}"))
+        response = JSON.parse(RestClient.get("#{@consul_catalog_service_url}/#{service_id}"))
       rescue
         response = {}
       end
