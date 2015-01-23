@@ -17,14 +17,14 @@ require 'json'
 
 module ConsulHelper
   class Helper
-    def add_service_tag(service_id, tag)
+    def add_service_tag(args={})
       agent = ConsulAgent.new
-      service = agent.service(service_id)
+      service = agent.service(args[:service_id])
 
       if service['Tags'].nil?
-        service['Tags'] = [tag.to_s]
-      elsif !service['Tags'].include?(tag)
-        service['Tags'].push(tag)
+        service['Tags'] = [args[:tag].to_s]
+      elsif !service['Tags'].include?(args[:tag])
+        service['Tags'].push(args[:tag])
       end
 
       service['Name'] = service['Service'].to_s
@@ -47,10 +47,10 @@ module ConsulHelper
       service_nodes.delete_if { |item| item['Node'] == my_name }
     end
 
-    def find_node_possession_tag(arg = {})
+    def find_node_possession_tag(args = {})
       catalog = ConsulCatalog.new
-      service_nodes = catalog.service(arg[:service])
-      service_nodes.delete_if { |item| item['ServiceTags'].nil? || !item['ServiceTags'].include?(arg[:tag]) }
+      service_nodes = catalog.service(args[:service])
+      service_nodes.delete_if { |item| item['ServiceTags'].nil? || !item['ServiceTags'].include?(args[:tag]) }
     end
   end
   class ConsulAgent
