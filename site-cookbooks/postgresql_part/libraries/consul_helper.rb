@@ -17,7 +17,7 @@ require 'json'
 
 module ConsulHelper
   class Helper
-    def add_service_tag(args={})
+    def add_service_tag(args = {})
       agent = ConsulAgent.new
       service = agent.service(args[:service_id])
 

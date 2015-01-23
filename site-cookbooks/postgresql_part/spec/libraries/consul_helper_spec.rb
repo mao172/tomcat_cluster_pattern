@@ -24,7 +24,7 @@ describe ConsulHelper::Helper do
         expect_any_instance_of(ConsulHelper::ConsulAgent).to receive(:regist_service).with(regist_hash)
 
         helper = ConsulHelper::Helper.new
-        helper.send(:add_service_tag, {service_id: 'ap', tag: 'primary'})
+        helper.send(:add_service_tag, service_id: 'ap', tag: 'primary')
       end
     end
 
@@ -37,7 +37,7 @@ describe ConsulHelper::Helper do
         expect_any_instance_of(ConsulHelper::ConsulAgent).to receive(:regist_service).with(regist_hash)
 
         helper = ConsulHelper::Helper.new
-        helper.send(:add_service_tag, {service_id: 'ap', tag: 'primary'})
+        helper.send(:add_service_tag, service_id: 'ap', tag: 'primary')
       end
     end
 
@@ -50,7 +50,7 @@ describe ConsulHelper::Helper do
         expect_any_instance_of(ConsulHelper::ConsulAgent).to receive(:regist_service).with(regist_hash)
 
         helper = ConsulHelper::Helper.new
-        helper.send(:add_service_tag, {service_id: 'ap', tag: 'primary'})
+        helper.send(:add_service_tag, service_id: 'ap', tag: 'primary')
       end
     end
 
