@@ -39,7 +39,7 @@ module ConsulHelper
       catalog.deregister(args)
     end
 
-    def other_service_node(service_id)
+    def find_other_service_node(service_id)
       agent = ConsulAgent.new
       my_name = agent.my_nodename
       catalog = ConsulCatalog.new
@@ -47,7 +47,7 @@ module ConsulHelper
       service_nodes.delete_if { |item| item['Node'] == my_name }
     end
 
-    def serch_node_possession_tag(arg = {})
+    def find_node_possession_tag(arg = {})
       catalog = ConsulCatalog.new
       service_nodes = catalog.service(arg[:service])
       service_nodes.delete_if { |item| item['ServiceTags'].nil? || !item['ServiceTags'].include?(arg[:tag]) }

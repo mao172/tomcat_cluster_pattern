@@ -112,7 +112,7 @@ describe ConsulHelper::Helper do
         allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
 
         helper = ConsulHelper::Helper.new
-        expect(helper.other_service_node('db')).to eq(JSON.parse(response))
+        expect(helper.find_other_service_node('db')).to eq(JSON.parse(response))
       end
     end
     describe 'ther is no other node' do
@@ -124,7 +124,7 @@ describe ConsulHelper::Helper do
         allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
 
         helper = ConsulHelper::Helper.new
-        expect(helper.other_service_node('db')).to eq(JSON.parse('[]'))
+        expect(helper.find_other_service_node('db')).to eq(JSON.parse('[]'))
       end
     end
   end
@@ -141,7 +141,7 @@ describe ConsulHelper::Helper do
 
         allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
         helper = ConsulHelper::Helper.new
-        expect(helper.serch_node_possession_tag(service: 'db', tag: 'primary')).to eq(JSON.parse(response))
+        expect(helper.find_node_possession_tag(service: 'db', tag: 'primary')).to eq(JSON.parse(response))
       end
     end
     describe 'there is no node to possession of a tag' do
@@ -153,7 +153,7 @@ describe ConsulHelper::Helper do
 
         allow_any_instance_of(ConsulHelper::ConsulCatalog).to receive(:service).with('db').and_return(JSON.parse(service))
         helper = ConsulHelper::Helper.new
-        expect(helper.serch_node_possession_tag(service: 'db', tag: 'primary')).to eq([])
+        expect(helper.find_node_possession_tag(service: 'db', tag: 'primary')).to eq([])
       end
     end
   end
