@@ -1,3 +1,5 @@
+::Chef::Resource.send(:include, ConsulHelper)
+
 # setting pg_hba.conf
 pg_hba = [
   { type: 'local', db: 'all', user: 'postgres', addr: nil, method: 'ident' },
