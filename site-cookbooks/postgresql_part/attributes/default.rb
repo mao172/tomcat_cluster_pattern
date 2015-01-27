@@ -1,5 +1,5 @@
 default['postgresql']['enable_pgdg_yum'] = true
-default['postgresql']['version'] = '9.3'
+default['postgresql']['version'] = '9.4'
 default['postgresql']['client']['packages'] = ["postgresql#{node['postgresql']['version'].split('.').join}-devel"]
 default['postgresql']['server']['packages'] = ["postgresql#{node['postgresql']['version'].split('.').join}-server"]
 default['postgresql']['contrib']['packages'] = ["postgresql#{node['postgresql']['version'].split('.').join}-contrib"]
