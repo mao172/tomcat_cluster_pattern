@@ -27,6 +27,8 @@ describe 'postgresql_part::default' do
     chef_run.node.set['postgresql']['config']['port'] = port
     chef_run.node.set['postgresql']['assign_postgres_password'] = true
     chef_run.node.set['postgresql']['password']['postgres'] = dba_passwd
+    chef_run.node.set['postgresql_part']['replication']['user'] = replication_user
+    chef_run.node.set['postgresql_part']['replication']['password'] = replication_pass
     chef_run.node.set['postgresql_part']['application']['user'] = app_user
     chef_run.node.set['postgresql_part']['application']['password'] = app_pass
     chef_run.node.set['postgresql_part']['application']['database'] = app_db
