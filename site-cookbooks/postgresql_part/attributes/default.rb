@@ -9,19 +9,22 @@ default['postgresql']['password']['postgres'] = 'todo_replace_random_password'
 default['postgresql']['config']['listen_addresses'] = '*'
 default['postgresql']['config']['data_directory'] = node['postgresql']['dir']
 
+default['postgresql_part']['replication']['user'] = 'replication'
+default['postgresql_part']['replication']['password'] = 'todo_replace_random_password'
+
 default['postgresql_part']['application']['database'] = 'application'
 default['postgresql_part']['application']['user'] = 'application'
 default['postgresql_part']['application']['password'] = 'todo_replace_random_password'
 
 # To merge because does not contain a "pgdg-repo" of postgresql 9.4 to postgresql cookbook now.
 # if contains a "pgdg-repo" to postgresql cookbook to use it
-unless node['postgresql']['pgdg']['repo_rpm_url'].include?("9.4")
+unless node['postgresql']['pgdg']['repo_rpm_url'].include?('9.4')
   normal['postgresql']['pgdg']['repo_rpm_url'] = {
-    "9.4" => {
-      "centos" => {
-        "6" => {
-          "i386" => "http://yum.postgresql.org/9.4/redhat/rhel-6-i386/pgdg-centos94-9.4-1.noarch.rpm",
-          "x86_64" => "http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm"
+    '9.4' => {
+      'centos' => {
+        '6' => {
+          'i386' => 'http://yum.postgresql.org/9.4/redhat/rhel-6-i386/pgdg-centos94-9.4-1.noarch.rpm',
+          'x86_64' => 'http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm'
         }
       }
     }
