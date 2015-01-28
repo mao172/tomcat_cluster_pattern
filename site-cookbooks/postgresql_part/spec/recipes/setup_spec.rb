@@ -13,6 +13,8 @@ describe 'postgresql_part::default' do
   app_pass = 'app_pass'
   app_db = 'app_db'
 
+  pgpool_source = 'http://www.pgpool.net/download.php?f=pgpool-II-3.4.0.tar.gz'
+
   postgresql_connection_info = {
     host: '127.0.0.1',
     port: port,
@@ -33,6 +35,7 @@ describe 'postgresql_part::default' do
     chef_run.node.set['postgresql_part']['application']['password'] = app_pass
     chef_run.node.set['postgresql_part']['application']['database'] = app_db
     chef_run.node.set['postgresql_part']['pgpool-II']['use'] = true
+    chef_run.node.set['postgresql_part']['pgpool-II']['source_archive_url'] = pgpool_source
     chef_run.converge(described_recipe)
   end
 
@@ -57,6 +60,9 @@ describe 'postgresql_part::default' do
   end
 
   it 'execute initdb' do
+    allow(Dir).to receive(:glob).and_call_original
+    allow(Dir).to receive(:glob).with("#{chef_run.node['postgresql']['dir']}/*").and_return([])
+    chef_run.converge(described_recipe)
     expect(chef_run).to run_bash('run_initdb').with(
       code: "service postgresql-#{pgsql_version} initdb"
     )
@@ -119,23 +125,23 @@ describe 'postgresql_part::default' do
 
   it 'download pgpool-II archive file' do
     expect(chef_run).to create_remote_file("#{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0.tar.gz").with(
-      source: 'http://www.pgpool.net/download.php?f=pgpool-II-3.4.0.tar.gz'
+      source: pgpool_source
     )
   end
 
   it 'extract archive file' do
     expect(chef_run).to run_bash('extract_archive_file').with(
-     code: "tar -zxvf #{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0.tar.gz"
+     code: "tar xvf #{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0.tar.gz -C #{Chef::Config[:file_cache_path]}/"
     )
   end
 
   it 'install pgpool-II' do
-    expect(chef_run).to run_bash('install pgpool-II').with(
+    expect(chef_run).to run_bash('install_pgpool-II').with(
       code: <<-EOS
-  export PATH=/usr/pgsql-9.4/bin/:$PATH
-  cd #{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0/src/sql/pgpool-regclass/
-  make
-  make install
+      export PATH=/usr/pgsql-9.4/bin/:$PATH
+      cd #{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0/src/sql/pgpool-regclass/
+      make
+      make install
 EOS
     )
   end

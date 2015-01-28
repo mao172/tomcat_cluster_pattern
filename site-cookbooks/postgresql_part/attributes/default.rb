@@ -8,6 +8,13 @@ default['postgresql']['server']['service_name'] = "postgresql-#{node['postgresql
 default['postgresql']['password']['postgres'] = 'todo_replace_random_password'
 default['postgresql']['config']['listen_addresses'] = '*'
 default['postgresql']['config']['data_directory'] = node['postgresql']['dir']
+default['postgresql']['config']['wal_level'] = 'hot_standby'
+default['postgresql']['config']['max_wal_senders'] = '3'
+default['postgresql']['config']['wal_keep_segments'] = '32'
+default['postgresql']['config']['hot_standby'] = 'on'
+default['postgresql']['config']['max_replication_slots'] = '1'
+default['postgresql']['config']['synchronous_commit'] = 'off'
+default['postgresql']['config']['synchronous_standby_names'] = '*'
 
 default['postgresql_part']['replication']['user'] = 'replication'
 default['postgresql_part']['replication']['password'] = 'todo_replace_random_password'
@@ -15,6 +22,9 @@ default['postgresql_part']['replication']['password'] = 'todo_replace_random_pas
 default['postgresql_part']['application']['database'] = 'application'
 default['postgresql_part']['application']['user'] = 'application'
 default['postgresql_part']['application']['password'] = 'todo_replace_random_password'
+
+default['postgresql_part']['pgpool-II']['use'] = true
+default['postgresql_part']['pgpool-II']['source_archive_url'] = 'http://www.pgpool.net/download.php?f=pgpool-II-3.4.0.tar.gz'
 
 # To merge because does not contain a "pgdg-repo" of postgresql 9.4 to postgresql cookbook now.
 # if contains a "pgdg-repo" to postgresql cookbook to use it
