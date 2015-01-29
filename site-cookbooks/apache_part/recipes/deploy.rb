@@ -1,5 +1,10 @@
+#
+#
+
+extend ApachePart::ModJkHelper
+
 # determine the worker name　for mod_jk configuration
-target_worker = ModJkConfigure.worker_name(node)
+target_worker = worker_name
 
 # set uriworkers.properties
 template "#{node['apache']['conf_dir']}/uriworkermap.properties" do

@@ -1,5 +1,10 @@
+#
+#
+
+extend ApachePart::ModJkHelper
+
 # determine the worker name　for mod_jk configuration
-target_worker = ModJkConfigure.worker_name(node)
+target_worker = worker_name
 
 # set workers.properties
 tomcat_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('ap') }
