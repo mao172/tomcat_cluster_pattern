@@ -196,18 +196,19 @@ describe 'postgresql_part::configure' do
         chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
         chef_run.converge(described_recipe)
 
+        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                             "password=#{chef_run.node['postgresql_part']['replication']['passwd']}"].join
+
+        expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
+        expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
+          .to eq(chef_run.node['postgresql_part']['replication']['replication_slot'])
+
         expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf").with(
           source: 'recovery.conf.erb',
           mode: '0644',
           owner: 'postgres',
-          group: 'postgres',
-          variables: {
-            standby_mode: 'on',
-            primary_conninfo: ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                               "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                               "password=#{chef_run.node['postgresql_part']['replication']['passwd']}"].join,
-            primary_slot_name: chef_run.node['postgresql_part']['replication']['replication_slot']
-          }
+          group: 'postgres'
         )
       end
     end
@@ -218,19 +219,20 @@ describe 'postgresql_part::configure' do
         chef_run.node.set['postgresql_part']['replication']['application_name'] = 'application'
         chef_run.converge(described_recipe)
 
+        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                             "password=#{chef_run.node['postgresql_part']['replication']['passwd']} ",
+                             "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
+
+        expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
+        expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
+          .to eq(chef_run.node['postgresql_part']['replication']['replication_slot'])
+
         expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf").with(
           source: 'recovery.conf.erb',
           mode: '0644',
           owner: 'postgres',
-          group: 'postgres',
-          variables: {
-            standby_mode: 'on',
-            primary_conninfo: ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                               "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                               "password=#{chef_run.node['postgresql_part']['replication']['passwd']} ",
-                               "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join,
-            primary_slot_name: chef_run.node.set['postgresql_part']['replication']['replication_slot']
-          }
+          group: 'postgres'
         )
       end
     end
@@ -353,18 +355,19 @@ describe 'postgresql_part::configure' do
         chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
         chef_run.converge(described_recipe)
 
+        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                             "password=#{chef_run.node['postgresql_part']['replication']['passwd']}"].join
+
+        expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
+        expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
+          .to eq(chef_run.node['postgresql_part']['replication']['replication_slot'])
+
         expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf").with(
           source: 'recovery.conf.erb',
           mode: '0644',
           owner: 'postgres',
-          group: 'postgres',
-          variables: {
-            standby_mode: 'on',
-            primary_conninfo: ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                               "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                               "password=#{chef_run.node['postgresql_part']['replication']['passwd']}"].join,
-            primary_slot_name: chef_run.node.set['postgresql_part']['replication']['replication_slot']
-          }
+          group: 'postgres'
         )
       end
     end
@@ -374,19 +377,20 @@ describe 'postgresql_part::configure' do
         chef_run.node.set['postgresql_part']['replication']['application_name'] = 'application'
         chef_run.converge(described_recipe)
 
+        primary_conninfo = ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                            "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                            "password=#{chef_run.node['postgresql_part']['replication']['passwd']} ",
+                            "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
+
+        expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
+        expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
+          .to eq(chef_run.node['postgresql_part']['replication']['replication_slot'])
+
         expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf").with(
           source: 'recovery.conf.erb',
           mode: '0644',
           owner: 'postgres',
-          group: 'postgres',
-          variables: {
-            standby_mode: 'on',
-            primary_conninfo: ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                               "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                               "password=#{chef_run.node['postgresql_part']['replication']['passwd']} ",
-                               "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join,
-            primary_slot_name: chef_run.node.set['postgresql_part']['replication']['replication_slot']
-          }
+          group: 'postgres'
         )
       end
     end

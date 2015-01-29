@@ -18,6 +18,11 @@ default['postgresql']['config']['synchronous_standby_names'] = '*'
 
 default['postgresql_part']['replication']['user'] = 'replication'
 default['postgresql_part']['replication']['password'] = 'todo_replace_random_password'
+default['postgresql_part']['replication']['replication_slot'] = 'replication_slot'
+
+default['postgresql_part']['recovery']['standby_mode'] = 'on'
+default['postgresql_part']['recovery']['primary_slot_name'] = node['postgresql_part']['replication']['replication_slot']
+
 
 default['postgresql_part']['application']['database'] = 'application'
 default['postgresql_part']['application']['user'] = 'application'
