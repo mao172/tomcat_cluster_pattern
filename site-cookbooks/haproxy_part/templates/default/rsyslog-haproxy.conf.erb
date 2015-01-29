@@ -1,0 +1,15 @@
+#
+# haproxy.conf
+# for rsyslog
+#
+
+$ModLoad imudp
+$UDPServerRun 514
+
+<% if node[:haproxy_part][:log_template]  %>
+$template <%= node[:haproxy_part][:log_template] %>
+<% end %>
+
+<% node[:haproxy_part][:log_rules].each do |facility_level, action| %>
+<%= facility_level %> <%= action %>
+<% end %>
