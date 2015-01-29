@@ -69,6 +69,24 @@ postgresql_database 'postgres' do
   sql "SELECT * FROM pg_create_physical_replication_slot('#{node['postgresql_part']['replication']['replication_slot']}');"
 end
 
+primary_conninfo = ["host=#{partner_db['private_ip']} ",
+                    "port=#{node['postgresql']['config']['port']} ",
+                    "user=#{node['postgresql_part']['replication']['user']} ",
+                    "password=#{node['postgresql_part']['replication']['passwd']}"].join
+if node['postgresql']['config']['synchronous_commit'].is_a?(TrueClass) ||
+   node['postgresql']['config']['synchronous_commit'] == 'on'
+  primary_conninfo << " application_name=#{node['postgresql_part']['replication']['application_name']}"
+end
+
+node.set['postgresql_part']['recovery']['primary_conninfo'] = primary_conninfo
+
+template "#{node['postgresql']['dir']}/recovery.done" do
+  source 'recovery.conf.erb'
+  mode '0644'
+  owner 'postgres'
+  group 'postgres'
+end
+
 service 'postgresql' do
   service_name node['postgresql']['server']['service_name']
   supports [:restart, :reload, :status]
