@@ -28,6 +28,19 @@ template "#{node['postgresql']['dir']}/pg_hba.conf" do
   notifies :reload, 'service[postgresql]', :delayed
 end
 
+postgresql_connection_info = {
+  host: '127.0.0.1',
+  port: node['postgresql']['config']['port'],
+  username: 'postgres',
+  password: node['postgresql']['password']['postgres']
+}
+
+postgresql_database 'postgres' do
+  action :query
+  connection postgresql_connection_info
+  sql "SELECT * FROM pg_create_physical_replication_slot('#{node['postgresql_part']['replication']['replication_slot']}');"
+end
+
 service 'postgresql' do
   service_name node['postgresql']['server']['service_name']
   supports [:restart, :reload, :status]

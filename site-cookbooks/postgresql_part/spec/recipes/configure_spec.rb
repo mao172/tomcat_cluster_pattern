@@ -275,12 +275,12 @@ describe 'postgresql_part::configure' do
     it 'create replication slot' do
       postgresql_connection_info = {
         host: '127.0.0.1',
-        port: port,
+        port: chef_run.node['postgresql']['config']['port'],
         username: 'postgres',
-        password: dba_passwd
+        password: chef_run.node.set['postgresql']['password']['postgres']
       }
 
-      query = "SELECT * FROM pg_create_physical_replication_slot('#{['postgresql_part']['replication']['replication_slot']}');"
+      query = "SELECT * FROM pg_create_physical_replication_slot('#{chef_run.node['postgresql_part']['replication']['replication_slot']}');"
       expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
       :postgresql_database,
       :query,
