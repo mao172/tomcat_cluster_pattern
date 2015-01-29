@@ -16,8 +16,10 @@ worker.<%= server['name'] %>.route=<%= server['route'] %>
 worker.<%= server['name'] %>.lbfactor=<%= server['weight'] %>
 <% end %>
 
+<% if @worker_name == 'loadbalancer' %>
 worker.loadbalancer.type=lb
 worker.loadbalancer.balance_workers=<%= @tomcat_servers.map{|server| server['name'] }.join(',') %>
 worker.loadbalancer.sticky_session=<%= @sticky_session %>
+<% end %>
 
 worker.status.type=status
