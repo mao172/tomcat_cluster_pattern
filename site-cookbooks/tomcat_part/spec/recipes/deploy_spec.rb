@@ -1,7 +1,7 @@
 require_relative '../spec_helper'
 
 describe 'tomcat_part::deploy' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: ['tomcat_part_context', 'tomcat_part_tables']) }
+  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(tomcat_part_context tomcat_part_tables)) }
 
   app_name = 'application'
   db_private_ip = '172.0.0.10'
@@ -156,7 +156,7 @@ describe 'tomcat_part::deploy' do
           'port' => 5432
         }
         session_table_name = 'tomcat$session'
-        session_table = { 
+        session_table = {
           'name' => session_table_name,
           'idCol' => 'id',
           'appCol' => 'app',
@@ -235,9 +235,8 @@ describe 'tomcat_part::deploy' do
         end
       end
     end
-    
-    describe 'create tables for JDBCStore' do
 
+    describe 'create tables for JDBCStore' do
       tomcat_user = 'tomcat'
       tomcat_group = 'passwd'
       context_dir = '/etc/tomcat7/Catalina/localhost'
@@ -261,7 +260,7 @@ describe 'tomcat_part::deploy' do
         'port' => 5432
       }
       session_table_name = 'tomcat$session'
-      session_table = { 
+      session_table = {
         'name' => session_table_name,
         'idCol' => 'id',
         'appCol' => 'app',
@@ -307,7 +306,6 @@ describe 'tomcat_part::deploy' do
         )
       end
     end
-
   end
 
   describe 'multiple dynamic type applications are included in "cloudconductor applications"' do

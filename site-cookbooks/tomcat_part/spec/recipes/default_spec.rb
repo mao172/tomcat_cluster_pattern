@@ -4,7 +4,8 @@ describe 'tomcat_part::default' do
   let(:chef_run) { ChefSpec::SoloRunner.converge(described_recipe) }
 
   before do
-    stub_command("grep \"org.apache.catalina.STRICT_SERVLET_COMPLIANCE\" /usr/share/tomcat7/conf/catalina.properties\n").and_return(false)
+    file_name = '/usr/share/tomcat7/conf/catalina.properties'
+    stub_command("grep \"org.apache.catalina.STRICT_SERVLET_COMPLIANCE\" #{file_name}\n").and_return(false)
     chef_run.converge(described_recipe)
   end
 

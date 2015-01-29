@@ -41,8 +41,7 @@ applications.each do |app_name, app|
   }
 
   if node['tomcat_part']['session_replication'] == 'jdbcStore'
-    tomcat_part_tables "#{app_name}_session" do
-    end
+    tomcat_part_tables "#{app_name}_session"
   end
 
   tomcat_part_context "#{app_name}" do
