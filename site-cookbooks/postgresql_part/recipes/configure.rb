@@ -1,5 +1,33 @@
 ::Chef::Resource.send(:include, ConsulHelper)
 
+db_servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
+
+db_server_names = db_servers.keys
+enable_db_names = db_server_names[0, 2]
+unless enable_db_names.include?(node[:hostname])
+  raise 'DB node is too much, this node to disable'
+end
+
+partner_db_name = enable_db_names.reject{|item|item == node[:hostname]}.first
+partner_db = db_servers[partner_db_name]
+
+pgpass = {
+    'ip' => "#{partner_db['private_ip']}",
+    'port' => "#{node['postgresql']['config']['port']}",
+    'db_name' => 'replication',
+    'user' => "#{node['postgresql_part']['replication']['user']}",
+    'passwd' => "#{node['postgresql_part']['replication']['passwd']}"
+}
+
+template "#{node['postgresql_part']['home_dir']}/.pgpass" do
+  source 'pgpass.erb'
+  mode '0600'
+  owner 'postgres'
+  group 'postgres'
+  variables(
+    pgpass: pgpass
+  )
+end
 # setting pg_hba.conf
 pg_hba = [
   { type: 'local', db: 'all', user: 'postgres', addr: nil, method: 'ident' },

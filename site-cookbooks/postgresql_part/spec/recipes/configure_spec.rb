@@ -20,11 +20,20 @@ describe 'postgresql_part::configure' do
     chef_run.node.set['postgresql_part']['replication']['passwd'] = 'replication_pass'
     chef_run.node.set['postgresql_part']['replication']['replication_slot'] = 'chef_spec_slot'
     chef_run.node.set['cloudconductor']['servers'] = {
+      myself_hostname => {
+        roles: 'db',
+        private_ip: myself_ip
+      },
+      partner_hostname => {
+        roles: 'db',
+        private_ip: partner_ip
+      },
       ap_server: {
         roles: 'ap',
         private_ip: ap_ip
       }
     }
+    chef_run.node.automatic_attrs['hostname'] = myself_hostname
     chef_run.converge(described_recipe)
   end
 
@@ -59,11 +68,11 @@ describe 'postgresql_part::configure' do
       describe 'first entry of servers is this node' do
         it 'do configure for primary db' do
           chef_run.node.set['cloudconductor']['servers'] = {
-            myself_hostname: {
+            myself_hostname => {
               roles: 'db',
               private_ip: myself_ip
             },
-            partner_db_hostname: {
+            partner_hostname => {
               roles: 'db',
               private_ip: partner_ip
             },
@@ -79,11 +88,11 @@ describe 'postgresql_part::configure' do
       describe 'first entry of servers is not this node' do
         it 'do configure for standby db' do
           chef_run.node.set['cloudconductor']['servers'] = {
-            partner_db_hostname: {
+            partner_hostname => {
               roles: 'db',
               private_ip: partner_ip
             },
-            myself_hostname: {
+            myself_hostname => {
               roles: 'db',
               private_ip: myself_ip
             },
@@ -102,12 +111,13 @@ describe 'postgresql_part::configure' do
   describe 'itself is Master db node' do
     before do
       chef_run.node.automatic_attrs['hostname'] = myself_hostname
+      chef_run.node.automatic_attrs['ipaddress'] = myself_ip
       chef_run.node.set['cloudconductor']['servers'] = {
-        myself_hostname: {
+        myself_hostname => {
           roles: 'db',
           private_ip: myself_ip
         },
-        partner_db_hostname: {
+        partner_hostname => {
           roles: 'db',
           private_ip: partner_ip
         },
@@ -146,11 +156,11 @@ describe 'postgresql_part::configure' do
       before do
         chef_run.node.automatic_attrs['hostname'] = myself_hostname
         chef_run.node.set['cloudconductor']['servers'] = {
-          myself_hostname: {
+          myself_hostname => {
             roles: 'db',
             private_ip: myself_ip
           },
-          partner_db_hostname: {
+          partner_hostname => {
             roles: 'db',
             private_ip: partner_ip
           },
@@ -238,14 +248,13 @@ describe 'postgresql_part::configure' do
     end
 
     it 'create pgpass' do
-      pgpass = [
-        { 'ip' => partner_ip,
-          'port' => chef_run.node['postgresql']['config']['port'],
-          'db_name' => 'replication',
-          'user' => chef_run.node['postgresql_part']['replication']['user'],
-          'passwd' => chef_run.node['postgresql_part']['replication']['passwd']
-        }
-      ]
+      pgpass = {
+        'ip' => partner_ip,
+        'port' => chef_run.node['postgresql']['config']['port'],
+        'db_name' => 'replication',
+        'user' => chef_run.node['postgresql_part']['replication']['user'],
+        'passwd' => chef_run.node['postgresql_part']['replication']['passwd']
+      }
       chef_run.node.set['postgres_part']['pgpass'] = pgpass
       chef_run.converge(described_recipe)
 
@@ -295,12 +304,13 @@ describe 'postgresql_part::configure' do
   describe 'itself is standby db node' do
     before do
       chef_run.node.automatic_attrs['hostname'] = partner_hostname
+      chef_run.node.automatic_attrs['ipaddress'] = partner_ip
       chef_run.node.set['cloudconductor']['servers'] = {
-        partner_hostname: {
+        partner_hostname => {
           roles: 'db',
           private_ip: partner_ip
         },
-        myself_hostname: {
+        myself_hostname => {
           roles: 'db',
           private_ip: myself_ip
         },
@@ -313,14 +323,13 @@ describe 'postgresql_part::configure' do
     end
 
     it 'create pgpass' do
-      pgpass = [
-        { 'ip' => partner_ip,
-          'port' => chef_run.node['postgresql']['config']['port'],
-          'db_name' => 'replication',
-          'user' => chef_run.node['postgresql_part']['replication']['user'],
-          'passwd' => chef_run.node['postgresql_part']['replication']['passwd']
-        }
-      ]
+      pgpass = {
+        'ip' => myself_ip,
+        'port' => chef_run.node['postgresql']['config']['port'],
+        'db_name' => 'replication',
+        'user' => chef_run.node['postgresql_part']['replication']['user'],
+        'passwd' => chef_run.node['postgresql_part']['replication']['passwd']
+      }
       chef_run.node.set['postgres_part']['pgpass'] = pgpass
       chef_run.converge(described_recipe)
 
