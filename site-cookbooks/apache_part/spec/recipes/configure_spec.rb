@@ -61,7 +61,7 @@ describe 'apache_part::configure' do
           sticky_session: sticky_session
         }
       )
-    end 
+    end
   end
 
   it 'restart apaceh2 service' do

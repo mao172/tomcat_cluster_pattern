@@ -22,7 +22,6 @@ describe 'apache_part::deploy' do
   end
 
   describe 'create uriworkermap properties file' do
-
     it 'using loadbalancer' do
       expect(chef_run.node['apache']['conf_dir']).to eq('/etc/httpd/conf')
       chef_run.converge(described_recipe)
