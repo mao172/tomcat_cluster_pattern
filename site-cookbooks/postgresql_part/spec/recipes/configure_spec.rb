@@ -193,6 +193,9 @@ describe 'postgresql_part::configure' do
 
     describe 'synchronous replication' do
       it 'create recovery.done' do
+        chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
+        chef_run.converge(described_recipe)
+
         expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf").with(
           source: 'recovery.conf.erb',
           mode: '0644',
@@ -211,6 +214,7 @@ describe 'postgresql_part::configure' do
 
     describe 'asynchronous replication' do
       it 'create recovery.done' do
+        chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'off'
         chef_run.node.set['postgresql_part']['replication']['application_name'] = 'application'
         chef_run.converge(described_recipe)
 
@@ -346,6 +350,9 @@ describe 'postgresql_part::configure' do
 
     describe 'synchronous replication' do
       it 'create recovery.conf' do
+        chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
+        chef_run.converge(described_recipe)
+
         expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf").with(
           source: 'recovery.conf.erb',
           mode: '0644',
@@ -363,6 +370,7 @@ describe 'postgresql_part::configure' do
     end
     describe 'asynchronous replication' do
       it 'create recovery.conf' do
+        chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
         chef_run.node.set['postgresql_part']['replication']['application_name'] = 'application'
         chef_run.converge(described_recipe)
 
