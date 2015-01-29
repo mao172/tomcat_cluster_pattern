@@ -54,10 +54,12 @@ module ConsulHelper
     end
   end
   class ConsulAgent
-    @consul_agent_url = 'http://127.0.0.1:8500/v1/agent'
-    @consul_agent_services_url = "#{@consul_agent_url}/services"
-    @consul_agent_service_register_url = "#{@consul_agent_url}/service/register"
-    @consul_agent_self_url = "#{@consul_agent_url}/self"
+    def initialize
+      @consul_agent_url = 'http://127.0.0.1:8500/v1/agent'
+      @consul_agent_services_url = "#{@consul_agent_url}/services"
+      @consul_agent_service_register_url = "#{@consul_agent_url}/service/register"
+      @consul_agent_self_url = "#{@consul_agent_url}/self"
+    end
 
     attr_reader :consul_agent_services_url,
                 :consul_agent_service_register_url,
@@ -93,9 +95,11 @@ module ConsulHelper
     end
   end
   class ConsulCatalog
-    @consul_catalog_url = 'http://127.0.0.1:8500/v1/catalog'
-    @consul_catalog_deregister_url = "#{@consul_catalog_url}/deregister"
-    @consul_catalog_service_url = "#{@consul_catalog_url}/service"
+    def initialize
+      @consul_catalog_url = 'http://127.0.0.1:8500/v1/catalog'
+      @consul_catalog_deregister_url = "#{@consul_catalog_url}/deregister"
+      @consul_catalog_service_url = "#{@consul_catalog_url}/service"
+    end
 
     attr_reader :consul_catalog_deregister_url,
                 :consul_catalog_service_url
