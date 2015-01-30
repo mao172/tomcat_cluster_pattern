@@ -5,8 +5,31 @@ describe 'postgresql_part::deploy' do
   let(:chef_run) { ChefSpec::SoloRunner.new }
 
   myself_hostname = 'myself'
+  myself_ip = '172.0.0.10'
   partner_hostname = 'partner'
+  partner_ip = '172.0.0.11'
   app_name = 'app'
+
+  def helper_response(hostname, ipaddress)
+    [{
+      'Node' => "#{hostname}",
+      'Address' => "#{ipaddress}",
+      'ServiceID' => 'db',
+      'ServiceName' => 'db',
+      'ServiceTags' => ['primary'],
+      'ServicePort' => 5432
+    }]
+  end
+
+  before do
+    chef_run.node.set['cloudconductor']['servers'] = {
+      myself_hostname => { roles: 'db', private_ip: myself_ip },
+      partner_hostname => { roles: 'db', private_ip: partner_ip }
+    }
+
+    chef_run.node.automatic_attrs['hostname'] = myself_hostname
+    chef_run.node.automatic_attrs['ipaddress'] = myself_ip
+  end
 
   describe 'primary db is this node' do
     before do
@@ -17,9 +40,9 @@ describe 'postgresql_part::deploy' do
       }
       chef_run.converge(described_recipe)
 
-      response = format(['[{"Node":"%s","Address":"172.17.0.1","ServiceID":"db",',
-                         '"ServiceName":"db","ServiceTags":["primary"],"ServicePort":5432}]'].join, myself_hostname)
-      allow_any_instance_of(ConsulHelper::Helper).to receive(:serch_node_possession_tag).and_return(JSON.parse(response))
+      allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag)
+        .and_return(helper_response(myself_hostname, myself_ip))
+      chef_run.converge(described_recipe)
     end
 
     describe 'dynamic type application is included "cloudconductor applications"' do
@@ -125,9 +148,9 @@ describe 'postgresql_part::deploy' do
 
       chef_run.converge(described_recipe)
 
-      response = format(['[{"Node":"%s","Address":"172.17.0.1","ServiceID":"db",',
-                         '"ServiceName":"db","ServiceTags":["primary"],"ServicePort":5432}]'].join, partner_hostname)
-      allow_any_instance_of(ConsulHelper::Helper).to receive(:serch_node_possession_tag).and_return(JSON.parse(response))
+      allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag)
+        .and_return(helper_response(partner_hostname, partner_ip))
+      chef_run.converge(described_recipe)
     end
     describe 'tables is not exist in postgresql db' do
       it 'do not migration' do
