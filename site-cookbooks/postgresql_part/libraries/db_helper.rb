@@ -31,7 +31,6 @@ module DbHelper
   def primary?
     helper = Chef::Recipe::Helper.new
     tag_possession_nodes = helper.find_node_possession_tag(service: 'db', tag: 'primary')
-p tag_possession_nodes
     if tag_possession_nodes.empty?
       db_servers[enable_db_names.first]['private_ip'] == node[:ipaddress] ? true : false
     else
