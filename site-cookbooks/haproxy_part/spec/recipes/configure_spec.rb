@@ -11,7 +11,7 @@ RSpec.configure do |config|
 end
 
 describe 'haproxy_part::configure' do
-  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: ['haproxy', 'haproxy_part_pem_file']) }
+  let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(haproxy haproxy_part_pem_file)) }
 
   web01_server_nm = 'web01'
   web02_server_nm = 'web02'
@@ -49,15 +49,14 @@ describe 'haproxy_part::configure' do
     chef_run.node.set['haproxy']['enable_ssl'] = false
     chef_run.node.set[:haproxy_part][:enable_ssl_proxy] = false
 
-
     chef_run.converge(described_recipe)
   end
 
   describe 'haproxy conf' do
     describe 'global parameter' do
-        path = '/admin/stats'
-        user = 'hapxyusr'
-        group = 'hapxygp'
+      path = '/admin/stats'
+      user = 'hapxyusr'
+      group = 'hapxygp'
 
       before do
         chef_run.node.set['haproxy']['stats_socket_path'] = path
@@ -100,7 +99,6 @@ describe 'haproxy_part::configure' do
   end
 
   describe 'for SSL pem file' do
-
     before do
       chef_run.node.set['haproxy']['enable_ssl'] = false
       chef_run.node.set[:haproxy_part][:enable_ssl_proxy] = true
@@ -121,7 +119,6 @@ describe 'haproxy_part::configure' do
   end
 
   describe 'create haproxy.cfg' do
-
     config = nil
     config_pool = {}
 
@@ -144,9 +141,8 @@ describe 'haproxy_part::configure' do
     include Chef::Mixin::DeepMerge
 
     it 'without all' do
-
       config_pool = merge(make_hash(config), config_pool)
- 
+
       expect(chef_run).to create_haproxy('myhaproxy').with(
         config: config_pool
       )
@@ -162,20 +158,20 @@ describe 'haproxy_part::configure' do
 
       config_pool['frontend http'] = {
         maxconn: 2000,
-        bind: "0.0.0.0:80",
+        bind: '0.0.0.0:80',
         default_backend: 'servers-http'
       }
 
       params = {
         server: [
-          "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check", 
-          "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check", 
+          "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
+          "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
         ],
         option: []
       }
 
       config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
-      
+
       config_pool = merge(make_hash(config), config_pool)
       expect(chef_run).to create_haproxy('myhaproxy').with(
         config: config_pool
@@ -191,21 +187,21 @@ describe 'haproxy_part::configure' do
 
       config_pool['frontend https'] = {
         maxconn: 2000,
-        bind: "0.0.0.0:443",
+        bind: '0.0.0.0:443',
         default_backend: 'servers-https'
       }
 
       params = {
         mode: :tcp,
         server: [
-          "#{web01_server_nm} #{web01_private_ip}:443 weight 1 maxconn 100 check", 
-          "#{web02_server_nm} #{web02_private_ip}:443 weight 1 maxconn 100 check", 
+          "#{web01_server_nm} #{web01_private_ip}:443 weight 1 maxconn 100 check",
+          "#{web02_server_nm} #{web02_private_ip}:443 weight 1 maxconn 100 check"
         ],
         option: ['ssl-hello-chk']
       }
 
       config_pool['backend servers-https'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
-      
+
       config_pool = merge(make_hash(config), config_pool)
       expect(chef_run).to create_haproxy('myhaproxy').with(
         config: config_pool
@@ -222,14 +218,14 @@ describe 'haproxy_part::configure' do
 
       params = {
         server: [
-          "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check", 
-          "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check", 
+          "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
+          "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
         ],
         option: []
       }
 
       config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
-      
+
       config_pool['frontend ssl-proxy'] = {
         maxconn: 2000,
         bind: "0.0.0.0:443 ssl crt #{pem_file_path}",
@@ -241,7 +237,6 @@ describe 'haproxy_part::configure' do
       expect(chef_run).to create_haproxy('myhaproxy').with(
         config: config_pool
       )
-
     end
   end
 end
