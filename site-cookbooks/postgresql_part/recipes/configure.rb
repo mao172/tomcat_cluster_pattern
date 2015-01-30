@@ -1,29 +1,3 @@
-#::Chef::Recipe.send(:include, ConsulHelper)
-#
-#def db_servers
-#  node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
-#end
-#
-#def enable_db_names
-#  db_server_names = db_servers.keys
-#  db_server_names[0, 2]
-#end
-#
-#def partner_db
-#  partner_db_name = enable_db_names.reject { |item|item == node[:hostname] }.first
-#  db_servers[partner_db_name]
-#end
-#
-#def primary?
-#  helper = Chef::Recipe::Helper.new
-#  tag_possession_nodes = helper.find_node_possession_tag(service: 'db', tag: 'primary')
-#  if tag_possession_nodes.empty?
-#    db_servers[enable_db_names.first]['private_ip'] == node[:ipaddress] ? true : false
-#  else
-#    tag_possession_nodes.first['Address'] == node[:ipaddress] ? true : false
-#  end
-#end
-
 ::Chef::Recipe.send(:include, DbHelper)
 
 unless enable_db_names.include?(node[:hostname])
