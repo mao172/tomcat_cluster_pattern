@@ -115,4 +115,4 @@ module ConsulHelper
       response
     end
   end
-end
+end unless defined?(ConsulHelper)
