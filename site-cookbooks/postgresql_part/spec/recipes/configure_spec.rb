@@ -344,7 +344,7 @@ describe 'postgresql_part::configure' do
 
     it 'do pg_basebackup' do
       expect(chef_run).to run_bash('pg_basebackup').with(
-        code: "pg_basebackup -D #{chef_run.node['postgresql']['dir']} --xlog --verbose -h #{master_db_ip} -U replication",
+        code: "pg_basebackup -D #{chef_run.node['postgresql']['dir']} --xlog --verbose -h #{partner_ip} -U replication",
         user: 'postgres'
       )
     end
