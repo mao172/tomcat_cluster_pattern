@@ -1,15 +1,23 @@
 ::Chef::Resource.send(:include, ConsulHelper)
 
-db_servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
+def db_servers
+  node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
+end
 
-db_server_names = db_servers.keys
-enable_db_names = db_server_names[0, 2]
+def enable_db_names
+  db_server_names = db_servers.keys
+  db_server_names[0, 2]
+end
+
+def partner_db
+  partner_db_name = enable_db_names.reject { |item|item == node[:hostname] }.first
+  db_servers[partner_db_name]
+end
+
 unless enable_db_names.include?(node[:hostname])
   fail 'DB node is too much, this node to disable'
 end
 
-partner_db_name = enable_db_names.reject { |item|item == node[:hostname] }.first
-partner_db = db_servers[partner_db_name]
 
 pgpass = {
   'ip' => "#{partner_db['private_ip']}",
