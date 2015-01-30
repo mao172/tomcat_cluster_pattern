@@ -46,7 +46,6 @@ template "#{node['postgresql']['dir']}/pg_hba.conf" do
   variables(
     pg_hba: node['postgresql']['pg_hba']
   )
-  notifies :reload, 'service[postgresql]', :delayed
 end
 
 postgresql_connection_info = {
@@ -80,6 +79,7 @@ template "#{node['postgresql']['dir']}/#{recovery_conf_name}" do
   mode '0644'
   owner 'postgres'
   group 'postgres'
+  notifies :reload, 'service[postgresql]', :delayed
 end
 
 service 'postgresql' do

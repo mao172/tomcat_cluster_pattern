@@ -269,7 +269,7 @@ describe 'postgresql_part::configure' do
       service = chef_run.service('postgresql')
       expect(service).to do_nothing
       expect(service.service_name).to eq(service_name)
-      expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/pg_hba.conf"))
+      expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/recovery.done"))
         .to notify('service[postgresql]').to(:reload).delayed
     end
 
@@ -406,7 +406,7 @@ describe 'postgresql_part::configure' do
       service = chef_run.service('postgresql')
       expect(service).to do_nothing
       expect(service.service_name).to eq(service_name)
-      expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/pg_hba.conf"))
+      expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/recovery.conf"))
         .to notify('service[postgresql]').to(:reload).delayed
     end
   end
