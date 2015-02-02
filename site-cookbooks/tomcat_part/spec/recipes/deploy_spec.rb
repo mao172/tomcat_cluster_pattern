@@ -172,6 +172,7 @@ describe 'tomcat_part::deploy' do
 
           session_db['host'] = db_private_ip
           session_db['port'] = 5432
+          session_db['password'] = 'pswd'
 
           chef_run.node.set['tomcat']['user'] = tomcat_user
           chef_run.node.set['tomcat']['group'] = tomcat_group
@@ -187,6 +188,7 @@ describe 'tomcat_part::deploy' do
 
         it 'when not using pgpool-II' do
           session_table['name'] = "#{app_name}_session"
+          session_db['password'] = /[0-9a-f]{32}/
 
           expect(chef_run).to create_template("#{context_dir}/#{app_name}.xml").with(
             source: 'jdbcstore/context.xml.erb',
@@ -214,6 +216,7 @@ describe 'tomcat_part::deploy' do
 
           session_db['host'] = 'localhost'
           session_db['port'] = 9999
+          session_db['password'] = /[0-9a-f]{32}/
 
           session_table['name'] = "#{app_name}_session"
 

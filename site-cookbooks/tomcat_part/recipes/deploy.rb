@@ -10,6 +10,11 @@ if node['tomcat_part']['pgpool2'] == true
   node.set['tomcat_part']['session_db']['port'] = 9999
 end
 
+if node['tomcat_part']['session_replication'] == 'jdbcStore'
+  pswd_key = node['tomcat_part']['session_db']['password']
+  node.set['tomcat_part']['session_db']['password'] = generate_password(pswd_key)
+end
+
 applications = node['cloudconductor']['applications'].select { |_app_name, app| app['type'] == 'dynamic' }
 applications.each do |app_name, app|
   case app['protocol']

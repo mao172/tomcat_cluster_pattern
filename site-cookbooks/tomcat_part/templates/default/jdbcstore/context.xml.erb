@@ -19,7 +19,7 @@
     driverClassName="org.<%= @session_db['type'] %>.Driver" 
     url="jdbc:<%= @session_db['type'] %>://<%= @session_db['host'] %>:<%= @session_db['port'] %>/<%= @session_db['name'] %>"
     username="<%= @session_db['user'] %>" 
-    password="<%= @password %>" 
+    password="<%= @session_db['password'] %>" 
     maxActive="20" 
     maxIdle="10" 
     maxWait="-1" />
@@ -37,7 +37,7 @@
 <% if @use_jndi then %>
         dataSourceName="<%= @session_db['dataSourceName'] %>"
 <% else %>
-        connectionURL="jdbc:<%= @session_db['type'] %>://<%= @session_db['host'] %>:<%= @session_db['port'] %>/<%= @session_db['name'] %>?user=<%= @session_db['user'] %>&amp;password=<%= @password %>"
+        connectionURL="jdbc:<%= @session_db['type'] %>://<%= @session_db['host'] %>:<%= @session_db['port'] %>/<%= @session_db['name'] %>?user=<%= @session_db['user'] %>&amp;password=<%= @session_db['password'] %>"
         driverName="org.<%= @session_db['type'] %>.Driver"
 <% end %>
         sessionTable="<%= @session_table['name'] %>"
