@@ -31,11 +31,17 @@ if primary?
     { type: 'host', db: 'all', user: 'postgres', addr: '0.0.0.0/0', method: 'reject' }
   ]
 
-  %w(db ap).each do |role|
-    servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?(role) }
-    pg_hba += servers.map do |_name, server|
-      { type: 'host', db: 'all', user: 'all', addr: "#{server['private_ip']}/32", method: 'md5' }
-    end
+  pg_hba += db_servers.map do |_name, server|
+    {
+      type: 'host',
+      db: 'replication',
+      user: "#{node['postgresql_part']['replication']['user']}",
+      addr: "#{server['private_ip']}/32", method: 'md5'
+    }
+  end
+  ap_servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('ap') }
+  pg_hba += ap_servers.map do |_name, server|
+    { type: 'host', db: 'all', user: 'all', addr: "#{server['private_ip']}/32", method: 'md5' }
   end
   node.set['postgresql']['pg_hba'] = pg_hba
 
