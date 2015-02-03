@@ -9,7 +9,7 @@ pgpass = {
   'port' => "#{node['postgresql']['config']['port']}",
   'db_name' => 'replication',
   'user' => "#{node['postgresql_part']['replication']['user']}",
-  'passwd' => "#{node['postgresql_part']['replication']['passwd']}"
+  'passwd' => "#{node['postgresql_part']['replication']['password']}"
 }
 
 template "#{node['postgresql_part']['home_dir']}/.pgpass" do
@@ -81,7 +81,7 @@ end
 primary_conninfo = ["host=#{partner_db['private_ip']} ",
                     "port=#{node['postgresql']['config']['port']} ",
                     "user=#{node['postgresql_part']['replication']['user']} ",
-                    "password=#{node['postgresql_part']['replication']['passwd']}"].join
+                    "password=#{node['postgresql_part']['replication']['password']}"].join
 if node['postgresql']['config']['synchronous_commit'].is_a?(TrueClass) ||
    node['postgresql']['config']['synchronous_commit'] == 'on'
   primary_conninfo << " application_name=#{node['postgresql_part']['replication']['application_name']}"

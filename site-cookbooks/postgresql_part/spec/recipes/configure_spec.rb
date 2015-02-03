@@ -200,7 +200,7 @@ describe 'postgresql_part::configure' do
 
         primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
                              "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{chef_run.node['postgresql_part']['replication']['passwd']} ",
+                             "password=#{chef_run.node['postgresql_part']['replication']['password']} ",
                              "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
@@ -224,7 +224,7 @@ describe 'postgresql_part::configure' do
 
         primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
                              "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{chef_run.node['postgresql_part']['replication']['passwd']}"].join
+                             "password=#{chef_run.node['postgresql_part']['replication']['password']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
@@ -245,7 +245,7 @@ describe 'postgresql_part::configure' do
         'port' => chef_run.node['postgresql']['config']['port'],
         'db_name' => 'replication',
         'user' => chef_run.node['postgresql_part']['replication']['user'],
-        'passwd' => chef_run.node['postgresql_part']['replication']['passwd']
+        'passwd' => chef_run.node['postgresql_part']['replication']['password']
       }
       chef_run.node.set['postgres_part']['pgpass'] = pgpass
       chef_run.converge(described_recipe)
@@ -322,7 +322,7 @@ describe 'postgresql_part::configure' do
         'port' => chef_run.node['postgresql']['config']['port'],
         'db_name' => 'replication',
         'user' => chef_run.node['postgresql_part']['replication']['user'],
-        'passwd' => chef_run.node['postgresql_part']['replication']['passwd']
+        'passwd' => chef_run.node['postgresql_part']['replication']['password']
       }
       chef_run.node.set['postgres_part']['pgpass'] = pgpass
       chef_run.converge(described_recipe)
@@ -361,7 +361,7 @@ describe 'postgresql_part::configure' do
 
         primary_conninfo = ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                            "password=#{chef_run.node['postgresql_part']['replication']['passwd']} ",
+                            "password=#{chef_run.node['postgresql_part']['replication']['password']} ",
                             "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
@@ -383,7 +383,7 @@ describe 'postgresql_part::configure' do
 
         primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
                              "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{chef_run.node['postgresql_part']['replication']['passwd']}"].join
+                             "password=#{chef_run.node['postgresql_part']['replication']['password']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
