@@ -77,16 +77,20 @@ if primary?
     end
   end
 else
+  ruby_block 'stop_postgresql' do
+    block {}
+    notifies :stop, 'service[postgresql]', :immediately
+  end
   directory "#{node['postgresql']['dir']}" do
     action :delete
     recursive true
   end
 
-  code = "pg_basebackup -D #{node['postgresql']['dir']} --xlog --verbose -h #{partner_db['private_ip']} -U replication"
+  code = "sudo -u postgres /usr/bin/pg_basebackup -D #{node['postgresql']['dir']} --xlog --verbose -h #{partner_db['private_ip']} -U replication"
 
   bash 'pg_basebackup' do
     code code
-    user 'postgres'
+    notifies :start, 'service[postgresql]', :immediately
   end
 
   file "#{node['postgresql']['dir']}/recovery.done" do

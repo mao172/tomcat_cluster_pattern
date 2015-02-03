@@ -350,6 +350,11 @@ describe 'postgresql_part::configure' do
       )
     end
 
+    it 'stop postgresql' do
+      expect(chef_run.ruby_block('stop_postgresql'))
+        .to notify('service[postgresql]').to(:stop).immediately
+    end
+
     it 'delete data directory' do
       expect(chef_run).to delete_directory("#{chef_run.node['postgresql']['dir']}").with(
         recursive: true
@@ -358,9 +363,10 @@ describe 'postgresql_part::configure' do
 
     it 'do pg_basebackup' do
       expect(chef_run).to run_bash('pg_basebackup').with(
-        code: "pg_basebackup -D #{chef_run.node['postgresql']['dir']} --xlog --verbose -h #{partner_ip} -U replication",
-        user: 'postgres'
+        code: "sudo -u postgres /usr/bin/pg_basebackup -D #{chef_run.node['postgresql']['dir']} --xlog --verbose -h #{partner_ip} -U replication",
       )
+      expect(chef_run.bash('pg_basebackup'))
+        .to notify('service[postgresql]').to(:start).immediately
     end
 
     it 'delete recovery.done' do
