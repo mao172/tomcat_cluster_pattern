@@ -5,7 +5,16 @@
 #
 
 # for setup to Haproxy
-default['haproxy']['install_method'] = 'package'
+default['haproxy']['install_method'] = 'source'
+default['haproxy']['package']['version'] = nil
+
+default['haproxy']['source']['version'] = '1.5.11'
+default['haproxy']['source']['url'] = 'http://www.haproxy.org/download/1.5/src/haproxy-1.5.11.tar.gz'
+default['haproxy']['source']['checksum'] = '8b5aa462988405f09c8a6169294b202d7f524a5450a02dd92e7c216680f793bf'
+default['haproxy']['source']['use_pcre'] = true
+default['haproxy']['source']['use_openssl'] = true
+default['haproxy']['source']['use_zlib'] = true
+
 default['haproxy']['member_port'] = 80
 
 # for frontend ssl_proxy

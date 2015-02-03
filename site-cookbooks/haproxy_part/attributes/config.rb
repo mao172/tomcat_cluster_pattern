@@ -15,6 +15,8 @@ default[:haproxy][:config][:global][:group] = node[:haproxy][:group]
 
 default[:haproxy][:config][:global][:option] = node['haproxy']['global_options']
 
+default[:haproxy][:config][:global]['tune.ssl.default-dh-param'] = 2048
+
 default[:haproxy][:config][:defaults][:log] = :global
 default[:haproxy][:config][:defaults][:mode] = node['haproxy']['mode']
 default[:haproxy][:config][:defaults][:retries] = 3

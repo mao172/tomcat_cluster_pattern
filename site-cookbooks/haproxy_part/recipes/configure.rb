@@ -86,13 +86,17 @@ if conf['enable_ssl']
 else
   # SSL Proxy
   if node[:haproxy_part][:enable_ssl_proxy]
-    directory "#{node[:haproxy_part][:ssl_pem_dir]}" do
+    dir_path = "#{conf[conf['install_method']]['prefix']}#{node[:haproxy_part][:ssl_pem_dir]}"
+
+    directory dir_path do
       owner 'root'
       group 'root'
       mode  '0755'
     end
 
-    haproxy_part_pem_file "#{node[:haproxy_part][:ssl_pem_file]}"
+    file_path = "#{conf[conf['install_method']]['prefix']}#{node[:haproxy_part][:ssl_pem_file]}"
+
+    haproxy_part_pem_file file_path
 
     bind = "#{conf['ssl_incoming_address']}:#{conf['ssl_incoming_port']} ssl crt #{node[:haproxy_part][:ssl_pem_file]}"
 

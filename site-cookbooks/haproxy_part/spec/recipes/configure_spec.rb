@@ -42,12 +42,17 @@ describe 'haproxy_part::configure' do
       app_name: {}
     }
 
+    chef_run.node.set[:haproxy][:install_method] = 'source'
+
     chef_run.node.set['haproxy']['enable_stats_socket'] = false
     chef_run.node.set['haproxy']['enable_admin'] = false
 
     chef_run.node.set['haproxy']['enable_default_http'] = false
     chef_run.node.set['haproxy']['enable_ssl'] = false
     chef_run.node.set[:haproxy_part][:enable_ssl_proxy] = false
+
+    chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
+    chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
 
     chef_run.converge(described_recipe)
   end
@@ -103,18 +108,19 @@ describe 'haproxy_part::configure' do
       chef_run.node.set['haproxy']['enable_ssl'] = false
       chef_run.node.set[:haproxy_part][:enable_ssl_proxy] = true
 
-      chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
-      chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
+      chef_run.node.set[:haproxy][:source][:prefix] = '/opt'
 
       chef_run.converge(described_recipe)
     end
 
     it 'create a directory for pem file' do
-      expect(chef_run).to create_directory(pem_dir_path)
+      prefix = chef_run.node[:haproxy][:install_method] == 'source' ? '/opt' : nil
+      expect(chef_run).to create_directory("#{prefix}#{pem_dir_path}")
     end
 
     it 'create pem file' do
-      expect(chef_run).to create_file(pem_file_path)
+      prefix = chef_run.node[:haproxy][:install_method] == 'source' ? '/opt' : nil
+      expect(chef_run).to create_file("#{prefix}#{pem_file_path}")
     end
   end
 
@@ -123,6 +129,8 @@ describe 'haproxy_part::configure' do
     config_pool = {}
 
     before do
+      chef_run.node.set[:haproxy][:source][:prefix] = '/opt'
+      chef_run.converge(described_recipe)
       config = chef_run.node[:haproxy][:config]
     end
 
@@ -147,7 +155,8 @@ describe 'haproxy_part::configure' do
         config: config_pool
       )
 
-      expect(chef_run).to create_template('/etc/haproxy/haproxy.cfg')
+      prefix = chef_run.node[:haproxy][:install_method] == 'source' ? '/opt' : nil
+      expect(chef_run).to create_template("#{prefix}/etc/haproxy/haproxy.cfg")
     end
 
     it 'with default html' do
