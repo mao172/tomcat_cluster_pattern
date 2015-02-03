@@ -1,28 +1,16 @@
 #
 # Cookbook Name:: haproxy_part
-# Recipe::configure
+# Recipe:: configure
 #
 #
+
+extend Chef::Mixin::DeepMerge
 
 web_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('web') }
 
 config_pool = Mash.new
 
 conf = node['haproxy']
-
-#
-#
-def make_hash(attr)
-  new_hash = {}
-  attr.each do |k, v|
-    if v.is_a?(Hash)
-      new_hash[k] = make_hash(v)
-    else
-      new_hash[k] = v
-    end
-  end
-  new_hash
-end
 
 ##
 # config
@@ -66,7 +54,7 @@ if conf['enable_default_http'] || node[:haproxy_part][:enable_ssl_proxy]
     option: options
   }
 
-  config_pool['backend servers-http'] = Chef::Mixin::DeepMerge.merge(make_hash(node[:haproxy_part][:backend_params]), params)
+  config_pool['backend servers-http'] = merge(node[:haproxy_part][:backend_params], params)
 
 end
 
@@ -93,7 +81,7 @@ if conf['enable_ssl']
     option: options
   }
 
-  config_pool['backend servers-https'] = Chef::Mixin::DeepMerge.merge(make_hash(node[:haproxy_part][:backend_params]), params)
+  config_pool['backend servers-https'] = merge(node[:haproxy_part][:backend_params], params)
 
 else
   # SSL Proxy

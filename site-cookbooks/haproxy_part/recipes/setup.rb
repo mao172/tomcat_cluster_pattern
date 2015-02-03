@@ -28,6 +28,6 @@ end
 unless node[:haproxy_part][:rsyslog][:setup]
   service node['rsyslog']['service_name'] do
     supports restart: true, reload: true, status: true
-    action   [:enable, :restart]
+    action   [:enable, :start]
   end
 end

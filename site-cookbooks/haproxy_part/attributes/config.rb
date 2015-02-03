@@ -3,9 +3,12 @@
 # Attribute:: config
 #
 ## Base attributes used when generating configuration using default LWRP
-default[:haproxy][:config][:global][:log]['127.0.0.1'][:local0] = ' '
-default[:haproxy][:config][:global][:log]['127.0.0.1'][:local1] = :notice
-# default[:haproxy][:config][:global][:log]['127.0.0.1'] = ['local0', 'local1 notice']
+#
+#
+
+# default[:haproxy][:config][:global][:log]['127.0.0.1'][:local0] = nil
+# default[:haproxy][:config][:global][:log]['127.0.0.1'][:local1] = :notice
+default[:haproxy][:config][:global][:log]['127.0.0.1'] = { 'local0' => 'info' }
 default[:haproxy][:config][:global][:maxconn] = node[:haproxy][:global_max_connections]
 default[:haproxy][:config][:global][:user] = node[:haproxy][:user]
 default[:haproxy][:config][:global][:group] = node[:haproxy][:group]

@@ -21,7 +21,7 @@ default[:haproxy_part][:pem_file][:consul][:value_type] = 'text'
 default[:haproxy_part][:pem_file][:property_nm] = nil
 
 # backend params
-default[:haproxy_part][:backend_params] = { appsession: 'JSESSIONID len 32 timeout 3s request-learn' }
+default[:haproxy_part][:backend_params] = { appsession: 'JSESSIONID len 32 timeout 3h request-learn' }
 
 # install rsyslog package
 default[:haproxy_part][:rsyslog][:setup] = false # true
