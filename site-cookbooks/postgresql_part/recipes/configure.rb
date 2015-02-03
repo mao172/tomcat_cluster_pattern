@@ -67,6 +67,14 @@ if primary?
     action :query
     connection postgresql_connection_info
     sql "SELECT * FROM pg_create_physical_replication_slot('#{node['postgresql_part']['replication']['replication_slot']}');"
+    not_if do
+      cmd = ['sudo -u postgres /usr/bin/psql ',
+             '-qtA -c "select count(*) from pg_replication_slots ',
+             "where slot_name='#{node['postgresql_part']['replication']['replication_slot']}';\""].join
+      shell = Mixlib::ShellOut.new(cmd)
+      shell.run_command
+      shell.stdout.to_i > 0
+    end
   end
 else
   directory "#{node['postgresql']['dir']}" do
