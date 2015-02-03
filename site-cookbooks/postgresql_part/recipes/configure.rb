@@ -65,6 +65,7 @@ if primary?
 else
   directory "#{node['postgresql']['dir']}" do
     action :delete
+    recursive true
   end
 
   code = "pg_basebackup -D #{node['postgresql']['dir']} --xlog --verbose -h #{partner_db['private_ip']} -U replication"

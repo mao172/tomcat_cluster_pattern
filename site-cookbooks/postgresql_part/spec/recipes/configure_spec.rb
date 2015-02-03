@@ -339,7 +339,9 @@ describe 'postgresql_part::configure' do
     end
 
     it 'delete data directory' do
-      expect(chef_run).to delete_directory("#{chef_run.node['postgresql']['dir']}")
+      expect(chef_run).to delete_directory("#{chef_run.node['postgresql']['dir']}").with(
+        recursive: true
+      )
     end
 
     it 'do pg_basebackup' do
