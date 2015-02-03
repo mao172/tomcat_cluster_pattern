@@ -29,8 +29,13 @@ default[:haproxy_part][:pem_file][:consul][:key] = 'ssl_pem'
 default[:haproxy_part][:pem_file][:consul][:value_type] = 'text'
 default[:haproxy_part][:pem_file][:property_nm] = nil
 
+# for sticky session
+default[:haproxy_part][:enable_sticky_session] = true
+default[:haproxy_part][:sticky_session_method] = :cookie
+default[:haproxy_part][:cookie] = 'SERVERID insert indirect nocache'
+default[:haproxy_part][:appsession] = 'JSESSIONID len 32 timeout 3h request-learn'
 # backend params
-default[:haproxy_part][:backend_params] = { appsession: 'JSESSIONID len 32 timeout 3h request-learn' }
+default[:haproxy_part][:backend_params] = {}
 
 # install rsyslog package
 default[:haproxy_part][:rsyslog][:setup] = false # true

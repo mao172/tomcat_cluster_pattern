@@ -38,21 +38,44 @@ if conf['enable_default_http']
   }
 end
 
+cookie = nil
+appsession = nil
+
+if node[:haproxy_part][:enable_sticky_session]
+  case node[:haproxy_part][:sticky_session_method].to_sym
+  when :cookie
+    cookie = node[:haproxy_part][:cookie]
+  when :appsession
+    appsession = node[:haproxy_part][:appsession]
+  end
+end
+
 # default backend (http)
 if conf['enable_default_http'] || node[:haproxy_part][:enable_ssl_proxy]
 
   servers_http = web_servers.map do |hostname, server|
-    "#{hostname} #{server['private_ip']}:#{conf['member_port']} weight 1 maxconn #{conf['member_max_connections']} check"
+    sv = []
+    sv << "#{hostname}"
+    sv << "#{server['private_ip']}:#{conf['member_port']}"
+    sv << 'weight 1'
+    sv << "maxconn #{conf['member_max_connections']}"
+    sv << 'check'
+
+    sv << "cookie #{hostname}" unless cookie.nil? || cookie.empty?
+
+    sv.join(' ')
   end
 
   options = []
-
   options << "httpchk #{conf['httpchk']}" if conf['httpchk']
 
   params = {
     server: servers_http,
     option: options
   }
+
+  params['cookie'] = cookie unless cookie.nil? || cookie.empty?
+  params['appsession'] = appsession unless appsession.nil? || appsession.empty?
 
   config_pool['backend servers-http'] = merge(node[:haproxy_part][:backend_params], params)
 
@@ -68,11 +91,19 @@ if conf['enable_ssl']
   }
 
   servers_https = web_servers.map do |hostname, server|
-    "#{hostname} #{server['private_ip']}:#{conf['ssl_member_port']} weight 1 maxconn #{conf['member_max_connections']} check"
+    sv = []
+    sv << "#{hostname}"
+    sv << "#{server['private_ip']}:#{conf['ssl_member_port']}"
+    sv << 'weight 1'
+    sv << "maxconn #{conf['member_max_connections']}"
+    sv << 'check'
+
+    sv << "cookie #{hostname}" unless cookie.nil? || cookie.empty?
+
+    sv.join(' ')
   end
 
   options = ['ssl-hello-chk']
-
   options << "httpchk #{conf['ssl_httpchk']}" if conf['ssl_httpchk']
 
   params = {
@@ -80,6 +111,9 @@ if conf['enable_ssl']
     server: servers_https,
     option: options
   }
+
+  params['cookie'] = cookie unless cookie.nil? || cookie.empty?
+  params['appsession'] = appsession unless appsession.nil? || appsession.empty?
 
   config_pool['backend servers-https'] = merge(node[:haproxy_part][:backend_params], params)
 

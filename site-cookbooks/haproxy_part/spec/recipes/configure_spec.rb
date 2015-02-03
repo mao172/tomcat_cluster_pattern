@@ -50,6 +50,7 @@ describe 'haproxy_part::configure' do
     chef_run.node.set['haproxy']['enable_default_http'] = false
     chef_run.node.set['haproxy']['enable_ssl'] = false
     chef_run.node.set[:haproxy_part][:enable_ssl_proxy] = false
+    chef_run.node.set[:haproxy_part][:enable_sticky_session] = false
 
     chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
     chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
@@ -159,62 +160,159 @@ describe 'haproxy_part::configure' do
       expect(chef_run).to create_template("#{prefix}/etc/haproxy/haproxy.cfg")
     end
 
-    it 'with default html' do
-      chef_run.node.set['haproxy']['enable_default_http'] = true
-      chef_run.converge(described_recipe)
+    describe 'with default html' do
+      before do
+        chef_run.node.set['haproxy']['enable_default_http'] = true
+        chef_run.node.set[:haproxy_part][:enable_sticky_session] = false
+        chef_run.converge(described_recipe)
 
-      config_pool = {}
+        config_pool = {}
+        config_pool['frontend http'] = {
+          maxconn: 2000,
+          bind: '0.0.0.0:80',
+          default_backend: 'servers-http'
+        }
+      end
 
-      config_pool['frontend http'] = {
-        maxconn: 2000,
-        bind: '0.0.0.0:80',
-        default_backend: 'servers-http'
-      }
+      it 'disable sticky session' do
+        params = {
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
+            "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
+          ],
+          option: []
+        }
 
-      params = {
-        server: [
-          "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
-          "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
-        ],
-        option: []
-      }
+        config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
 
-      config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+        config_pool = merge(make_hash(config), config_pool)
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
 
-      config_pool = merge(make_hash(config), config_pool)
-      expect(chef_run).to create_haproxy('myhaproxy').with(
-        config: config_pool
-      )
+      it 'sticky session on app-session cookie' do
+        chef_run.node.set[:haproxy_part][:enable_sticky_session] = true
+        chef_run.node.set[:haproxy_part][:sticky_session_method] = :appsession
+        chef_run.converge(described_recipe)
+
+        params = {
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
+            "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
+          ],
+          option: [],
+          appsession: 'JSESSIONID len 32 timeout 3h request-learn'
+        }
+
+        config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+
+        config_pool = merge(make_hash(config), config_pool)
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
+
+      it 'sticky session on cookie' do
+        chef_run.node.set[:haproxy_part][:enable_sticky_session] = true
+        chef_run.node.set[:haproxy_part][:sticky_session_method] = :cookie
+        chef_run.converge(described_recipe)
+
+        params = {
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check cookie #{web01_server_nm}",
+            "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check cookie #{web02_server_nm}"
+          ],
+          option: [],
+          cookie: 'SERVERID insert indirect nocache'
+        }
+
+        config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+
+        config_pool = merge(make_hash(config), config_pool)
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
     end
 
-    it 'with https' do
-      chef_run.node.set['haproxy']['enable_ssl'] = true
-      chef_run.node.set[:haproxy][:ssl_member_port] = 443
-      chef_run.converge(described_recipe)
+    describe 'with https' do
+      before do
+        chef_run.node.set['haproxy']['enable_ssl'] = true
+        chef_run.node.set[:haproxy][:ssl_member_port] = 443
+        chef_run.node.set[:haproxy_part][:enable_sticky_session] = false
+        chef_run.converge(described_recipe)
 
-      config_pool = {}
+        config_pool = {}
 
-      config_pool['frontend https'] = {
-        maxconn: 2000,
-        bind: '0.0.0.0:443',
-        default_backend: 'servers-https'
-      }
+        config_pool['frontend https'] = {
+          maxconn: 2000,
+          bind: '0.0.0.0:443',
+          default_backend: 'servers-https'
+        }
+      end
 
-      params = {
-        mode: :tcp,
-        server: [
-          "#{web01_server_nm} #{web01_private_ip}:443 weight 1 maxconn 100 check",
-          "#{web02_server_nm} #{web02_private_ip}:443 weight 1 maxconn 100 check"
-        ],
-        option: ['ssl-hello-chk']
-      }
+      it 'disable sticky_session' do
+        params = {
+          mode: :tcp,
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:443 weight 1 maxconn 100 check",
+            "#{web02_server_nm} #{web02_private_ip}:443 weight 1 maxconn 100 check"
+          ],
+          option: ['ssl-hello-chk']
+        }
 
-      config_pool['backend servers-https'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+        config_pool['backend servers-https'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
 
-      config_pool = merge(make_hash(config), config_pool)
-      expect(chef_run).to create_haproxy('myhaproxy').with(
-        config: config_pool
-      )
+        config_pool = merge(make_hash(config), config_pool)
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
+      it 'sticky session on app-session cookie' do
+        chef_run.node.set[:haproxy_part][:enable_sticky_session] = true
+        chef_run.node.set[:haproxy_part][:sticky_session_method] = :appsession
+        chef_run.converge(described_recipe)
+
+        params = {
+          mode: :tcp,
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:443 weight 1 maxconn 100 check",
+            "#{web02_server_nm} #{web02_private_ip}:443 weight 1 maxconn 100 check"
+          ],
+          option: ['ssl-hello-chk'],
+          appsession: 'JSESSIONID len 32 timeout 3h request-learn'
+        }
+
+        config_pool['backend servers-https'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+
+        config_pool = merge(make_hash(config), config_pool)
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
+      it 'sticky session on cookie' do
+        chef_run.node.set[:haproxy_part][:enable_sticky_session] = true
+        chef_run.node.set[:haproxy_part][:sticky_session_method] = :cookie
+        chef_run.converge(described_recipe)
+
+        params = {
+          mode: :tcp,
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:443 weight 1 maxconn 100 check cookie #{web01_server_nm}",
+            "#{web02_server_nm} #{web02_private_ip}:443 weight 1 maxconn 100 check cookie #{web02_server_nm}"
+          ],
+          option: ['ssl-hello-chk'],
+          cookie: 'SERVERID insert indirect nocache'
+        }
+
+        config_pool['backend servers-https'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+
+        config_pool = merge(make_hash(config), config_pool)
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
     end
 
     it 'with ssl proxy' do
