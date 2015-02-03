@@ -18,6 +18,7 @@ postgresql_database_user node['postgresql_part']['replication']['user'] do
   connection postgresql_connection_info
   password node['postgresql_part']['replication']['password']
   action :create
+  replication true
 end
 
 postgresql_database_user node['postgresql_part']['application']['user'] do

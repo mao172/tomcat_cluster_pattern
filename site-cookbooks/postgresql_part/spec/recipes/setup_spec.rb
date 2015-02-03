@@ -89,7 +89,8 @@ describe 'postgresql_part::default' do
       replication_user
     ).with(
       connection: postgresql_connection_info,
-      password: replication_pass
+      password: replication_pass,
+      replication: true
     )
   end
 
