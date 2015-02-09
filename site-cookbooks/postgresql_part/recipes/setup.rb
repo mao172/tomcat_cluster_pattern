@@ -7,32 +7,6 @@ bash 'run_initdb' do
   only_if { Dir.glob("#{node['postgresql']['dir']}/*").empty? }
 end
 
-postgresql_connection_info = {
-  host: '127.0.0.1',
-  port: node['postgresql']['config']['port'],
-  username: 'postgres',
-  password: node['postgresql']['password']['postgres']
-}
-
-postgresql_database_user node['postgresql_part']['replication']['user'] do
-  connection postgresql_connection_info
-  password node['postgresql_part']['replication']['password']
-  action :create
-  replication true
-end
-
-postgresql_database_user node['postgresql_part']['application']['user'] do
-  connection postgresql_connection_info
-  password node['postgresql_part']['application']['password']
-  action :create
-end
-
-postgresql_database node['postgresql_part']['application']['database'] do
-  connection postgresql_connection_info
-  owner node['postgresql_part']['application']['user']
-  action :create
-end
-
 if node['postgresql_part']['pgpool-II']['use']
   remote_file "#{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0.tar.gz" do
     source node['postgresql_part']['pgpool-II']['source_archive_url']
@@ -50,6 +24,13 @@ if node['postgresql_part']['pgpool-II']['use']
       make install
   EOS
   end
+
+  postgresql_connection_info = {
+    host: '127.0.0.1',
+    port: node['postgresql']['config']['port'],
+    username: 'postgres',
+    password: node['postgresql']['password']['postgres']
+  }
 
   postgresql_database 'template1' do
     action :query

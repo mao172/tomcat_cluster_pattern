@@ -83,7 +83,7 @@ describe 'postgresql_part::deploy' do
             db_host = '127.0.0.1'
             db_port = '5432'
             db_user = 'pgsql'
-            db_pass = 'pgpass'
+            db_pass = 'passwd'
 
             postgresql_connection_info = {
               host: db_host,
@@ -94,13 +94,13 @@ describe 'postgresql_part::deploy' do
 
             chef_run.node.set['postgresql']['config']['port'] = db_port
             chef_run.node.set['postgresql_part']['application']['user'] = db_user
-            chef_run.node.set['postgresql_part']['application']['password'] = db_pass
 
             db_name = 'app_db'
             chef_run.node.set['postgresql_part']['application']['database'] = db_name
 
             allow_any_instance_of(Mixlib::ShellOut).to receive(:runcommand)
             allow_any_instance_of(Mixlib::ShellOut).to receive(:stdout).and_return('0')
+            allow_any_instance_of(Chef::Recipe).to receive(:generate_password).and_return(db_pass)
 
             chef_run.converge(described_recipe)
 

@@ -9,7 +9,7 @@ pgpass = {
   'port' => "#{node['postgresql']['config']['port']}",
   'db_name' => 'replication',
   'user' => "#{node['postgresql_part']['replication']['user']}",
-  'passwd' => "#{node['postgresql_part']['replication']['password']}"
+  'passwd' => generate_password('db_replication')
 }
 
 template "#{node['postgresql_part']['home_dir']}/.pgpass" do
@@ -23,6 +23,32 @@ template "#{node['postgresql_part']['home_dir']}/.pgpass" do
 end
 
 if primary?
+  postgresql_connection_info = {
+    host: '127.0.0.1',
+    port: node['postgresql']['config']['port'],
+    username: 'postgres',
+    password: node['postgresql']['password']['postgres']
+  }
+
+  postgresql_database_user node['postgresql_part']['replication']['user'] do
+    connection postgresql_connection_info
+    password generate_password('db_replication')
+    action :create
+    replication true
+  end
+
+  postgresql_database_user node['postgresql_part']['application']['user'] do
+    connection postgresql_connection_info
+    password generate_password('db_application')
+    action :create
+  end
+
+  postgresql_database node['postgresql_part']['application']['database'] do
+    connection postgresql_connection_info
+    owner node['postgresql_part']['application']['user']
+    action :create
+  end
+
   pg_hba = [
     { type: 'local', db: 'all', user: 'postgres', addr: nil, method: 'ident' },
     { type: 'local', db: 'all', user: 'all', addr: nil, method: 'ident' },
@@ -55,13 +81,6 @@ if primary?
     )
     notifies :reload, 'service[postgresql]', :delayed
   end
-
-  postgresql_connection_info = {
-    host: '127.0.0.1',
-    port: node['postgresql']['config']['port'],
-    username: 'postgres',
-    password: node['postgresql']['password']['postgres']
-  }
 
   postgresql_database 'postgres' do
     action :query

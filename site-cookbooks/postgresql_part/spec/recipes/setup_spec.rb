@@ -82,40 +82,6 @@ describe 'postgresql_part::default' do
     end
   end
 
-  it 'create replication user' do
-    expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
-      :postgresql_database_user,
-      :create,
-      replication_user
-    ).with(
-      connection: postgresql_connection_info,
-      password: replication_pass,
-      replication: true
-    )
-  end
-
-  it 'create application db user' do
-    expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
-      :postgresql_database_user,
-      :create,
-      app_user
-    ).with(
-      connection: postgresql_connection_info,
-      password: app_pass
-    )
-  end
-
-  it 'create application database' do
-    expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
-      :postgresql_database,
-      :create,
-      app_db
-    ).with(
-      connection: postgresql_connection_info,
-      owner: app_user
-    )
-  end
-
   it 'install gcc' do
     expect(chef_run).to install_package('gcc')
   end

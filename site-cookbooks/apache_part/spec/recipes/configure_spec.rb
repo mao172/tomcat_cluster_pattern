@@ -16,25 +16,52 @@ describe 'apache_part::configure' do
     chef_run.converge(described_recipe)
   end
 
-  it 'create template file' do
+  describe 'create template file' do
     sticky_session = true
-    chef_run.node.set['apache_part']['sticky_session'] = sticky_session
-    chef_run.converge(described_recipe)
 
-    expect(chef_run.node['apache']['conf_dir']).to eq('/etc/httpd/conf')
-    expect(chef_run).to create_template('/etc/httpd/conf/workers.properties').with(
-      source: 'workers.properties.erb',
-      mode: '0664',
-      variables: {
-        tomcat_servers: [
-          'name' => server_name,
-          'host' => private_ip,
-          'route' => private_ip,
-          'weight' => 1
-        ],
-        sticky_session: sticky_session
-      }
-    )
+    it 'used loadbalancer' do
+      chef_run.node.set['apache_part']['sticky_session'] = sticky_session
+      chef_run.converge(described_recipe)
+
+      expect(chef_run.node['apache']['conf_dir']).to eq('/etc/httpd/conf')
+      expect(chef_run).to create_template('/etc/httpd/conf/workers.properties').with(
+        source: 'workers.properties.erb',
+        mode: '0664',
+        variables: {
+          worker_name: 'loadbalancer',
+          tomcat_servers: [
+            'name' => server_name,
+            'host' => private_ip,
+            'route' => private_ip,
+            'weight' => 1
+          ],
+          sticky_session: sticky_session
+        }
+      )
+    end
+
+    it 'unused loadbalancer' do
+      ip_addr = chef_run.node['ipaddress']
+      chef_run.node.set['cloudconductor']['servers'][server_name]['private_ip'] = ip_addr
+      chef_run.node.set['apache_part']['sticky_session'] = sticky_session
+      chef_run.converge(described_recipe)
+
+      expect(chef_run.node['apache']['conf_dir']).to eq('/etc/httpd/conf')
+      expect(chef_run).to create_template('/etc/httpd/conf/workers.properties').with(
+        source: 'workers.properties.erb',
+        mode: '0664',
+        variables: {
+          worker_name: server_name,
+          tomcat_servers: [
+            'name' => server_name,
+            'host' => ip_addr,
+            'route' => ip_addr,
+            'weight' => 1
+          ],
+          sticky_session: sticky_session
+        }
+      )
+    end
   end
 
   it 'restart apaceh2 service' do

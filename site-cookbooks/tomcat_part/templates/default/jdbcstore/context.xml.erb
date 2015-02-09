@@ -1,0 +1,55 @@
+
+<Context backgroundProcessorDelay="1">
+
+<% if @use_db then %>
+  <Resource name="<%= @datasource %>" auth="Container" 
+    type="javax.sql.DataSource"
+    driverClassName="org.<%= @database['type'] %>.Driver" 
+    url="jdbc:<%= @database['type'] %>://<%= @database['host'] %>:<%= @database['port'] %>/<%= @database['name'] %>"
+    username="<%= @database['user'] %>" 
+    password="<%= @password %>" 
+    maxActive="100" 
+    maxIdle="30" 
+    maxWait="-1" />
+<% end %>
+
+<% if @use_jndi then %>
+  <Resource name="<%= @session_db['dataSourceName'] %>" auth="Container" 
+    type="javax.sql.DataSource"
+    driverClassName="org.<%= @session_db['type'] %>.Driver" 
+    url="jdbc:<%= @session_db['type'] %>://<%= @session_db['host'] %>:<%= @session_db['port'] %>/<%= @session_db['name'] %>"
+    username="<%= @session_db['user'] %>" 
+    password="<%= @session_db['password'] %>" 
+    maxActive="20" 
+    maxIdle="10" 
+    maxWait="-1" />
+
+<% end %>
+
+  <Manager className="org.apache.catalina.session.PersistentManager"
+    saveOnRestart="false"
+    minIdleSwap="0"
+    maxIdleSwap="0"
+    maxIdleBackup="0"
+    maxInactiveInterval="0" >
+
+    <Store className="org.apache.catalina.session.JDBCStore"
+<% if @use_jndi then %>
+        dataSourceName="<%= @session_db['dataSourceName'] %>"
+<% else %>
+        connectionURL="jdbc:<%= @session_db['type'] %>://<%= @session_db['host'] %>:<%= @session_db['port'] %>/<%= @session_db['name'] %>?user=<%= @session_db['user'] %>&amp;password=<%= @session_db['password'] %>"
+        driverName="org.<%= @session_db['type'] %>.Driver"
+<% end %>
+        sessionTable="<%= @session_table['name'] %>"
+        sessionIdCol="<%= @session_table['idCol'] %>"
+        sessionAppCol="<%= @session_table['appCol'] %>"
+        sessionDataCol="<%= @session_table['dataCol'] %>"
+        sessionLastAccessedCol="<%= @session_table['lastAccessedCol'] %>"
+        sessionMaxInactiveCol="<%= @session_table['maxInactiveCol'] %>"
+        sessionValidCol="<%= @session_table['validCol'] %>"
+    />
+  </Manager>
+
+</Context>
+
+

@@ -10,15 +10,24 @@ describe 'postgresql_part::configure' do
   partner_ip = '172.0.0.11'
   ap_ip = '172.0.0.1'
   ap2_ip = '172.0.0.2'
+  dba_passwd = 'dba_password'
+  app_db = 'application_db'
+  db_port = '5432'
+  rep_user = 'replication_user' 
+  generate_rep_passwd = 'generete_rep_passwd'
+  app_user = 'application_user'
+  generate_app_passwd = 'generete_app_passwd'
 
   before do
     chef_run.node.set['postgresql']['version'] = '9.4'
-    chef_run.node.set['postgresql']['config']['port'] = '5432'
+    chef_run.node.set['postgresql']['config']['port'] = db_port
     chef_run.node.set['postgresql']['assign_postgres_password'] = true
-    chef_run.node.set['postgresql']['password']['postgres'] = 'dba_passwd'
-    chef_run.node.set['postgresql_part']['replication']['user'] = 'replication_user'
+    chef_run.node.set['postgresql']['password']['postgres'] = dba_passwd
+    chef_run.node.set['postgresql_part']['replication']['user'] = rep_user
     chef_run.node.set['postgresql_part']['replication']['passwd'] = 'replication_pass'
     chef_run.node.set['postgresql_part']['replication']['replication_slot'] = 'chef_spec_slot'
+    chef_run.node.set['postgresql_part']['application']['database'] = app_db
+    chef_run.node.set['postgresql_part']['application']['user'] = app_user
     chef_run.node.set['cloudconductor']['servers'] = {
       myself_hostname => {
         roles: 'db',
@@ -35,6 +44,12 @@ describe 'postgresql_part::configure' do
     }
     chef_run.node.automatic_attrs['hostname'] = myself_hostname
     chef_run.node.automatic_attrs['ipaddress'] = myself_ip
+    chef_run.converge(described_recipe)
+
+    allow_any_instance_of(Chef::Resource)
+      .to receive(:generate_password).with('db_replication').and_return(generate_rep_passwd)
+    allow_any_instance_of(Chef::Resource)
+      .to receive(:generate_password).with('db_application').and_return(generate_app_passwd)
     chef_run.converge(described_recipe)
   end
 
@@ -100,6 +115,13 @@ describe 'postgresql_part::configure' do
   end
 
   describe 'itself is Master db node' do
+    postgresql_connection_info = {
+      host: '127.0.0.1',
+      port: db_port,
+      username: 'postgres',
+      password: dba_passwd
+    }
+
     before do
       allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag).and_return([])
       chef_run.node.automatic_attrs['hostname'] = myself_hostname
@@ -205,6 +227,40 @@ describe 'postgresql_part::configure' do
       end
     end
 
+    it 'create replication user' do
+      expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
+        :postgresql_database_user,
+        :create,
+        rep_user
+      ).with(
+        connection: postgresql_connection_info,
+        password: generate_rep_passwd,
+        replication: true
+      )
+    end
+
+    it 'create application db user' do
+      expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
+        :postgresql_database_user,
+        :create,
+        app_user
+      ).with(
+        connection: postgresql_connection_info,
+        password: generate_app_passwd
+      )
+    end
+
+    it 'create application database' do
+      expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
+        :postgresql_database,
+        :create,
+        app_db
+      ).with(
+        connection: postgresql_connection_info,
+        owner: app_user
+      )
+    end
+
     describe 'synchronous replication' do
       it 'create recovery.done' do
         chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
@@ -273,6 +329,7 @@ describe 'postgresql_part::configure' do
       )
     end
 
+
     it 'restart posgresql service' do
       service_name = 'postgresql'
       chef_run.node.set['postgresql']['server']['service_name'] = service_name
@@ -286,13 +343,6 @@ describe 'postgresql_part::configure' do
     end
 
     it 'create replication slot' do
-      postgresql_connection_info = {
-        host: '127.0.0.1',
-        port: chef_run.node['postgresql']['config']['port'],
-        username: 'postgres',
-        password: chef_run.node.set['postgresql']['password']['postgres']
-      }
-
       query = ["SELECT * FROM pg_create_physical_replication_slot('",
                "#{chef_run.node['postgresql_part']['replication']['replication_slot']}');"].join
       expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(

@@ -1,5 +1,5 @@
 /jkstatus=status
 /jkstatus/*=status
 
-/<%= @app_name %>=loadbalancer
-/<%= @app_name %>/*=loadbalancer
+/<%= @app_name %>=<%= @worker_name %>
+/<%= @app_name %>/*=<%= @worker_name %>

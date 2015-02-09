@@ -26,7 +26,6 @@ default['postgresql_part']['recovery']['primary_slot_name'] = node['postgresql_p
 
 default['postgresql_part']['application']['database'] = 'application'
 default['postgresql_part']['application']['user'] = 'application'
-default['postgresql_part']['application']['password'] = 'todo_replace_random_password'
 
 default['postgresql_part']['pgpool-II']['use'] = true
 default['postgresql_part']['pgpool-II']['source_archive_url'] = 'http://www.pgpool.net/download.php?f=pgpool-II-3.4.0.tar.gz'
