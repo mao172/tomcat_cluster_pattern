@@ -44,8 +44,14 @@ describe 'postgresql_part::configure' do
     }
     chef_run.node.automatic_attrs['hostname'] = myself_hostname
     chef_run.node.automatic_attrs['ipaddress'] = myself_ip
+
+    allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
+    allow_any_instance_of(Chef::Recipe).to receive(:standby_db_ip).and_return(partner_ip)
+
     chef_run.converge(described_recipe)
 
+    allow_any_instance_of(Chef::Recipe)
+      .to receive(:generate_password).with('db_replication').and_return(generate_rep_passwd)
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('db_replication').and_return(generate_rep_passwd)
     allow_any_instance_of(Chef::Resource)
@@ -53,68 +59,7 @@ describe 'postgresql_part::configure' do
     chef_run.converge(described_recipe)
   end
 
-  describe 'identify a own node type' do
-    describe 'primary db is registerd in catalog of consul' do
-      def helper_response(hostname, ipaddress)
-        [{
-          'Node' => "#{hostname}",
-          'Address' => "#{ipaddress}",
-          'ServiceID' => 'db',
-          'ServiceName' => 'db',
-          'ServiceTags' => ['primary'],
-          'ServicePort' => 5432
-        }]
-      end
-
-      describe 'primary db is this node' do
-        it 'do configure for primary db' do
-          allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag)
-            .and_return(helper_response(myself_hostname, myself_ip))
-          chef_run.converge(described_recipe)
-
-          expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.done")
-        end
-      end
-      describe 'primary db is not this node' do
-        it 'do configure for standby db' do
-          allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag)
-            .and_return(helper_response(partner_hostname, partner_ip))
-          chef_run.converge(described_recipe)
-
-          expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf")
-        end
-      end
-    end
-    describe 'primary db is not registerd in catalog of consul' do
-      before do
-        allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag).and_return([])
-      end
-      describe 'first entry of servers is this node' do
-        it 'do configure for primary db' do
-          chef_run.node.set['cloudconductor']['servers'] = {
-            myself_hostname => { roles: 'db', private_ip: myself_ip },
-            partner_hostname => { roles: 'db', private_ip: partner_ip },
-            ap_server: { roles: 'ap', private_ip: ap_ip }
-          }
-          chef_run.converge(described_recipe)
-          expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.done")
-        end
-      end
-      describe 'first entry of servers is not this node' do
-        it 'do configure for standby db' do
-          chef_run.node.set['cloudconductor']['servers'] = {
-            partner_hostname => { roles: 'db', private_ip: partner_ip },
-            myself_hostname => { roles: 'db', private_ip: myself_ip },
-            ap_server: { roles: 'ap', private_ip: ap_ip }
-          }
-          chef_run.converge(described_recipe)
-          expect(chef_run).to create_template("#{chef_run.node['postgresql']['dir']}/recovery.conf")
-        end
-      end
-    end
-  end
-
-  describe 'itself is Master db node' do
+  describe 'this node is primary db' do
     postgresql_connection_info = {
       host: '127.0.0.1',
       port: db_port,
@@ -123,7 +68,6 @@ describe 'postgresql_part::configure' do
     }
 
     before do
-      allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag).and_return([])
       chef_run.node.automatic_attrs['hostname'] = myself_hostname
       chef_run.node.automatic_attrs['ipaddress'] = myself_ip
       chef_run.node.set['cloudconductor']['servers'] = {
@@ -313,7 +257,7 @@ describe 'postgresql_part::configure' do
         'port' => chef_run.node['postgresql']['config']['port'],
         'db_name' => 'replication',
         'user' => chef_run.node['postgresql_part']['replication']['user'],
-        'passwd' => chef_run.node['postgresql_part']['replication']['password']
+        'passwd' => generate_rep_passwd
       }
       chef_run.node.set['postgres_part']['pgpass'] = pgpass
       chef_run.converge(described_recipe)
@@ -356,9 +300,10 @@ describe 'postgresql_part::configure' do
     end
   end
 
-  describe 'itself is standby db node' do
+  describe 'this node is standby db' do
     before do
-      allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag).and_return([])
+      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(false)
+
       chef_run.node.automatic_attrs['hostname'] = myself_hostname
       chef_run.node.automatic_attrs['ipaddress'] = myself_ip
       chef_run.node.set['cloudconductor']['servers'] = {
@@ -384,7 +329,7 @@ describe 'postgresql_part::configure' do
         'port' => chef_run.node['postgresql']['config']['port'],
         'db_name' => 'replication',
         'user' => chef_run.node['postgresql_part']['replication']['user'],
-        'passwd' => chef_run.node['postgresql_part']['replication']['password']
+        'passwd' => generate_rep_passwd
       }
       chef_run.node.set['postgres_part']['pgpass'] = pgpass
       chef_run.converge(described_recipe)

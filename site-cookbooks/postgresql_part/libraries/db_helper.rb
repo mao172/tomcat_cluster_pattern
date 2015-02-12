@@ -12,29 +12,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-::Chef::Recipe.send(:include, ConsulHelper)
+Chef::Recipe.send(:include, Consul)
+
 module DbHelper
   def db_servers
     node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
   end
   
-  def enable_db_names
-    db_server_names = db_servers.keys
-    db_server_names[0, 2]
-  end
-  
-  def partner_db
-    partner_db_name = enable_db_names.reject { |item|item == node[:hostname] }.first
-    db_servers[partner_db_name]
-  end
-  
-  def primary?
-    helper = Chef::Recipe::Helper.new
-    tag_possession_nodes = helper.find_node_possession_tag(service: 'db', tag: 'primary')
-    if tag_possession_nodes.empty?
-      db_servers[enable_db_names.first]['private_ip'] == node[:ipaddress] ? true : false
+  def standby_db_ip
+    first_node_ip = db_servers[db_servers.keys[0]]['private_ip']
+    if is_primary_db?(first_node_ip)
+      db_servers[db_servers.keys[1]]['private_ip']
     else
-      tag_possession_nodes.first['Address'] == node[:ipaddress] ? true : false
+      first_node_ip
     end
   end
-end
+  
+  def is_primary_db?(ipaddress)
+    service = Consul::Service
+    primary_node = service.get('db', tag: 'primary')
+    if primary_node.empty?
+      db_servers[db_servers.keys.first]['private_ip'] == ipaddress ? true : false
+    else
+      primary_node.first['Address'] == ipaddress ? true : false
+    end
+  end
+end unless defined?(DbHelper)
+
+Chef::Recipe.send(:include, DbHelper)

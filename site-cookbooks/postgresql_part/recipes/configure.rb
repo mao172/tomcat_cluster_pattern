@@ -1,11 +1,5 @@
-::Chef::Recipe.send(:include, DbHelper)
-
-unless enable_db_names.include?(node[:hostname])
-  fail 'DB node is too much, this node to disable'
-end
-
 pgpass = {
-  'ip' => "#{partner_db['private_ip']}",
+  'ip' => "#{standby_db_ip}",
   'port' => "#{node['postgresql']['config']['port']}",
   'db_name' => 'replication',
   'user' => "#{node['postgresql_part']['replication']['user']}",
@@ -22,7 +16,7 @@ template "#{node['postgresql_part']['home_dir']}/.pgpass" do
   )
 end
 
-if primary?
+if is_primary_db?(node[:ipaddress])
   postgresql_connection_info = {
     host: '127.0.0.1',
     port: node['postgresql']['config']['port'],
@@ -105,7 +99,7 @@ else
     recursive true
   end
 
-  code = "sudo -u postgres /usr/bin/pg_basebackup -D #{node['postgresql']['dir']} --xlog --verbose -h #{partner_db['private_ip']} -U replication"
+  code = "sudo -u postgres /usr/bin/pg_basebackup -D #{node['postgresql']['dir']} --xlog --verbose -h #{standby_db_ip} -U replication"
 
   bash 'pg_basebackup' do
     code code
@@ -116,7 +110,7 @@ else
     action :delete
   end
 end
-primary_conninfo = ["host=#{partner_db['private_ip']} ",
+primary_conninfo = ["host=#{standby_db_ip} ",
                     "port=#{node['postgresql']['config']['port']} ",
                     "user=#{node['postgresql_part']['replication']['user']} ",
                     "password=#{node['postgresql_part']['replication']['password']}"].join
@@ -127,7 +121,7 @@ end
 
 node.set['postgresql_part']['recovery']['primary_conninfo'] = primary_conninfo
 
-recovery_conf_name = primary? ? 'recovery.done' : 'recovery.conf'
+recovery_conf_name = is_primary_db?(node[:ipaddress]) ? 'recovery.done' : 'recovery.conf'
 
 template "#{node['postgresql']['dir']}/#{recovery_conf_name}" do
   source 'recovery.conf.erb'

@@ -1,7 +1,7 @@
 #::Chef::Resource.send(:include, ConsulHelper)
 ::Chef::Recipe.send(:include, DbHelper)
 
-if primary?
+if is_primary_db?(node[:ipaddress])
   postgresql_connection_info = {
     host: '127.0.0.1',
     port: node['postgresql']['config']['port'],

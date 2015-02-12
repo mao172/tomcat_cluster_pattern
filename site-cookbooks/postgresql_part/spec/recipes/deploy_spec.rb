@@ -38,11 +38,9 @@ describe 'postgresql_part::deploy' do
           type: 'dynamic'
         }
       }
+      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
       chef_run.converge(described_recipe)
 
-      allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag)
-        .and_return(helper_response(myself_hostname, myself_ip))
-      chef_run.converge(described_recipe)
     end
 
     describe 'dynamic type application is included "cloudconductor applications"' do
@@ -145,11 +143,7 @@ describe 'postgresql_part::deploy' do
           }
         }
       }
-
-      chef_run.converge(described_recipe)
-
-      allow_any_instance_of(ConsulHelper::Helper).to receive(:find_node_possession_tag)
-        .and_return(helper_response(partner_hostname, partner_ip))
+      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(false)
       chef_run.converge(described_recipe)
     end
     describe 'tables is not exist in postgresql db' do
