@@ -5,6 +5,7 @@ db_servers.each_with_index do | (_name, server), index |
   node.set['pgpool_part']['pgconf']["backend_port#{index}"] = node['pgpool_part']['postgresql']['port']
   node.set['pgpool_part']['pgconf']["backend_data_directory#{index}"] = node['pgpool_part']['postgresql']['dir']
   node.set['pgpool_part']['pgconf']["backend_flag#{index}"] = 'ALLOW_TO_FAILOVER'
+  node.set['pgpool_part']['pgconf']["backend_weight#{index}"] = 1
 end
 
 template "#{node['pgpool_part']['config']['dir']}/pgpool.conf" do
