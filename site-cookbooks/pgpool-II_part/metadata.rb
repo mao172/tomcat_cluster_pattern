@@ -8,3 +8,4 @@ maintainer_email 'ccndctr@gmail.com'
 supports 'centos', '= 6.5'
 
 depends 'yum'
+depends 'cloudconductor'

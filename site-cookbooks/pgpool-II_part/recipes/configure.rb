@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 db_servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
 
 db_servers.each_with_index do | (_name, server), index |
@@ -6,6 +8,14 @@ db_servers.each_with_index do | (_name, server), index |
   node.set['pgpool_part']['pgconf']["backend_data_directory#{index}"] = node['pgpool_part']['postgresql']['dir']
   node.set['pgpool_part']['pgconf']["backend_flag#{index}"] = 'ALLOW_TO_FAILOVER'
   node.set['pgpool_part']['pgconf']["backend_weight#{index}"] = 1
+end
+
+file "#{node['pgpool_part']['config']['dir']}/pcp.conf" do
+  owner 'root'
+  group 'root'
+  mode '0764'
+  content "#{node['pgpool_part']['user']}:#{Digest::MD5.hexdigest(generate_password('pcp'))}"
+  notifies :restart, 'service[pgpool]', :delayed
 end
 
 template "#{node['pgpool_part']['config']['dir']}/pgpool.conf" do
