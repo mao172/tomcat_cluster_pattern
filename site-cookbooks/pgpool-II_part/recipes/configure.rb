@@ -7,5 +7,5 @@ end
 
 service 'pgpool' do
   service_name node['pgpool_part']['service']
-  action [:enable]
+  action :nothing
 end
