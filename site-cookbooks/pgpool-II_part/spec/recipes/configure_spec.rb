@@ -10,6 +10,8 @@ describe 'pgpool-II_part::configure' do
     chef_run.node.set['pgpool_part']['config']['dir'] = pgpool_dir
     chef_run.node.set['pgpool_part']['postgresql']['dir'] = '/var/lib/pgsql/9.4/data'
     chef_run.node.set['pgpool_part']['postgresql']['port'] = '5432'
+    chef_run.node.set['pgpool_part']['pgconf']['backend_flag0'] = 'ALLOW_TO_FAILOVER'
+    chef_run.node.set['pgpool_part']['pgconf']['backend_weight0'] = 1
     chef_run.node.set['cloudconductor']['servers'] = { 'foo' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' } }
     chef_run.converge(described_recipe)
   end
@@ -57,6 +59,15 @@ describe 'pgpool-II_part::configure' do
       }
       chef_run.converge(described_recipe)
     end
+
+    it 'backend_flag1 or later is the same value as the backend_flag0' do
+      expect(chef_run.node['pgpool_part']['pgconf']['backend_flag1']).to eq(chef_run.node['pgpool_part']['pgconf']['backend_flag0'])
+    end
+
+    it 'backend_weight1 or later is the same value as the backend_weight0' do
+      expect(chef_run.node['pgpool_part']['pgconf']['backend_weight1']).to eq(chef_run.node['pgpool_part']['pgconf']['backend_weight0'])
+    end
+
     it 'write to pgpool.conf all of the nodes as a backend' do
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_hostname0".ljust(25)} = '127.0.0.1'/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port0".ljust(25)} = '5432'/)
