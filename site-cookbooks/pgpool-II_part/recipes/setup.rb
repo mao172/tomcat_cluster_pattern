@@ -31,7 +31,13 @@ file "#{node['pgpool_part']['config']['dir']}/pool_passwd" do
   group node['pgpool_part']['group']
 end
 
+file "#{node['pgpool_part']['pgconf']['logdir']}/pgpool_status" do
+  action :create_if_missing
+  owner node['pgpool_part']['user']
+  group node['pgpool_part']['group']
+end
+
 service 'pgpool' do
   service_name node['pgpool_part']['service']
-  action [ :enable ]
+  action [:enable]
 end

@@ -61,6 +61,13 @@ describe 'pgpool-II_part::setup' do
     )
   end
 
+  it 'create pgpool_status file' do
+    expect(chef_run).to create_file_if_missing("#{log_dir}/pgpool_status").with(
+      owner: user,
+      group: group
+    )
+  end
+
   it 'set enable service at root' do
     expect(chef_run).to enable_service('pgpool').with(
       service_name: service
