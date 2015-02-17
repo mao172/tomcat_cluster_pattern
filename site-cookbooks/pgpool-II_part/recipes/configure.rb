@@ -4,6 +4,8 @@ def servers(role)
   node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?(role) }
 end
 
+node.set['pgpool_part']['pgconf']['sr_check_password'] = generate_password('db_replication_check')
+
 db_servers = servers('db')
 
 db_servers.each_with_index do | (_name, server), index |

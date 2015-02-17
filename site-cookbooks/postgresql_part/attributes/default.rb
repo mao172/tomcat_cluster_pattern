@@ -11,3 +11,4 @@ default['postgresql']['config']['data_directory'] = node['postgresql']['dir']
 
 default['postgresql_part']['application']['database'] = 'application'
 default['postgresql_part']['application']['user'] = 'application'
+default['postgresql_part']['replication']['check_user'] = 'repcheck'

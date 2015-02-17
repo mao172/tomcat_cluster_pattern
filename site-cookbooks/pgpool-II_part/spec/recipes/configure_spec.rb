@@ -205,4 +205,12 @@ describe 'pgpool-II_part::configure' do
         .with_content(/#{"heartbeat_destination_port1".ljust(25)} = 9694/)
     end
   end
+  it 'sr_check_password is the generate_password' do
+    allow_any_instance_of(Chef::Recipe).to receive(:generate_password).with('db_replication_check').and_return('dummy_passwd')
+    chef_run.converge(described_recipe)
+
+    expect(chef_run.node['pgpool_part']['pgconf']['sr_check_password']).to eq('dummy_passwd')
+    expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
+      .with_content(/#{"sr_check_password".ljust(25)} = 'dummy_passwd'/)
+  end
 end
