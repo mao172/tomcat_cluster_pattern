@@ -4,6 +4,7 @@
   "chef_type": "role",
   "json_class": "Chef::Role",
   "run_list": [
-    "tomcat_part::configure"
+    "tomcat_part::configure",
+    "pgpool-II_part::configure"
   ]
 }
