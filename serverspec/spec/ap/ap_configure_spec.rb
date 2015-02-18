@@ -1,9 +1,47 @@
 require 'spec_helper'
 
+def servers(role)
+  property[:servers].each_value.select { |server| server[:roles].include?(role) }
+end
+
 describe service('tomcat7') do
+  it { should be_running }
+end
+
+describe service('pgpool') do
   it { should be_running }
 end
 
 describe port(8009) do
   it { should be_listening.with('tcp') }
+end
+
+params = property[:consul_parameters]
+
+if params['pgpool_part'] && params['pgpool_part']['pgconf'] && params['pgpool_part']['pgconf']['port']
+  pgpool_port = params['pgpool_part']['pgconf']['port']
+else
+  pgpool_port = 9999
+end
+if params['pgpool_part'] && params['pgpool_part']['pgconf'] && params['pgpool_part']['pgconf']['wd_port']
+  wd_port = params['pgpool_part']['pgconf']['wd_port']
+else
+  wd_port = 9000
+end
+
+describe port(pgpool_port) do
+  it { should be_listening.with('tcp') }
+end
+
+describe port(wd_port) do
+  it { should be_listening.with('tcp') }
+end
+
+servers('ap').each do |server|
+  describe command("hping3 -S #{server[:private_ip]} -p #{pgpool_port} -c 5") do
+    its(:stdout) { should match(/sport=#{pgpool_port} flags=SA/) }
+  end
+  describe command("hping3 -S #{server[:private_ip]} -p #{wd_port} -c 5") do
+    its(:stdout) { should match(/sport=#{wd_port} flags=SA/) }
+  end
 end
