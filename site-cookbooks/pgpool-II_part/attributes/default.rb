@@ -13,8 +13,6 @@ default['pgpool_part']['config']['dir'] = '/etc/pgpool-II'
 
 default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust' },
-  { type: 'host', db: 'all', user: 'all', addr: '127.0.0.1/32', method: 'trust' },
-  { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'trust' }
 ]
 
 default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'

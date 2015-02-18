@@ -16,8 +16,7 @@ db_servers.each_with_index do | (_name, server), index |
   node.set['pgpool_part']['pgconf']["backend_weight#{index}"] = node['pgpool_part']['pgconf']['backend_weight0']
 end
 
-ap_servers = servers('ap')
-other_ap_servers = ap_servers.delete_if { |_key, val| val['private_ip'] == node[:ipaddress] }
+other_ap_servers = servers('ap').delete_if { |_key, val| val['private_ip'] == node[:ipaddress] }
 
 other_ap_servers.each_with_index do | (_name, server), index |
   node.set['pgpool_part']['pgconf']["other_pgpool_hostname#{index}"] = server['private_ip']
@@ -36,6 +35,19 @@ file "#{node['pgpool_part']['config']['dir']}/pcp.conf" do
 end
 
 template "#{node['pgpool_part']['config']['dir']}/pgpool.conf" do
+  owner 'root'
+  group 'root'
+  mode '0764'
+  notifies :restart, 'service[pgpool]', :delayed
+end
+
+pg_hba_auth = node['pgpool_part']['pg_hba']['auth'].to_a
+pg_hba_auth += servers('ap').map do |_name, server|
+  { type: 'host', db: 'all', user: 'all', addr: "#{server['private_ip']}/32", method: 'md5' }
+end
+node.set['pgpool_part']['pg_hba']['auth'] = pg_hba_auth
+
+template "#{node['pgpool_part']['config']['dir']}/pool_hba.conf" do
   owner 'root'
   group 'root'
   mode '0764'
