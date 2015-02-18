@@ -45,3 +45,15 @@ servers('ap').each do |server|
     its(:stdout) { should match(/sport=#{wd_port} flags=SA/) }
   end
 end
+
+if params['postgresql'] && params['postgresql']['config'] && params['postgresql']['config']['port']
+  postgresql_port = params['postgresql']['config']['port']
+else
+  postgresql_port = 5432
+end
+
+servers('db').each do |server|
+  describe command("hping3 -S #{server[:private_ip]} -p #{postgresql_port} -c 5") do
+    its(:stdout) { should match(/sport=#{postgresql_port} flags=SA/) }
+  end
+end
