@@ -31,6 +31,8 @@ default['postgresql_part']['pgpool-II']['use'] = true
 default['postgresql_part']['pgpool-II']['source_archive_url'] = 'http://www.pgpool.net/download.php?f=pgpool-II-3.4.0.tar.gz'
 
 default['postgresql_part']['event_handlers_dir'] = '/opt/consul/event_handlers'
+default[:postgresql_part][:wait_timeout] = 90
+default[:postgresql_part][:wait_interval] = 10
 
 # To merge because does not contain a "pgdg-repo" of postgresql 9.4 to postgresql cookbook now.
 # if contains a "pgdg-repo" to postgresql cookbook to use it
