@@ -9,7 +9,6 @@ describe 'pgpool-II_part::configure' do
     chef_run.node.set['pgpool_part']['user'] = 'postgres'
     chef_run.node.set['pgpool_part']['config']['dir'] = pgpool_dir
     chef_run.node.set['pgpool_part']['postgresql']['dir'] = '/var/lib/pgsql/9.4/data'
-    chef_run.node.set['pgpool_part']['pg_hba']['auth'] =  [{ type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust' }]
     chef_run.node.set['pgpool_part']['postgresql']['port'] = 5432
     chef_run.node.set['pgpool_part']['pgconf']['port'] = 9999
     chef_run.node.set['pgpool_part']['pgconf']['backend_flag0'] = 'ALLOW_TO_FAILOVER'
@@ -106,18 +105,10 @@ describe 'pgpool-II_part::configure' do
     it 'other_wd_port settings attribute is not create' do
       expect(chef_run.node['pgpool_part']['pgconf'].include?('other_wd_port')).to be_falsey
     end
-
-    it 'auth settings is to add configuration of ap node to the default attributes' do
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][0])
-        .to match(type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust')
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][1])
-        .to match(type: 'host', db: 'all', user: 'all', addr: '127.0.0.101/32', method: 'md5')
-    end
   end
 
   describe 'only one node of ap role other than its own node' do
     before do
-      chef_run.node.set['pgpool_part']['pg_hba']['auth'] = [{ type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust' }]
       chef_run.node.set['cloudconductor']['servers'] = {
         'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
         'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' },
@@ -156,19 +147,9 @@ describe 'pgpool-II_part::configure' do
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"heartbeat_destination_port0".ljust(25)} = 9694/)
     end
-
-    it 'auth settings is to add configuration of ap node to the default attributes' do
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][0])
-        .to match(type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust')
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][1])
-        .to match(type: 'host', db: 'all', user: 'all', addr: '127.0.0.101/32', method: 'md5')
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][2])
-        .to match(type: 'host', db: 'all', user: 'all', addr: '127.0.0.102/32', method: 'md5')
-    end
   end
   describe 'multiple node of ap role other than its own node' do
     before do
-      chef_run.node.set['pgpool_part']['pg_hba']['auth'] = [{ type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust' }]
       chef_run.node.set['cloudconductor']['servers'] = {
         'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
         'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' },
@@ -222,17 +203,6 @@ describe 'pgpool-II_part::configure' do
         .with_content(/#{"heartbeat_destination1".ljust(25)} = '127.0.0.103'/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"heartbeat_destination_port1".ljust(25)} = 9694/)
-    end
-
-    it 'auth settings is to add configuration of ap node to the default attributes' do
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][0])
-        .to match(type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust')
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][1])
-        .to match(type: 'host', db: 'all', user: 'all', addr: '127.0.0.101/32', method: 'md5')
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][2])
-        .to match(type: 'host', db: 'all', user: 'all', addr: '127.0.0.102/32', method: 'md5')
-      expect(chef_run.node['pgpool_part']['pg_hba']['auth'][3])
-        .to match(type: 'host', db: 'all', user: 'all', addr: '127.0.0.103/32', method: 'md5')
     end
   end
   it 'sr_check_password is the generate_password' do

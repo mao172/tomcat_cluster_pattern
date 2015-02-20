@@ -41,12 +41,6 @@ template "#{node['pgpool_part']['config']['dir']}/pgpool.conf" do
   notifies :restart, 'service[pgpool]', :delayed
 end
 
-pg_hba_auth = node['pgpool_part']['pg_hba']['auth'].to_a
-pg_hba_auth += servers('ap').map do |_name, server|
-  { type: 'host', db: 'all', user: 'all', addr: "#{server['private_ip']}/32", method: 'md5' }
-end
-node.set['pgpool_part']['pg_hba']['auth'] = pg_hba_auth
-
 template "#{node['pgpool_part']['config']['dir']}/pool_hba.conf" do
   owner 'root'
   group 'root'
