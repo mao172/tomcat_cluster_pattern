@@ -1,0 +1,5 @@
+#!/bin/sh
+# 
+# failover event handler for consul event 
+#
+#

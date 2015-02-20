@@ -129,6 +129,24 @@ EOS
     )
   end
 
+  describe 'for consul event' do
+    it 'create event handler dir' do
+      expect(chef_run).to create_directory('/opt/consul/event_handlers')
+    end
+
+    it 'create failover_event_handler file' do
+      expect(chef_run).to create_cookbook_file('failover_event_handler')
+    end
+
+    it 'create event watch def' do
+      expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
+        :consul_event_watch_def,
+        :create,
+        'failover'
+      )
+    end
+  end
+
   describe 'not use pgpool-II' do
     before do
       chef_run.node.set['postgresql_part']['pgpool-II']['use'] = false
@@ -148,6 +166,22 @@ EOS
         :postgresql_database,
         :query,
         'template1'
+      )
+    end
+
+    it 'not create event handler dir' do
+      expect(chef_run).to_not create_directory('/opt/consul/event_handlers')
+    end
+
+    it 'not create failover_event_handler file' do
+      expect(chef_run).to_not create_cookbook_file('failover_event_handler')
+    end
+
+    it 'not create event watch def' do
+      expect(chef_run).to_not ChefSpec::Matchers::ResourceMatcher.new(
+        :consul_event_watch_def,
+        :create,
+        'failover'
       )
     end
   end

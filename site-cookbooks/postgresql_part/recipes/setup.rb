@@ -37,4 +37,28 @@ if node['postgresql_part']['pgpool-II']['use']
     connection postgresql_connection_info
     sql lazy { ::File.read("#{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0/src/sql/pgpool-regclass/pgpool-regclass.sql") }
   end
+
+  event_handlers_dir = node['postgresql_part']['event_handlers_dir']
+
+  # create directory for Consul event-handler
+  directory event_handlers_dir do
+    owner 'root'
+    group 'root'
+    mode 0755
+    recursive true
+    action :create
+  end
+
+  cookbook_file 'failover_event_handler' do
+    path "#{File.join(event_handlers_dir, 'failover_event_handler')}"
+    mode 0755
+    owner 'root'
+    user 'root'
+    action :create
+  end
+
+  consul_event_watch_def 'failover' do
+    handler "#{File.join(event_handlers_dir, 'failover_event_handler')}"
+    action :create
+  end
 end

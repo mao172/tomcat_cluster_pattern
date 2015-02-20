@@ -30,6 +30,8 @@ default['postgresql_part']['application']['user'] = 'application'
 default['postgresql_part']['pgpool-II']['use'] = true
 default['postgresql_part']['pgpool-II']['source_archive_url'] = 'http://www.pgpool.net/download.php?f=pgpool-II-3.4.0.tar.gz'
 
+default['postgresql_part']['event_handlers_dir'] = '/opt/consul/event_handlers'
+
 # To merge because does not contain a "pgdg-repo" of postgresql 9.4 to postgresql cookbook now.
 # if contains a "pgdg-repo" to postgresql cookbook to use it
 unless node['postgresql']['pgdg']['repo_rpm_url'].include?('9.4')
