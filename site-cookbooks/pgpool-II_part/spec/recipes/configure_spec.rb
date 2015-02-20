@@ -9,8 +9,8 @@ describe 'pgpool-II_part::configure' do
     chef_run.node.set['pgpool_part']['user'] = 'postgres'
     chef_run.node.set['pgpool_part']['config']['dir'] = pgpool_dir
     chef_run.node.set['pgpool_part']['postgresql']['dir'] = '/var/lib/pgsql/9.4/data'
-    chef_run.node.set['pgpool_part']['postgresql']['port'] = '5432'
     chef_run.node.set['pgpool_part']['pg_hba']['auth'] =  [{ type: 'local', db: 'all', user: 'all', addr: nil, method: 'trust' }]
+    chef_run.node.set['pgpool_part']['postgresql']['port'] = 5432
     chef_run.node.set['pgpool_part']['pgconf']['port'] = 9999
     chef_run.node.set['pgpool_part']['pgconf']['backend_flag0'] = 'ALLOW_TO_FAILOVER'
     chef_run.node.set['pgpool_part']['pgconf']['backend_weight0'] = 1
@@ -51,7 +51,7 @@ describe 'pgpool-II_part::configure' do
 
   it 'write the backend db settings to pgpool.conf' do
     expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_hostname0".ljust(25)} = '127.0.0.1'/)
-    expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port0".ljust(25)} = '5432'/)
+    expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port0".ljust(25)} = 5432/)
     expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_weight0".ljust(25)} = 1/)
     expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
       .with_content(/#{"backend_data_directory0".ljust(25)} = '\/var\/lib\/pgsql\/9.4\/data'/)
@@ -80,14 +80,14 @@ describe 'pgpool-II_part::configure' do
 
     it 'write to pgpool.conf all of the nodes as a backend' do
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_hostname0".ljust(25)} = '127.0.0.1'/)
-      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port0".ljust(25)} = '5432'/)
+      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port0".ljust(25)} = 5432/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_weight0".ljust(25)} = 1/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"backend_data_directory0".ljust(25)} = '\/var\/lib\/pgsql\/9.4\/data'/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"backend_flag0".ljust(25)} = 'ALLOW_TO_FAILOVER'/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_hostname1".ljust(25)} = '127.0.0.2'/)
-      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port1".ljust(25)} = '5432'/)
+      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_port1".ljust(25)} = 5432/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"backend_weight1".ljust(25)} = 1/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"backend_data_directory1".ljust(25)} = '\/var\/lib\/pgsql\/9.4\/data'/)
