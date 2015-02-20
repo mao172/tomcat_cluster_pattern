@@ -297,5 +297,18 @@ describe 'postgresql_part::configure_primary' do
       sql: query
     )
     end
+
+    it 'create consul service def' do
+      expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
+        :cloudconductor_consul_service_def,
+        :create,
+        'postgresql'
+      ).with(
+        id: 'postgresql',
+        port: 5432,
+        tags: ['primary'],
+        check: nil
+      )
+    end
   end
 end
