@@ -7,19 +7,19 @@ describe 'DbHelper' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
-      node = {'cloudconductor' => { 'servers' => { 'db' => { 'roles' => 'db' }, 'ab' => { 'roles' => 'ap'}}}}
+      node = { 'cloudconductor' => { 'servers' => { 'db' => { 'roles' => 'db' }, 'ab' => { 'roles' => 'ap' } } } }
       allow(@helper).to receive(:node).and_return(node)
     end
-   
+
     it 'return db role hash' do
-      expect(@helper.db_servers).to eq({'db' => { 'roles' => 'db' }})
+      expect(@helper.db_servers).to eq('db' => { 'roles' => 'db' })
     end
   end
   describe '#standby_db_ip' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
-      allow(@helper).to receive(:db_servers).and_return({'db1' => {'private_ip' => '127.0.0.1'}, 'db2' => {'private_ip' => '127.0.0.2'}})
+      allow(@helper).to receive(:db_servers).and_return('db1' => { 'private_ip' => '127.0.0.1' }, 'db2' => { 'private_ip' => '127.0.0.2' })
     end
     describe 'if 1st hash of db_servers is the primary db' do
       before do
@@ -45,7 +45,7 @@ describe 'DbHelper' do
     end
     describe 'if found at the consul' do
       before do
-        allow(Consul::Service).to receive(:get).and_return([{'Address' => '127.0.0.1'}])
+        allow(CloudConductor::ConsulClient::Catalog).to receive(:service).and_return([{ 'Address' => '127.0.0.1' }])
       end
       describe 'and registerd private_ip is same as the argument' do
         it 'return true' do
@@ -60,8 +60,8 @@ describe 'DbHelper' do
     end
     describe 'if not found at the consul' do
       before do
-        allow(Consul::Service).to receive(:get).and_return([])
-        allow(@helper).to receive(:db_servers).and_return({'db1' => {'private_ip' => '127.0.0.1'}})
+        allow(CloudConductor::ConsulClient::Catalog).to receive(:service).and_return([])
+        allow(@helper).to receive(:db_servers).and_return('db1' => { 'private_ip' => '127.0.0.1' })
       end
       describe 'and first node private_ip of db_servers is same as the argument' do
         it 'return true' do

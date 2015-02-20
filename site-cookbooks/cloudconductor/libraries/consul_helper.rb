@@ -16,27 +16,41 @@
 require 'faraday'
 require 'json'
 
-module Consul
-  class Service
+module CloudConductor
+  class ConsulClient
     class << self
-      def get(service_id, filters = {})
-        request_url = "catalog/service/#{service_id}"
-        filters = filters.select{ |key, value| %w(tag dc).include?(key) }
-        unless filters.empty?
-          request_url << '?' + filters.map{ |key, value| "#{key}=#{value}" }.join('&')
-        end
-        response = client.get(request_url)
-        services = JSON.parse(response.body)
-        services
-      end
-
-      private
-
-      def client
-        Faraday.new(url: 'http://localhost:8500/v1')
+      def http
+        Faraday.new(url: 'http://localhost:8500/v1', proxy: '')
       end
     end
-  end
-end unless defined?(Consul)
+    #
+    # FullName:: CloudConductor::ConsulClient::Catalog
+    class Catalog
+      class << self
+        #
+        # service_id - String
+        # filters    - Hash (optional)
+        #              :service_id - String (optional)
+        #              :dc - String (optional)
+        #              :tag - String (optional)
+        def service(service_id, filters = {})
+          if service_id.is_a?(Hash)
+            filters = service_id
+            service_id = filters[:service_id]
+          end
 
-Chef::Recipe.send(:include, Consul)
+          request_url = "catalog/service/#{service_id}"
+          filters = filters.select { |key, _value| %w(tag dc).include?(key.to_s) }
+          unless filters.empty?
+            request_url << '?' + filters.map { |key, value| "#{key}=#{value}" }.join('&')
+          end
+
+          response = ConsulClient.http.get(request_url)
+          JSON.parse(response.body)
+        end
+      end
+    end
+  end unless defined?(ConsulClient)
+end # unless defined?(CloudConductor)
+
+# Chef::Recipe.send(:include, Consul)

@@ -37,7 +37,7 @@ module CloudConductor
       result
     end
   end unless defined?(Helper)
-end unless defined?(CloudConductor)
+end # unless defined?(CloudConductor)
 
 Chef::Recipe.send(:include, CloudConductor::Helper)
 Chef::Resource.send(:include, CloudConductor::Helper)
