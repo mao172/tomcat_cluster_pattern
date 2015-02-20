@@ -11,6 +11,7 @@ describe 'pgpool-II_part::setup' do
   service = 'pgpool'
   pgpool_dir = '/etc/pgpool'
   log_dir = '/var/log/pgpool'
+  pool_passwd = 'pool_passwd'
 
   before do
     chef_run.node.set['pgpool_part']['repository']['baseurl'] = baseurl
@@ -21,6 +22,7 @@ describe 'pgpool-II_part::setup' do
     chef_run.node.set['pgpool_part']['service'] = service
     chef_run.node.set['pgpool_part']['config']['dir'] = pgpool_dir
     chef_run.node.set['pgpool_part']['pgconf']['logdir'] = log_dir
+    chef_run.node.set['pgpool_part']['pgconf']['pool_passwd'] = pool_passwd
 
     chef_run.converge(described_recipe)
   end
@@ -55,7 +57,7 @@ describe 'pgpool-II_part::setup' do
   end
 
   it 'create pool_passwd file' do
-    expect(chef_run).to create_file_if_missing("#{pgpool_dir}/pool_passwd").with(
+    expect(chef_run).to create_file_if_missing("#{pgpool_dir}/#{pool_passwd}").with(
       owner: user,
       group: group
     )

@@ -25,7 +25,7 @@ directory node['pgpool_part']['pgconf']['logdir'] do
   mode '0755'
 end
 
-file "#{node['pgpool_part']['config']['dir']}/pool_passwd" do
+file "#{node['pgpool_part']['config']['dir']}/#{node['pgpool_part']['pgconf']['pool_passwd']}" do
   action :create_if_missing
   owner node['pgpool_part']['user']
   group node['pgpool_part']['group']
