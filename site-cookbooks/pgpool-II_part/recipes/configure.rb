@@ -48,6 +48,10 @@ template "#{node['pgpool_part']['config']['dir']}/pool_hba.conf" do
   notifies :restart, 'service[pgpool]', :delayed
 end
 
+bash 'create md5 auth setting' do
+ code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['application']['user']} #{generate_password('db_application')}"
+end
+
 service 'pgpool' do
   service_name node['pgpool_part']['service']
   action :nothing

@@ -6,6 +6,11 @@ describe 'pgpool-II_part::configure' do
   pgpool_dir = '/etc/pgpool-II'
 
   before do
+    allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('db_application').and_return('dummy_passwd')
+
+    allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('pcp').and_return('foobarbaz')
+    allow(Digest::MD5).to receive(:hexdigest).with('foobarbaz').and_return('dummy_passwd')
+
     chef_run.node.set['pgpool_part']['user'] = 'postgres'
     chef_run.node.set['pgpool_part']['config']['dir'] = pgpool_dir
     chef_run.node.set['pgpool_part']['postgresql']['dir'] = '/var/lib/pgsql/9.4/data'
@@ -24,10 +29,6 @@ describe 'pgpool-II_part::configure' do
   end
 
   it 'create pcp.conf, to write pcp user and password hash, and service restart' do
-    allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('pcp').and_return('foobarbaz')
-    allow(Digest::MD5).to receive(:hexdigest).with('foobarbaz').and_return('dummy_passwd')
-    chef_run.converge(described_recipe)
-
     expect(chef_run).to create_file("#{pgpool_dir}/pcp.conf").with(
       owner: 'root',
       group: 'root',
@@ -206,7 +207,7 @@ describe 'pgpool-II_part::configure' do
     end
   end
   it 'sr_check_password is the generate_password' do
-    allow_any_instance_of(Chef::Recipe).to receive(:generate_password).with('db_replication_check').and_return('dummy_passwd')
+    allow_any_instance_of(Chef::Recipe).to receive(:generate_password).and_return('dummy_passwd')
     chef_run.converge(described_recipe)
 
     expect(chef_run.node['pgpool_part']['pgconf']['sr_check_password']).to eq('dummy_passwd')
@@ -222,5 +223,15 @@ describe 'pgpool-II_part::configure' do
     )
 
     expect(chef_run.template("#{pgpool_dir}/pgpool.conf")).to notify('service[pgpool]').to(:restart).delayed
+  end
+
+  it 'make auth settings in pg_md5 command' do
+    app_user = 'app_user'
+    chef_run.node.set['pgpool_part']['postgresql']['application']['user'] = app_user
+    chef_run.converge(described_recipe)
+
+    expect(chef_run).to run_bash('create md5 auth setting').with(
+      code: "pg_md5 --md5auth --username=#{app_user} dummy_passwd"
+    )
   end
 end

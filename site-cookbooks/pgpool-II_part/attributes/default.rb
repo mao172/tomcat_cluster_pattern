@@ -1,6 +1,7 @@
 default['pgpool_part']['postgresql']['version'] = '9.4'
 default['pgpool_part']['postgresql']['dir'] = "/var/lib/pgsql/#{node['pgpool_part']['postgresql']['version']}/data"
 default['pgpool_part']['postgresql']['port'] = 5432
+default['pgpool_part']['postgresql']['application']['user'] = 'application'
 default['pgpool_part']['postgresql']['replication']['check_user'] = 'repcheck'
 
 default['pgpool_part']['repository']['baseurl'] = 'http://www.pgpool.net/yum/rpms/3.4/redhat/rhel-6-x86_64/'
