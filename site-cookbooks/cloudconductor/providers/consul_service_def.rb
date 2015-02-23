@@ -9,7 +9,7 @@ require 'json'
 use_inline_resources
 
 action :create do
-  ConsulClient.regist_service(
+  CloudConductor::ConsulClient.regist_service(
     name: new_resource.name,
     id: new_resource.id,
     port: new_resource.port,
