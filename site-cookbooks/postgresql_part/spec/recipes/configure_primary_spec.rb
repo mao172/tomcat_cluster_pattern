@@ -56,6 +56,13 @@ describe 'postgresql_part::configure_primary' do
       .to receive(:generate_password).with('db_replication').and_return(generate_rep_passwd)
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('db_application').and_return(generate_app_passwd)
+
+    allow_any_instance_of(Chef::Resource)
+      .to receive(:generate_password).with('tomcat').and_return(generate_app_passwd)
+
+    # /vi/agent/service/register (need consul agent is running)
+    CloudConductor::ConsulClient.regist_service('postgresql', port: 5432)
+
     chef_run.converge(described_recipe)
   end
 
@@ -296,6 +303,10 @@ describe 'postgresql_part::configure_primary' do
       connection: postgresql_connection_info,
       sql: query
     )
+    end
+
+    it 'include configure_tomcat_session recipe ' do
+      expect(chef_run).to include_recipe('postgresql_part::configure_tomcat_session')
     end
 
     it 'create consul service def' do

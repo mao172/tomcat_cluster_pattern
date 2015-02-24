@@ -123,6 +123,10 @@ service 'postgresql' do
   action :nothing
 end
 
+# for tomcat session replication
+
+include_recipe 'postgresql_part::configure_tomcat_session'
+
 # postgresql_part_append_service_tag 'primary'
 
 service_info = CloudConductor::ConsulClient.services['postgresql']
