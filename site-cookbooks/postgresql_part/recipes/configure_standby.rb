@@ -60,7 +60,7 @@ end
 primary_conninfo = ["host=#{primary_db_ip} ",
                     "port=#{node['postgresql']['config']['port']} ",
                     "user=#{node['postgresql_part']['replication']['user']} ",
-                    "password=#{node['postgresql_part']['replication']['password']}"].join
+                    "password=#{generate_password('db_replication')}"].join
 
 if node['postgresql']['config']['synchronous_commit'].is_a?(TrueClass) ||
    node['postgresql']['config']['synchronous_commit'] == 'on'
