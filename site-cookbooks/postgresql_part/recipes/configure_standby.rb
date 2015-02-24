@@ -46,7 +46,7 @@ cmd_params << "#{primary_db_ip}"
 cmd_params << '-U'
 cmd_params << 'replication'
 
-code = "sudo -u postgres /usr/bin/pg_basebackup #{cmd_params.join(' ')}"
+code = "su - postgres -c '/usr/bin/pg_basebackup #{cmd_params.join(' ')}'"
 
 bash 'pg_basebackup' do
   code code
