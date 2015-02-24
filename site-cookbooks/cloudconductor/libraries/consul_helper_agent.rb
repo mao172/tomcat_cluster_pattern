@@ -54,7 +54,7 @@ module CloudConductor
       def regist_service(name, options = nil)
         if name.is_a? Hash
           options = name
-          name = options[:name]
+          # name = options[:name]
         else
           options = {} if options.nil?
           options[:name] = name

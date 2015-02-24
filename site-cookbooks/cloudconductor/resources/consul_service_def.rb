@@ -20,15 +20,12 @@ attribute :check, kind_of: Hash, default: nil, callbacks: {
 }
 
 def self.validate_check(check)
-  unless check.is_a?(Hash)
-    return false
-  end
-  if check.key?(:ttl) && (!check.key?(:interval) && !check.key?(:script))
-    return true
-  end
-  if check.key?(:interval) && check.key?(:script)
-    return true
-  end
+  return false unless check.is_a?(Hash)
+
+  return true if check.key?(:ttl) && (!check.key?(:interval) && !check.key?(:script))
+
+  return true if check.key?(:interval) && check.key?(:script)
+
   false
 end
 

@@ -19,7 +19,8 @@ describe 'DbHelper' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
-      allow(@helper).to receive(:db_servers).and_return('db1' => { 'private_ip' => '127.0.0.1' }, 'db2' => { 'private_ip' => '127.0.0.2' })
+      allow(@helper).to receive(:db_servers)
+        .and_return('db1' => { 'private_ip' => '127.0.0.1' }, 'db2' => { 'private_ip' => '127.0.0.2' })
     end
     describe 'if 1st hash of db_servers is the primary db' do
       before do

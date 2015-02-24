@@ -36,7 +36,17 @@ directory "#{node['postgresql']['dir']}" do
   recursive true
 end
 
-code = "sudo -u postgres /usr/bin/pg_basebackup -D #{node['postgresql']['dir']} --xlog --verbose -h #{primary_db_ip} -U replication"
+cmd_params = []
+cmd_params << '-D'
+cmd_params << "#{node['postgresql']['dir']}"
+cmd_params << '--xlog'
+cmd_params << '--verbose'
+cmd_params << '-h'
+cmd_params << "#{primary_db_ip}"
+cmd_params << '-U'
+cmd_params << 'replication'
+
+code = "sudo -u postgres /usr/bin/pg_basebackup #{cmd_params.join(' ')}"
 
 bash 'pg_basebackup' do
   code code

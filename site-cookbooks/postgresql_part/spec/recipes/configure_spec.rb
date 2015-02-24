@@ -30,7 +30,6 @@ describe 'postgresql_part::configure' do
   end
 
   describe 'this node is primary db' do
-
     before do
       allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
       chef_run.converge(described_recipe)
@@ -52,4 +51,3 @@ describe 'postgresql_part::configure' do
     end
   end
 end
-

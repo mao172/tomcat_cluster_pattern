@@ -40,7 +40,6 @@ describe 'postgresql_part::deploy' do
       }
       allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
       chef_run.converge(described_recipe)
-
     end
 
     describe 'dynamic type application is included "cloudconductor applications"' do

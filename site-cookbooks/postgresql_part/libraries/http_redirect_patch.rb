@@ -8,29 +8,29 @@ if chef_ver[0].to_i < 12 || chef_ver[0].to_i == 12 && chef_ver[1].to_i < 2
   ::Chef::HTTP.class_eval do
     def send_http_request_patched(method, url, headers, body, &response_handler)
       headers = build_headers(method, url, headers, body)
-  
+
       retrying_http_errors(url) do
         client = http_client(url)
         return_value = nil
         if block_given?
           request, response = client.request(method, url, body, headers, &response_handler)
         else
-          request, response = client.request(method, url, body, headers) {|r| r.read_body }
+          request, response = client.request(method, url, body, headers) { |r| r.read_body }
           return_value = response.read_body
         end
         @last_response = response
-  
-        if response.kind_of?(Net::HTTPSuccess)
+
+        if response.is_a?(Net::HTTPSuccess)
           [response, request, return_value]
-        elsif response.kind_of?(Net::HTTPNotModified) # Must be tested before Net::HTTPRedirection because it's subclass.
+        elsif response.is_a?(Net::HTTPNotModified) # Must be tested before Net::HTTPRedirection because it's subclass.
           [response, request, false]
         elsif redirect_location = redirected_to(response)
           if [:GET, :HEAD].include?(method)
             follow_redirect do
-              send_http_request(method, url+redirect_location, headers, body, &response_handler)
+              send_http_request(method, url + redirect_location, headers, body, &response_handler)
             end
           else
-            raise Exceptions::InvalidRedirect, "#{method} request was redirected from #{url} to #{redirect_location}. Only GET and HEAD support redirects."
+            fail Exceptions::InvalidRedirect, "#{method} request was redirected from #{url} to #{redirect_location}. Only GET and HEAD support redirects."
           end
         else
           [response, request, nil]

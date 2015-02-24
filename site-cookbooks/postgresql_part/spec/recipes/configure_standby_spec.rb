@@ -9,7 +9,7 @@ describe 'postgresql_part::configure_standby' do
   standby_hostname = 'standby'
   standby_ip = '172.0.0.11'
   ap_ip = '172.0.0.1'
-  ap2_ip = '172.0.0.2'
+  # ap2_ip = '172.0.0.2'
   dba_passwd = 'dba_password'
   app_db = 'application_db'
   db_port = '5432'
@@ -116,8 +116,21 @@ describe 'postgresql_part::configure_standby' do
     end
 
     it 'do pg_basebackup' do
+      cmd_params = []
+      cmd_params << '-D'
+      cmd_params << "#{chef_run.node['postgresql']['dir']}"
+      cmd_params << '--xlog'
+      cmd_params << '--verbose'
+      cmd_params << '-h'
+      cmd_params << "#{primary_ip}"
+      cmd_params << '-U'
+      cmd_params << 'replication'
+
+      cmd = 'sudo -u postgres /usr/bin/pg_basebackup '
+      cmd << cmd_params.join(' ')
+
       expect(chef_run).to run_bash('pg_basebackup').with(
-        code: "sudo -u postgres /usr/bin/pg_basebackup -D #{chef_run.node['postgresql']['dir']} --xlog --verbose -h #{primary_ip} -U replication"
+        code: cmd
       )
       expect(chef_run.bash('pg_basebackup'))
         .to notify('service[postgresql]').to(:start).immediately

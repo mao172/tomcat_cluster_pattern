@@ -23,7 +23,9 @@ describe CloudConductor::ConsulClient do
       response_by_tag = Faraday::Response
       allow(response_by_tag).to receive(:body).and_return(response_body_by_tag)
 
-      allow(@helper).to receive_message_chain(:http, :get).with(:no_args).with('catalog/service/db?tag=value').and_return(response_by_tag)
+      allow(@helper).to receive_message_chain(:http, :get)
+        .with(:no_args).with('catalog/service/db?tag=value').and_return(response_by_tag)
+
       expect(@helper::Catalog.service('db', 'tag' => 'value')).to eq(JSON.parse(response_body_by_tag))
     end
 
@@ -33,7 +35,9 @@ describe CloudConductor::ConsulClient do
       response_by_dc = Faraday::Response
       allow(response_by_dc).to receive(:body).and_return(response_body_by_dc)
 
-      allow(@helper).to receive_message_chain(:http, :get).with(:no_args).with('catalog/service/db?dc=value').and_return(response_by_dc)
+      allow(@helper).to receive_message_chain(:http, :get)
+        .with(:no_args).with('catalog/service/db?dc=value').and_return(response_by_dc)
+
       expect(@helper::Catalog.service('db', 'dc' => 'value')).to eq(JSON.parse(response_body_by_dc))
     end
 
@@ -43,7 +47,8 @@ describe CloudConductor::ConsulClient do
       response_by_tag_and_dc = Faraday::Response
       allow(response_by_tag_and_dc).to receive(:body).and_return(response_body_by_tag_and_dc)
 
-      allow(@helper).to receive_message_chain(:http, :get).with(:no_args).with('catalog/service/db?tag=value&dc=value').and_return(response_by_tag_and_dc)
+      allow(@helper).to receive_message_chain(:http, :get)
+        .with(:no_args).with('catalog/service/db?tag=value&dc=value').and_return(response_by_tag_and_dc)
       expect(@helper::Catalog.service('db', 'tag' => 'value', 'dc' => 'value')).to eq(JSON.parse(response_body_by_tag_and_dc))
     end
 
