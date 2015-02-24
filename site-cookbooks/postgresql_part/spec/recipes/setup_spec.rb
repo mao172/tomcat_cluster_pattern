@@ -134,8 +134,12 @@ EOS
       expect(chef_run).to create_directory('/opt/consul/event_handlers')
     end
 
+    it 'crate failover_action.rb file' do
+      expect(chef_run).to create_cookbook_file('failover_action.rb')
+    end
+
     it 'create failover_event_handler file' do
-      expect(chef_run).to create_cookbook_file('failover_event_handler')
+      expect(chef_run).to create_template('/opt/consul/event_handlers/failover_event_handler')
     end
 
     it 'create event watch def' do
@@ -169,20 +173,26 @@ EOS
       )
     end
 
-    it 'not create event handler dir' do
-      expect(chef_run).to_not create_directory('/opt/consul/event_handlers')
-    end
+    describe 'for consul event' do
+      it 'not create event handler dir' do
+        expect(chef_run).to_not create_directory('/opt/consul/event_handlers')
+      end
 
-    it 'not create failover_event_handler file' do
-      expect(chef_run).to_not create_cookbook_file('failover_event_handler')
-    end
+      it 'not create failover_action.rb file' do
+        expect(chef_run).to_not create_cookbook_file('failover_action.rb')
+      end
 
-    it 'not create event watch def' do
-      expect(chef_run).to_not ChefSpec::Matchers::ResourceMatcher.new(
-        :consul_event_watch_def,
-        :create,
-        'failover'
-      )
+      it 'not create failover_event_handler file' do
+        expect(chef_run).to_not create_template('/opt/consul/event_handlers/failover_event_handler')
+      end
+
+      it 'not create event watch def' do
+        expect(chef_run).to_not ChefSpec::Matchers::ResourceMatcher.new(
+          :consul_event_watch_def,
+          :create,
+          'failover'
+        )
+      end
     end
   end
 end

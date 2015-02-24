@@ -49,16 +49,26 @@ if node['postgresql_part']['pgpool-II']['use']
     action :create
   end
 
-  cookbook_file 'failover_event_handler' do
-    path "#{File.join(event_handlers_dir, 'failover_event_handler')}"
+  cookbook_file 'failover_action.rb' do
+    path "#{File.join(event_handlers_dir, 'failover_action.rb')}"
     mode 0755
     owner 'root'
     user 'root'
     action :create
   end
 
+  template "#{File.join(event_handlers_dir, 'failover_event_handler')}" do
+    source 'failover_event_handler'
+    mode 0755
+    owner 'root'
+    user 'root'
+    variables(
+      action_script: 'failover_action.rb'
+    )
+  end
+
   consul_event_watch_def 'failover' do
-    handler "#{File.join(event_handlers_dir, 'failover_event_handler')}"
+    handler "#{File.join(event_handlers_dir, 'failover_event_handler')} failover"
     action :create
   end
 end
