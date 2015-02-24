@@ -74,7 +74,7 @@ template "#{node['postgresql']['dir']}/recovery.conf" do
   mode '0644'
   owner 'postgres'
   group 'postgres'
-  notifies :reload, 'service[postgresql]', :delayed
+  notifies :restart, 'service[postgresql]', :delayed
 end
 
 service 'postgresql' do
