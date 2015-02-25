@@ -26,15 +26,13 @@ describe 'postgresql_part::configure' do
       }
     }
 
+    allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
+    chef_run.converge(described_recipe)
+    allow(CloudConductor::ConsulClient::Catalog).to receive_message_chain(:service, :empty?).and_return(false)
     chef_run.converge(described_recipe)
   end
 
   describe 'this node is primary db' do
-    before do
-      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
-      chef_run.converge(described_recipe)
-    end
-
     it 'include primary recipe' do
       expect(chef_run).to include_recipe 'postgresql_part::configure_primary'
     end
