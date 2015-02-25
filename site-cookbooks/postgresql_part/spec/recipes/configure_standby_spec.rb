@@ -194,7 +194,7 @@ describe 'postgresql_part::configure_standby' do
       expect(service).to do_nothing
       expect(service.service_name).to eq(service_name)
       expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/recovery.conf"))
-        .to notify('service[postgresql]').to(:reload).delayed
+        .to notify('service[postgresql]').to(:restart).delayed
     end
   end
 end
