@@ -126,8 +126,7 @@ describe 'postgresql_part::configure_standby' do
       cmd_params << '-U'
       cmd_params << 'replication'
 
-      cmd = 'sudo -u postgres /usr/bin/pg_basebackup '
-      cmd << cmd_params.join(' ')
+      cmd = "su - postgres -c '/usr/bin/pg_basebackup #{cmd_params.join(' ')}'"
 
       expect(chef_run).to run_bash('pg_basebackup').with(
         code: cmd
