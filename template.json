@@ -68,7 +68,7 @@
         "CidrBlock" : "10.0.0.0/16"
       }
     },
-    "Subnet" : {
+    "AllSubnet" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "CidrBlock" : "10.0.1.0/24",
@@ -99,10 +99,10 @@
         "RouteTableId" : { "Ref" : "RouteTable" }
       }
     },
-    "SubnetRouteTableAssociation" : {
+    "AllSubnetRouteTableAssociation" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
-        "SubnetId" : { "Ref" : "Subnet" },
+        "SubnetId" : { "Ref" : "AllSubnet" },
         "RouteTableId" : { "Ref" : "RouteTable" }
       }
     },
@@ -152,20 +152,20 @@
       "Type" : "AWS::EC2::NetworkInterface",
       "Properties" : {
         "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "WebSecurityGroup"}],
-        "SubnetId" : { "Ref" : "Subnet" }
+        "SubnetId" : { "Ref" : "AllSubnet" }
       }
     },
-    "FrontendEIP" : {
+    "WebFrontendEIP" : {
       "Type" : "AWS::EC2::EIP",
-      "DependsOn" : ["VPCGatewayAttachment", "SubnetRouteTableAssociation"],
+      "DependsOn" : ["VPCGatewayAttachment", "AllSubnetRouteTableAssociation"],
       "Properties" : {
         "Domain" : "vpc"
       }
     },
-    "EIPAssociation" : {
+    "WebEIPAssociation" : {
       "Type" : "AWS::EC2::EIPAssociation",
       "Properties" : {
-        "AllocationId" : { "Fn::GetAtt" : [ "FrontendEIP", "AllocationId" ]},
+        "AllocationId" : { "Fn::GetAtt" : [ "WebFrontendEIP", "AllocationId" ]},
         "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface" }
       }
     },
@@ -204,7 +204,7 @@
         "NetworkInterfaces" : [{
            "DeviceIndex" : "0",
            "AssociatePublicIpAddress" : true,
-           "SubnetId" : { "Ref" : "Subnet" },
+           "SubnetId" : { "Ref" : "AllSubnet" },
            "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "APSecurityGroup"}]
         }],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
@@ -259,7 +259,7 @@
         "NetworkInterfaces" : [{
            "DeviceIndex" : "0",
            "AssociatePublicIpAddress" : true,
-           "SubnetId" : { "Ref" : "Subnet" },
+           "SubnetId" : { "Ref" : "AllSubnet" },
            "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "DBSecurityGroup"}]
         }],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
@@ -337,7 +337,7 @@
   },
   "Outputs" : {
     "FrontendAddress" : {
-      "Value" : { "Ref" : "FrontendEIP" },
+      "Value" : { "Ref" : "WebFrontendEIP" },
       "Description" : "Frontend DNS name or IP address to access Consul api port from CloudConductor server. This output is required."
     },
     "VpcId" : {
@@ -345,7 +345,7 @@
       "Description" : "Reference of VPC to create subnet, security group on same VPC in optional pattern. This output is required."
     },
     "SubnetId" : {
-      "Value" : { "Ref" : "Subnet" },
+      "Value" : { "Ref" : "AllSubnet" },
       "Description" : "Reference of subnet to connect same subnet when create instance in optional pattern. This output is required."
     },
     "ClusterAddress" : {
