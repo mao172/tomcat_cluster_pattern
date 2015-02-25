@@ -132,7 +132,7 @@ else
 
     haproxy_part_pem_file file_path
 
-    bind = "#{conf['ssl_incoming_address']}:#{conf['ssl_incoming_port']} ssl crt #{node[:haproxy_part][:ssl_pem_file]}"
+    bind = "#{conf['ssl_incoming_address']}:#{conf['ssl_incoming_port']} ssl crt #{file_path}"
 
     config_pool['frontend ssl-proxy'] = {
       'maxconn' => conf['frontend_ssl_max_connections'],
