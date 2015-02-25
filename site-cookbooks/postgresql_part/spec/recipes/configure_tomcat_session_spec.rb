@@ -28,7 +28,7 @@ describe 'postgresql_part::configure_tomcat_session' do
     chef_run.node.set['postgresql_part']['tomcat_session']['user'] = tomcat_user
     chef_run.node.set['postgresql_part']['tomcat_session']['database'] = tomcat_db
 
-    allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
+    allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(true)
 
     chef_run.converge(described_recipe)
 

@@ -38,7 +38,7 @@ describe 'postgresql_part::deploy' do
           type: 'dynamic'
         }
       }
-      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
+      allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(true)
       chef_run.converge(described_recipe)
     end
 
@@ -142,7 +142,7 @@ describe 'postgresql_part::deploy' do
           }
         }
       }
-      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(false)
+      allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(false)
       chef_run.converge(described_recipe)
     end
     describe 'tables is not exist in postgresql db' do

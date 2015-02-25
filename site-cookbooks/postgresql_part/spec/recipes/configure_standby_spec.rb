@@ -45,7 +45,7 @@ describe 'postgresql_part::configure_standby' do
     chef_run.node.automatic_attrs['hostname'] = primary_hostname
     chef_run.node.automatic_attrs['ipaddress'] = primary_ip
 
-    allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(false)
+    allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(false)
     allow_any_instance_of(Chef::Recipe).to receive(:standby_db_ip).and_return(standby_ip)
 
     chef_run.converge(described_recipe)
@@ -61,7 +61,7 @@ describe 'postgresql_part::configure_standby' do
 
   describe 'this node is standby db' do
     before do
-      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(false)
+      allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(false)
 
       chef_run.node.automatic_attrs['hostname'] = primary_hostname
       chef_run.node.automatic_attrs['ipaddress'] = primary_ip

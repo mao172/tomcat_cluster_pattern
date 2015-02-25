@@ -26,7 +26,7 @@ describe 'postgresql_part::configure' do
       }
     }
 
-    allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(true)
+    allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(true)
     chef_run.converge(described_recipe)
     allow(CloudConductor::ConsulClient::Catalog).to receive_message_chain(:service, :empty?).and_return(false)
     chef_run.converge(described_recipe)
@@ -40,7 +40,7 @@ describe 'postgresql_part::configure' do
 
   describe 'this node is standby db' do
     before do
-      allow_any_instance_of(Chef::Recipe).to receive(:is_primary_db?).and_return(false)
+      allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(false)
       chef_run.converge(described_recipe)
     end
 

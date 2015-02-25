@@ -6,7 +6,7 @@
 
 require 'timeout'
 
-if is_primary_db?(node[:ipaddress])
+if primary_db?(node[:ipaddress])
   include_recipe 'postgresql_part::configure_primary'
 
 else

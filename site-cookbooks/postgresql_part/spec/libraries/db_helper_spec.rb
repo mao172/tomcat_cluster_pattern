@@ -24,7 +24,7 @@ describe 'DbHelper' do
     end
     describe 'if 1st hash of db_servers is the primary db' do
       before do
-        allow(@helper).to receive(:is_primary_db?).and_return(true)
+        allow(@helper).to receive(:primary_db?).and_return(true)
       end
       it 'return 2nd hash private_ip of db_servers' do
         expect(@helper.standby_db_ip).to eq('127.0.0.2')
@@ -32,14 +32,14 @@ describe 'DbHelper' do
     end
     describe 'if first hash of db_servers is not the primary db' do
       before do
-        allow(@helper).to receive(:is_primary_db?).and_return(false)
+        allow(@helper).to receive(:primary_db?).and_return(false)
       end
       it 'return 1st hash private_ip of db_servers' do
         expect(@helper.standby_db_ip).to eq('127.0.0.1')
       end
     end
   end
-  describe '#is_primary_db?' do
+  describe '#primary_db?' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
@@ -50,12 +50,12 @@ describe 'DbHelper' do
       end
       describe 'and registerd private_ip is same as the argument' do
         it 'return true' do
-          expect(@helper.is_primary_db?('127.0.0.1')).to eq(true)
+          expect(@helper.primary_db?('127.0.0.1')).to eq(true)
         end
       end
       describe 'and registerd private_ip is different as the argument' do
         it 'return false' do
-          expect(@helper.is_primary_db?('127.0.0.111')).to eq(false)
+          expect(@helper.primary_db?('127.0.0.111')).to eq(false)
         end
       end
     end
@@ -66,12 +66,12 @@ describe 'DbHelper' do
       end
       describe 'and first node private_ip of db_servers is same as the argument' do
         it 'return true' do
-          expect(@helper.is_primary_db?('127.0.0.1')).to eq(true)
+          expect(@helper.primary_db?('127.0.0.1')).to eq(true)
         end
       end
       describe 'and first node private_ip of db_servers is diffeerent as the argument' do
         it 'return false' do
-          expect(@helper.is_primary_db?('127.0.0.111')).to eq(false)
+          expect(@helper.primary_db?('127.0.0.111')).to eq(false)
         end
       end
     end

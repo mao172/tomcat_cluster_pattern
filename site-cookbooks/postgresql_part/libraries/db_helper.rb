@@ -20,7 +20,7 @@ module DbHelper
 
   def standby_db_ip
     first_node_ip = db_servers[db_servers.keys[0]]['private_ip']
-    if is_primary_db?(first_node_ip)
+    if primary_db?(first_node_ip)
       db_servers[db_servers.keys[1]]['private_ip']
     else
       first_node_ip
@@ -29,11 +29,11 @@ module DbHelper
 
   def primary_db_ip
     node_ip = db_servers[db_servers.keys[0]]['private_ip']
-    node_ip = db_servers[db_servers.keys[1]]['private_ip'] unless is_primary_db?(node_ip)
+    node_ip = db_servers[db_servers.keys[1]]['private_ip'] unless primary_db?(node_ip)
     node_ip
   end
 
-  def is_primary_db?(ipaddress)
+  def primary_db?(ipaddress)
     catalog = CloudConductor::ConsulClient::Catalog
     primary_node = catalog.service('postgresql', tag: 'primary')
 
