@@ -148,7 +148,7 @@ describe 'postgresql_part::configure_standby' do
 
         primary_conninfo = ["host=#{primary_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                            "password=#{chef_run.node['postgresql_part']['replication']['password']} ",
+                            "password=#{generate_rep_passwd} ",
                             "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
@@ -170,7 +170,7 @@ describe 'postgresql_part::configure_standby' do
 
         primary_conninfo =  ["host=#{primary_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
                              "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{chef_run.node['postgresql_part']['replication']['password']}"].join
+                             "password=#{generate_rep_passwd}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
