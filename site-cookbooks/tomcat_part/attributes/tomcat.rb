@@ -1,22 +1,37 @@
-default['tomcat']['base_version'] = 7
-default['tomcat']['deploy_manager_apps'] = false
+#
+# Cookbook Name:: tomcat_part
+# Attributes:: tomcat
+#
 
-case node['platform']
-when 'centos', 'redhat', 'fedora', 'amazon', 'scientific', 'oracle'
+default['tomcat']['base_version'] = 7
+default['tomcat']['base_instance'] = "tomcat#{node['tomcat']['base_version']}"
+default['tomcat']['deploy_manager_apps'] = false
+default['tomcat']['packages'] = ["tomcat#{node['tomcat']['base_version']}"]
+default['tomcat']['deploy_manager_packages'] = ["tomcat#{node['tomcat']['base_version']}-admin"]
+
+case node['platform_family']
+
+when 'rhel', 'fedora'
+  suffix = node['tomcat']['base_version'].to_i < 7 ? node['tomcat']['base_version'] : ''
+  suffix = node['tomcat']['base_version'] if node['tomcat_part']['use_jpackage']
+
+  default['tomcat']['base_instance'] = "tomcat#{suffix}"
   default['tomcat']['user'] = 'tomcat'
   default['tomcat']['group'] = 'tomcat'
-  default['tomcat']['home'] = "/usr/share/tomcat#{node['tomcat']['base_version']}"
-  default['tomcat']['base'] = "/usr/share/tomcat#{node['tomcat']['base_version']}"
-  default['tomcat']['config_dir'] = "/etc/tomcat#{node['tomcat']['base_version']}"
-  default['tomcat']['log_dir'] = "/var/log/tomcat#{node['tomcat']['base_version']}"
-  default['tomcat']['tmp_dir'] = "/var/cache/tomcat#{node['tomcat']['base_version']}/temp"
-  default['tomcat']['work_dir'] = "/var/cache/tomcat#{node['tomcat']['base_version']}/work"
+  default['tomcat']['home'] = "/usr/share/tomcat#{suffix}"
+  default['tomcat']['base'] = "/usr/share/tomcat#{suffix}"
+  default['tomcat']['config_dir'] = "/etc/tomcat#{suffix}"
+  default['tomcat']['log_dir'] = "/var/log/tomcat#{suffix}"
+  default['tomcat']['tmp_dir'] = "/var/cache/tomcat#{suffix}/temp"
+  default['tomcat']['work_dir'] = "/var/cache/tomcat#{suffix}/work"
   default['tomcat']['context_dir'] = "#{node['tomcat']['config_dir']}/Catalina/localhost"
-  default['tomcat']['webapp_dir'] = "/var/lib/tomcat#{node['tomcat']['base_version']}/webapps"
+  default['tomcat']['webapp_dir'] = "/var/lib/tomcat#{suffix}/webapps"
   default['tomcat']['keytool'] = 'keytool'
   default['tomcat']['lib_dir'] = "#{node['tomcat']['home']}/lib"
   default['tomcat']['endorsed_dir'] = "#{node['tomcat']['lib_dir']}/endorsed"
-when 'debian', 'ubuntu'
+  default['tomcat']['packages'] = ["tomcat#{suffix}"]
+  default['tomcat']['deploy_manager_packages'] = ["tomcat#{suffix}-admin-webapps"]
+when 'debian'
   default['tomcat']['user'] = "tomcat#{node['tomcat']['base_version']}"
   default['tomcat']['group'] = "tomcat#{node['tomcat']['base_version']}"
   default['tomcat']['home'] = "/usr/share/tomcat#{node['tomcat']['base_version']}"
@@ -44,6 +59,8 @@ when 'smartos'
   default['tomcat']['keytool'] = '/opt/local/bin/keytool'
   default['tomcat']['lib_dir'] = "#{node['tomcat']['home']}/lib"
   default['tomcat']['endorsed_dir'] = "#{node['tomcat']['home']}/lib/endorsed"
+  default['tomcat']['packages'] = ['apache-tomcat']
+  default['tomcat']['deploy_manager_packages'] = []
 else
   default['tomcat']['user'] = "tomcat#{node['tomcat']['base_version']}"
   default['tomcat']['group'] = "tomcat#{node['tomcat']['base_version']}"
@@ -59,5 +76,3 @@ else
   default['tomcat']['lib_dir'] = "#{node['tomcat']['home']}/lib"
   default['tomcat']['endorsed_dir'] = "#{node['tomcat']['lib_dir']}/endorsed"
 end
-
-Chef::Config[:yum_timeout] = 1800

@@ -1,8 +1,15 @@
-yum_repository 'jpackage' do
-  description 'JPackage 6 generic'
-  mirrorlist 'http://www.jpackage.org/mirrorlist.php?dist=generic&type=free&release=6.0'
-  gpgcheck false
-  action :create
+#
+# Cookbook Name:: tomcat_part
+# Recipe:: setup
+#
+
+if platform_family?('rhel') && node['tomcat_part']['use_jpackage']
+  yum_repository 'jpackage' do
+    description 'JPackage 6 generic'
+    mirrorlist 'http://www.jpackage.org/mirrorlist.php?dist=generic&type=free&release=6.0'
+    gpgcheck false
+    action :create
+  end
 end
 
 include_recipe 'java'
