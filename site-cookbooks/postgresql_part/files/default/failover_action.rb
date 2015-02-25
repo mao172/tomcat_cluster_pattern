@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 #
 
+require 'logger'
 require 'faraday'
 require 'json'
 
@@ -58,6 +59,28 @@ module CloudConductor
     end
 
     include Agent
+
+    class KeyValueStore
+      class << self
+        def put(key, value)
+          if value.is_a?(Hash)
+            value = JSON.generate(value)
+          end
+
+          ConsulClient.http.put "kv/#{key}", value
+        end
+
+        def get(key, _optional = nil)
+          response = ConsulClient.http.get "kv/#{key}?raw"
+
+          response.body
+        end
+
+        def delete(key)
+          ConsulClient.http.delete "kv/#{key}"
+        end
+      end
+    end
   end
 
   class ConsulConfig
@@ -83,10 +106,37 @@ end
 class FailoverAction
   class << self
     def execute
+      if lock?
+        promote
+        lock_free
+      else
+        logger.warn('failed to lock acquisition.')
+      end
+    end
+
+    private
+
+    def lock?
+      value = CloudConductor::ConsulClient::KeyValueStore.get('cloudconductor/postgresql/failover-event/lock')
+
+      logger.info("#{value}")
+      if 'true' == value
+        false
+      else
+        CloudConductor::ConsulClient::KeyValueStore.put('cloudconductor/postgresql/failover-event/lock', 'true')
+        true
+      end
+    end
+
+    def lock_free
+      CloudConductor::ConsulClient::KeyValueStore.delete('cloudconductor/postgresql/failover-event/lock')
+    end
+
+    def promote
       if already?
         logger.info('this node is already primary.')
       else
-        if system("sudo -u postgres pg_ctl promote -D #{ENV['PGSQL_DATA_DIR']}")
+        if system('service postgresql-9.4 promote')
           logger.info('promoted to primary on successfully.')
           add_primary_tag
         else
@@ -94,8 +144,6 @@ class FailoverAction
         end
       end
     end
-
-    private
 
     def root_dir
       '/opt/cloudconductor'
