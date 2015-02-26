@@ -117,6 +117,13 @@ template "#{node['postgresql']['dir']}/recovery.done" do
   notifies :reload, 'service[postgresql]', :delayed
 end
 
+# create replication check user
+postgresql_database_user node['postgresql_part']['replication']['check_user'] do
+  connection postgresql_connection_info
+  password generate_password('db_replication_check')
+  action :create
+end
+
 service 'postgresql' do
   service_name node['postgresql']['server']['service_name']
   supports [:restart, :reload, :status]
