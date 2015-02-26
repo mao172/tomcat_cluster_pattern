@@ -9,5 +9,6 @@ supports 'centos', '= 6.5'
 
 depends 'cloudconductor'
 depends 'postgresql'
-depends 'database'
+depends 'database', '= 4.0.2'
 depends 'openssl', '< 3.0.0'
+depends 'consul'

@@ -3,6 +3,7 @@ AllCops:
     - cookbooks/**/*
     - site-cookbooks/**/metadata.rb
     - vendor/**/*
+    - site-cookbooks/postgresql_part/libraries/http_redirect_patch.rb
 
 LineLength:
   Max: 130

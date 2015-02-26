@@ -1,0 +1,53 @@
+#!/bin/sh
+# 
+# failover event handler for consul event 
+#
+# Copyright 2014 TIS Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+source /opt/cloudconductor/lib/common.sh
+source /opt/cloudconductor/config
+
+PGSQL_DATA_DIR=<%= node['postgresql']['dir'] %>
+
+EVENT_HANDLER_DIR="`cd $(dirname $0) && pwd`"
+LOG_FILE="${LOG_DIR}/failover_event_handler.log"
+EVENT="$1"
+
+if [ -z "${EVENT}" ]; then
+  log_info "a config-load trigger was ignored."
+  exit 0
+fi
+
+STDIN_DATA="`cat /dev/stdin`"
+EVENT_ID=`echo "${STDIN_DATA}" | jq '.[] | .ID' | sed -e 's/[^"]*"\([^"]*\)".*/\1/'`
+if [ -z "${EVENT_ID}" ]; then
+  log_info "a config-load trigger was ignored."
+  exit 0
+fi
+
+script_dir=`dirname $0`
+
+export PATH=`chefdk_path`:${PATH}
+
+result_log="`ruby ${script_dir}/<%= @action_script %> 2>&1`"
+result=$?
+
+if [ ${result} -ne 0 ] ; then
+  log_error "finished abnormarry. failover_action has failed. EVENT[${EVENT}], EVENT_ID[${EVENT_ID}]"
+  log_error "${result_log}"
+else
+  log_info "finished successfully. EVENT[${EVENT}], EVENT_ID[${EVENT_ID}]"
+fi

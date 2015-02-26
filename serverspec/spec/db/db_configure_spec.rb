@@ -18,42 +18,7 @@ describe 'postgresql server' do
     root_passwd = 'todo_replace_random_password'
   end
 
-  if params['postgresql_part'] && params['postgresql_part']['application'] && params['postgresql_part']['application']['database']
-    app_db = params['postgresql_part']['application']['database']
-  else
-    app_db = 'application'
-  end
-
-  if params['postgresql_part'] && params['postgresql_part']['application'] && params['postgresql_part']['application']['user']
-    app_user = params['postgresql_part']['application']['user']
-  else
-    app_user = 'postgres'
-  end
-
-  if params['postgresql_part'] && params['postgresql_part']['application'] && params['postgresql_part']['application']['password']
-    app_passwd = params['postgresql_part']['application']['password']
-  else
-    app_passwd = 'todo_replace_random_password'
-  end
-
-  before(:all) do
-    Specinfra.backend.run_command(<<-EOS
-      echo #{hostname}:#{port}:#{database}:#{root_user}:#{root_passwd} > ~/.pgpass
-      echo #{hostname}:#{port}:#{app_db}:#{app_user}:#{app_passwd} >> ~/.pgpass
-      chmod 600 ~/.pgpass
-      EOS
-    )
-  end
-
-  describe command("psql -U #{root_user} -d #{database} -h #{hostname} -p #{port} -c '\\l'") do
+  describe command("sudo -u postgres psql -U #{root_user} -d #{database} -c '\\l'") do
     its(:exit_status) { should eq 0 }
-  end
-
-  describe command("psql -U #{app_user} -d #{app_db} -h #{hostname} -p #{port} -c '\\l'") do
-    its(:exit_status) { should eq 0 }
-  end
-
-  after(:all) do
-    Specinfra.backend.run_command('rm -f ~/.pgpass')
   end
 end
