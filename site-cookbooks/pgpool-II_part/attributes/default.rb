@@ -3,6 +3,7 @@ default['pgpool_part']['postgresql']['dir'] = "/var/lib/pgsql/#{node['pgpool_par
 default['pgpool_part']['postgresql']['port'] = 5432
 default['pgpool_part']['postgresql']['application']['user'] = 'application'
 default['pgpool_part']['postgresql']['replication']['check_user'] = 'repcheck'
+default['pgpool_part']['postgresql']['tomcat']['user'] = 'tomcat'
 
 default['pgpool_part']['repository']['baseurl'] = 'http://www.pgpool.net/yum/rpms/3.4/redhat/rhel-6-x86_64/'
 default['pgpool_part']['repository']['gpgkey'] = 'http://www.pgpool.net/yum/RPM-GPG-KEY-PGPOOL2'
@@ -14,6 +15,7 @@ default['pgpool_part']['config']['dir'] = '/etc/pgpool-II'
 
 default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'host', db: 'all', user: 'all', addr: '127.0.0.1/32', method: 'md5' },
+  { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' },
 ]
 
 default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'

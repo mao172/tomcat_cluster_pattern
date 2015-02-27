@@ -29,7 +29,7 @@ action :create do
         use_db: new_resource.use_db,
         use_jndi: new_resource.use_jndi,
         database: new_resource.database,
-        password: generate_password('database'),
+        password: generate_password('db_application'),
         datasource: new_resource.datasource,
         session_db: new_resource.session_db,
         session_table: session_table

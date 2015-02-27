@@ -39,8 +39,8 @@ applications.each do |app_name, app|
 
   database_spec = {
     'type' => node['tomcat_part']['database']['type'],
-    'name' => app_name,
-    'user' => app_name,
+    'name' => node['tomcat_part']['database']['name'],
+    'user' => node['tomcat_part']['database']['user'],
     'host' => node['tomcat_part']['database']['host'],
     'port' => node['tomcat_part']['database']['port']
   }

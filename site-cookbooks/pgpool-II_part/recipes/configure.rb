@@ -52,6 +52,10 @@ bash 'create md5 auth setting' do
  code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['application']['user']} #{generate_password('db_application')}"
 end
 
+bash 'create md5 auth setting for tomcat user' do
+ code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['tomcat']['user']} #{generate_password('tomcat')}"
+end
+
 service 'pgpool' do
   service_name node['pgpool_part']['service']
   action :nothing
