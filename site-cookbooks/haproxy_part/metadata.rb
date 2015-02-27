@@ -8,5 +8,6 @@ version          '0.1.0'
 
 supports 'centos', '= 6.5'
 
+depends 'cloudconductor'
 depends 'haproxy'
 depends 'rsyslog'

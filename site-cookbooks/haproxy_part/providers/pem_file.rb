@@ -7,7 +7,7 @@
 # require 'cloud_conductor_utils/consul'
 
 def read_pem_resource_from_consul
-  Chef::Log.info("read pem from consul [key: #{node[:haproxy_part][:pem_file][:consul_key]}]")
+  Chef::Log.info("read pem from consul [key: #{node[:haproxy_part][:pem_file][:consul][:key]}]")
 
   key = node[:haproxy_part][:pem_file][:consul][:key]
   type = node[:haproxy_part][:pem_file][:consul][:value_type].to_sym
@@ -39,9 +39,12 @@ def read_pem
 end
 
 action :create do
+  Chef::Log.info("Provider:: pem_file, Action:: :create ")
   pem_source = read_pem
 
   Chef::Log.debug(pem_source)
+
+  raise 'SSL server certificate could not be retrieved.' if pem_source.nil? || pem_source.empty?
 
   file new_resource.file_name do
     content  pem_source

@@ -4,12 +4,40 @@
 require 'logger'
 require 'faraday'
 require 'json'
+require 'cgi'
 
 module CloudConductor
   class ConsulClient
     class << self
       def http
         Faraday.new(url: 'http://localhost:8500/v1', proxy: '')
+      end
+
+      def token
+        CGI::escape("#{ENV['CONSUL_SECRET_KEY']}")
+      end
+
+      def acl_token?
+        if token.nil? || token.empty?
+          false
+        else
+          true
+        end
+      end
+
+      def request_url(url, params = nil)
+        params = {} if params.nil?
+        params[:token] = ConsulClient.token if ConsulClient.acl_token?
+
+        unless params.empty?
+          if url.include?('?')
+            url << '&' + params.map { |key, value| "#{key}=#{value}" }.join('&')
+          else
+            url << '?' + params.map { |key, value| "#{key}=#{value}" }.join('&')
+          end
+        end
+
+        url
       end
     end
 
@@ -21,7 +49,7 @@ module CloudConductor
       def services
         endpoint_url = 'agent/services'
 
-        response = ConsulClient.http.get endpoint_url
+        response = ConsulClient.http.get ConsulClient.request_url(endpoint_url)
         result = JSON.parse(response.body)
         result = {} if result.nil?
         result
@@ -50,7 +78,7 @@ module CloudConductor
 
         json_data = JSON.generate(options)
 
-        ConsulClient.http.put 'agent/service/register', json_data
+        ConsulClient.http.put ConsulClient.request_url('agent/service/register'), json_data
       end
 
       def self.included(klass)
@@ -67,17 +95,17 @@ module CloudConductor
             value = JSON.generate(value)
           end
 
-          ConsulClient.http.put "kv/#{key}", value
+          ConsulClient.http.put ConsulClient.request_url("kv/#{key}"), value
         end
 
         def get(key, _optional = nil)
-          response = ConsulClient.http.get "kv/#{key}?raw"
+          response = ConsulClient.http.get ConsulClient.request_url("kv/#{key}?raw")
 
           response.body
         end
 
         def delete(key)
-          ConsulClient.http.delete "kv/#{key}"
+          ConsulClient.http.delete ConsulClient.request_url("kv/#{key}")
         end
       end
     end

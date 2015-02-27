@@ -15,12 +15,40 @@
 
 require 'faraday'
 require 'json'
+require 'cgi'
 
 module CloudConductor
   class ConsulClient
     class << self
       def http
         Faraday.new(url: 'http://localhost:8500/v1', proxy: '')
+      end
+
+      def token
+        CGI::escape("#{ENV['CONSUL_SECRET_KEY']}")
+      end
+
+      def acl_token?
+        if token.nil? || token.empty?
+          false
+        else
+          true
+        end
+      end
+
+      def request_url(url, params = nil)
+        params = {} if params.nil?
+        params[:token] = ConsulClient.token if ConsulClient.acl_token?
+
+        unless params.empty?
+          if url.include?('?')
+            url << '&' + params.map { |key, value| "#{key}=#{value}" }.join('&')
+          else
+            url << '?' + params.map { |key, value| "#{key}=#{value}" }.join('&')
+          end
+        end
+
+        url
       end
     end
     #
@@ -41,11 +69,8 @@ module CloudConductor
 
           request_url = "catalog/service/#{service_id}"
           filters = filters.select { |key, _value| %w(tag dc).include?(key.to_s) }
-          unless filters.empty?
-            request_url << '?' + filters.map { |key, value| "#{key}=#{value}" }.join('&')
-          end
 
-          response = ConsulClient.http.get(request_url)
+          response = ConsulClient.http.get(ConsulClient.request_url(request_url, filters))
           JSON.parse(response.body)
         end
       end

@@ -2,9 +2,14 @@ require_relative '../spec_helper'
 require_relative '../../libraries/consul_helper'
 
 describe CloudConductor::ConsulClient do
+
+  token='++token_key++'
+
   describe '::Catalog #service' do
     before do
       @helper = CloudConductor::ConsulClient
+
+      allow(@helper).to receive_message_chain(:token).and_return(token)
     end
 
     it 'return services hash of the passed id' do
@@ -13,7 +18,11 @@ describe CloudConductor::ConsulClient do
       response = Faraday::Response
       allow(response).to receive(:body).and_return(response_body)
 
-      allow(@helper).to receive_message_chain(:http, :get).with(:no_args).with('catalog/service/db').and_return(response)
+      allow(@helper).to receive_message_chain(:http, :get)
+        .with(:no_args)
+        .with("catalog/service/db?token=#{token}")
+        .and_return(response)
+
       expect(@helper::Catalog.service('db')).to eq(JSON.parse(response_body))
     end
 
@@ -24,7 +33,9 @@ describe CloudConductor::ConsulClient do
       allow(response_by_tag).to receive(:body).and_return(response_body_by_tag)
 
       allow(@helper).to receive_message_chain(:http, :get)
-        .with(:no_args).with('catalog/service/db?tag=value').and_return(response_by_tag)
+        .with(:no_args)
+        .with("catalog/service/db?tag=value&token=#{token}")
+        .and_return(response_by_tag)
 
       expect(@helper::Catalog.service('db', 'tag' => 'value')).to eq(JSON.parse(response_body_by_tag))
     end
@@ -36,7 +47,9 @@ describe CloudConductor::ConsulClient do
       allow(response_by_dc).to receive(:body).and_return(response_body_by_dc)
 
       allow(@helper).to receive_message_chain(:http, :get)
-        .with(:no_args).with('catalog/service/db?dc=value').and_return(response_by_dc)
+        .with(:no_args)
+        .with("catalog/service/db?dc=value&token=#{token}")
+        .and_return(response_by_dc)
 
       expect(@helper::Catalog.service('db', 'dc' => 'value')).to eq(JSON.parse(response_body_by_dc))
     end
@@ -48,7 +61,10 @@ describe CloudConductor::ConsulClient do
       allow(response_by_tag_and_dc).to receive(:body).and_return(response_body_by_tag_and_dc)
 
       allow(@helper).to receive_message_chain(:http, :get)
-        .with(:no_args).with('catalog/service/db?tag=value&dc=value').and_return(response_by_tag_and_dc)
+        .with(:no_args)
+        .with("catalog/service/db?tag=value&dc=value&token=#{token}")
+        .and_return(response_by_tag_and_dc)
+
       expect(@helper::Catalog.service('db', 'tag' => 'value', 'dc' => 'value')).to eq(JSON.parse(response_body_by_tag_and_dc))
     end
 
@@ -58,7 +74,11 @@ describe CloudConductor::ConsulClient do
       response = Faraday::Response
       allow(response).to receive(:body).and_return(response_body)
 
-      allow(@helper).to receive_message_chain(:http, :get).with(:no_args).with('catalog/service/db').and_return(response)
+      allow(@helper).to receive_message_chain(:http, :get)
+        .with(:no_args)
+        .with("catalog/service/db?token=#{token}")
+        .and_return(response)
+
       expect(@helper::Catalog.service('db', 'fake' => 'value')).to eq(JSON.parse(response_body))
     end
   end

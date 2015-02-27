@@ -13,24 +13,15 @@ class Chef
     #
     #
     class ConsulUtils
-      CONSUL_KVS_URL ||= 'http://127.0.0.1:8500/v1/kv/'
-
-      #
-      #
-      def self.request_url(key)
-        "#{CONSUL_KVS_URL}/#{key}"
-      end
 
       #
       #
       def self.get_value(key, type)
         begin
-          response = RestClient.get(request_url(key))
-          res_hash = JSON.parse(response, symbolize_names: true).first
-          value = Base64.decode64(res_hash[:Value])
-
+          value = CloudConductor::ConsulClient::KeyValueStore.get(key)
           value = JSON.parse(value, symbolize_names: true) if type == :json
-        rescue
+        rescue JSON::ParserError => e
+          Chef::Log.warn "#{e.class} #{e.message}"
           value = {} if type == :json
         end
         value

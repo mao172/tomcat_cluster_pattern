@@ -32,7 +32,7 @@ module CloudConductor
       def services
         endpoint_url = 'agent/services'
 
-        response = ConsulClient.http.get endpoint_url
+        response = ConsulClient.http.get ConsulClient.request_url(endpoint_url)
         result = JSON.parse(response.body)
         result = {} if result.nil?
         result
@@ -64,11 +64,11 @@ module CloudConductor
 
         # puts json_data
 
-        ConsulClient.http.put 'agent/service/register', json_data
+        ConsulClient.http.put ConsulClient.request_url('agent/service/register'), json_data
       end
 
       def remove_service(service_id)
-        ConsulClient.http.put "agent/service/deregister/#{service_id}"
+        ConsulClient.http.put ConsulClient.request_url("agent/service/deregister/#{service_id}")
       end
 
       def self.included(klass)
