@@ -8,6 +8,8 @@ include_recipe 'haproxy'
 
 ##
 if node[:haproxy_part][:rsyslog][:config]
+  node.default[:haproxy_part][:rsyslog][:setup] = true unless ::File.exist?("#{node['rsyslog']['config_prefix']}/rsyslog.d")
+
   include_recipe 'rsyslog' if node[:haproxy_part][:rsyslog][:setup]
 
   directory "#{node[:haproxy_part][:log_dir]}" do
