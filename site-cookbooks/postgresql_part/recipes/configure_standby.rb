@@ -50,7 +50,6 @@ code = "su - postgres -c '/usr/bin/pg_basebackup #{cmd_params.join(' ')}'"
 
 bash 'pg_basebackup' do
   code code
-  notifies :start, 'service[postgresql]', :immediately
 end
 
 file "#{node['postgresql']['dir']}/recovery.done" do
@@ -74,7 +73,7 @@ template "#{node['postgresql']['dir']}/recovery.conf" do
   mode '0644'
   owner 'postgres'
   group 'postgres'
-  notifies :restart, 'service[postgresql]', :delayed
+  notifies :start, 'service[postgresql]', :delayed
 end
 
 service 'postgresql' do
