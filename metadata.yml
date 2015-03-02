@@ -1,4 +1,4 @@
-name:             "tomcat_pattern"
+name:             "tomcat_cluster_pattern"
 maintainer:       "TIS Inc."
 maintainer_email: "ccndctr@gmail.com"
 license:          "Apache v2.0"

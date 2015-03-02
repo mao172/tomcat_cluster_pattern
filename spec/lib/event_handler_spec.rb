@@ -29,7 +29,7 @@ describe CloudConductorPattern::EventHandler do
     it 'creates and returns new instance' do
       event_handler = CloudConductorPattern::EventHandler.new('web,ap,db')
       expect(event_handler.instance_variable_get('@logger')).not_to be_nil
-      expect(event_handler.instance_variable_get('@pattern_name')).to eq('tomcat_pattern')
+      expect(event_handler.instance_variable_get('@pattern_name')).to eq('tomcat_cluster_pattern')
       expect(event_handler.instance_variable_get('@pattern_dir')).to eq("#{pattern_path}")
       expect(event_handler.instance_variable_get('@roles')).to eq(%w(web ap db))
     end
@@ -161,7 +161,7 @@ describe CloudConductorPattern::EventHandler do
       allow(dummy_file).to receive(:write).with("ssl_verify_mode :verify_peer\n")
       allow(dummy_file).to receive(:write).with("role_path '#{pattern_path}/roles'\n")
       allow(dummy_file).to receive(:write).with("log_level :info\n")
-      allow(dummy_file).to receive(:write).with("log_location '#{pattern_path}/logs/tomcat_pattern_web_chef-solo.log'\n")
+      allow(dummy_file).to receive(:write).with("log_location '#{pattern_path}/logs/tomcat_cluster_pattern_web_chef-solo.log'\n")
       allow(dummy_file).to receive(:write).with("file_cache_path '#{pattern_path}/tmp/cache'\n")
       allow(dummy_file).to receive(:write).with("cookbook_path ['#{pattern_path}/cookbooks', '#{pattern_path}/site-cookbooks']\n")
       event_handler = CloudConductorPattern::EventHandler.new('web,ap,db')
@@ -178,7 +178,7 @@ describe CloudConductorPattern::EventHandler do
       dummy_parameter = {
         cloudconductor: {
           patterns: {
-            tomcat_pattern: {
+            tomcat_cluster_pattern: {
               user_attributes: {
                 key1: 'value1',
                 key2: {
@@ -193,7 +193,7 @@ describe CloudConductorPattern::EventHandler do
       expected_data = {
         cloudconductor: {
           patterns: {
-            tomcat_pattern: {
+            tomcat_cluster_pattern: {
               user_attributes: {
                 key1: 'value1',
                 key2: {
@@ -219,7 +219,7 @@ describe CloudConductorPattern::EventHandler do
       dummy_parameter = {
         cloudconductor: {
           patterns: {
-            tomcat_pattern: {
+            tomcat_cluster_pattern: {
               user_attributes: {
                 key1: 'value1',
                 key2: {
@@ -240,7 +240,7 @@ describe CloudConductorPattern::EventHandler do
       expected_data = {
         cloudconductor: {
           patterns: {
-            tomcat_pattern: {
+            tomcat_cluster_pattern: {
               user_attributes: {
                 key1: 'value1',
                 key2: {
