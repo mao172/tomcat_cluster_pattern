@@ -81,7 +81,7 @@ default['pgpool_part']['pgconf']['health_check_password'] = ''
 default['pgpool_part']['pgconf']['health_check_max_retries'] = 0
 default['pgpool_part']['pgconf']['health_check_retry_delay'] = 1
 default['pgpool_part']['pgconf']['connect_timeout'] = 10000
-default['pgpool_part']['pgconf']['failover_command'] = ''
+default['pgpool_part']['pgconf']['failover_command'] = 'consul event -name="failover" -node="%H"'
 default['pgpool_part']['pgconf']['failback_command'] = ''
 default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = true
 default['pgpool_part']['pgconf']['search_primary_node_timeout'] = 10
