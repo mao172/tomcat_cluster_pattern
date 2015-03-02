@@ -6,7 +6,7 @@ if primary_db?(node[:ipaddress])
     host: '127.0.0.1',
     port: node['postgresql']['config']['port'],
     username: node['postgresql_part']['application']['user'],
-    password: generate_password('database')
+    password: generate_password('db_application')
   }
 
   applications = node['cloudconductor']['applications'].select { |_app_name, app| app['type'] == 'dynamic' }
