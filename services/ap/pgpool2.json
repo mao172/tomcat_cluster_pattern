@@ -1,0 +1,6 @@
+{
+  "service" : {
+    "name" : "pgpool-II",
+    "port" : 9999
+  }
+}
