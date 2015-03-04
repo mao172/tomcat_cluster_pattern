@@ -131,8 +131,6 @@ describe 'postgresql_part::configure_standby' do
       expect(chef_run).to run_bash('pg_basebackup').with(
         code: cmd
       )
-      expect(chef_run.bash('pg_basebackup'))
-        .to notify('service[postgresql]').to(:start).immediately
     end
 
     it 'delete recovery.done' do
@@ -193,7 +191,7 @@ describe 'postgresql_part::configure_standby' do
       expect(service).to do_nothing
       expect(service.service_name).to eq(service_name)
       expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/recovery.conf"))
-        .to notify('service[postgresql]').to(:restart).delayed
+        .to notify('service[postgresql]').to(:start).delayed
     end
   end
 end
