@@ -39,12 +39,12 @@ def read_pem
 end
 
 action :create do
-  Chef::Log.info("Provider:: pem_file, Action:: :create ")
+  Chef::Log.info('Provider:: pem_file, Action:: :create ')
   pem_source = read_pem
 
   Chef::Log.debug(pem_source)
 
-  raise 'SSL server certificate could not be retrieved.' if pem_source.nil? || pem_source.empty?
+  fail 'SSL server certificate could not be retrieved.' if pem_source.nil? || pem_source.empty?
 
   file new_resource.file_name do
     content  pem_source

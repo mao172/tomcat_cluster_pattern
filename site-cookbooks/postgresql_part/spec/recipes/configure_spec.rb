@@ -27,7 +27,21 @@ describe 'postgresql_part::configure' do
     }
 
     allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(true)
+
+    services = {
+      'postgresql' => {
+        ID: 'postgresql',
+        Service: 'postgresql',
+        Tags: nil,
+        Address: '',
+        Port: 5432
+      }
+    }
+
+    allow_any_instance_of(Chef::Recipe)
+      .to receive(:consul_service_info).with('postgresql').and_return(services)
     chef_run.converge(described_recipe)
+
     allow(CloudConductor::ConsulClient::Catalog).to receive_message_chain(:service, :empty?).and_return(false)
     chef_run.converge(described_recipe)
   end

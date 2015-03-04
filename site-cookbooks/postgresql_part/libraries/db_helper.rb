@@ -43,6 +43,10 @@ module DbHelper
       primary_node.first['Address'] == ipaddress ? true : false
     end
   end
+
+  def consul_service_info(service_id)
+    CloudConductor::ConsulClient.services[service_id]
+  end
 end unless defined?(DbHelper)
 
 Chef::Recipe.send(:include, DbHelper)

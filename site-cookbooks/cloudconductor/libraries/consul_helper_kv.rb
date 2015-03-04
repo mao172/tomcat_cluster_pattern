@@ -26,6 +26,6 @@ module CloudConductor
           ConsulClient.http.delete ConsulClient.request_url("kv/#{key}")
         end
       end
-    end
+    end unless defined? (KeyValueStore)
   end
 end

@@ -13,7 +13,6 @@ class Chef
     #
     #
     class ConsulUtils
-
       #
       #
       def self.get_value(key, type)

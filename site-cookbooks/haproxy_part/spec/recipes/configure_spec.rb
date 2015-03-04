@@ -55,6 +55,8 @@ describe 'haproxy_part::configure' do
     chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
     chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
 
+    allow(CloudConductor::ConsulClient::KeyValueStore)
+      .to receive(:get).with('ssl_pem').and_return('simple result text')
     chef_run.converge(described_recipe)
   end
 
@@ -316,6 +318,9 @@ describe 'haproxy_part::configure' do
     end
 
     it 'with ssl proxy' do
+      method = chef_run.node[:haproxy][:install_method]
+      prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
+
       chef_run.node.set['haproxy_part']['enable_ssl_proxy'] = true
       chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
       chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
@@ -335,7 +340,7 @@ describe 'haproxy_part::configure' do
 
       config_pool['frontend ssl-proxy'] = {
         maxconn: 2000,
-        bind: "0.0.0.0:443 ssl crt #{pem_file_path}",
+        bind: "0.0.0.0:443 ssl crt #{prefix}#{pem_file_path}",
         'mode' => :http,
         default_backend: 'servers-http'
       }

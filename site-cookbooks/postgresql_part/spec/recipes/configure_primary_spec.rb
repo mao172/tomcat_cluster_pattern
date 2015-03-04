@@ -48,6 +48,17 @@ describe 'postgresql_part::configure_primary' do
     allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(true)
     allow_any_instance_of(Chef::Recipe).to receive(:standby_db_ip).and_return(partner_ip)
 
+    service_info = {
+      'ID' => 'postgresql',
+      'Service' => 'postgresql',
+      'Tags' => nil,
+      'Address' => '',
+      'Port' => 5432
+    }
+
+    allow_any_instance_of(Chef::Recipe)
+      .to receive(:consul_service_info).with('postgresql').and_return(service_info)
+
     chef_run.converge(described_recipe)
 
     allow_any_instance_of(Chef::Recipe)
@@ -55,13 +66,12 @@ describe 'postgresql_part::configure_primary' do
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('db_replication').and_return(generate_rep_passwd)
     allow_any_instance_of(Chef::Resource)
+      .to receive(:generate_password).with('db_replication_check').and_return(generate_rep_passwd)
+    allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('db_application').and_return(generate_app_passwd)
 
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('tomcat').and_return(generate_app_passwd)
-
-    # /vi/agent/service/register (need consul agent is running)
-    CloudConductor::ConsulClient.regist_service('postgresql', port: 5432)
 
     chef_run.converge(described_recipe)
   end
