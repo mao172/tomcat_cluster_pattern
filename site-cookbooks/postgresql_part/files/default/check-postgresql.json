@@ -1,0 +1,16 @@
+{
+  "check": {
+    "id" : "service:postgresql:check",
+    "name" : "service postgresql check",
+    "script" : "su - postgres -c '/usr/bin/psql -d template1 -U postgres -c \"select now();\"'",
+    "interval" : "10s",
+    "service_id" : "postgresql"
+  },
+  "watches" : [
+    {
+      "type" : "checks",
+      "service" : "postgresql",
+      "handler" : "/opt/consul/event_handlers/check-state-event-handler"
+    }
+  ]
+}

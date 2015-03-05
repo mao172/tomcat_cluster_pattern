@@ -88,6 +88,45 @@ module CloudConductor
 
     include Agent
 
+    #
+    # FullName:: CloudConductor::ConsulClient::Catalog
+    class Catalog
+      class << self
+        def regist(data)
+          data = JSON.generate(data) if data.is_a?(Hash)
+          response = ConsulClient.http.put(ConsulClient.request_url("catalog/register"), data)
+          puts "#{response.status}"
+        end
+        #
+        # service_id - String
+        # params     - Hash (optional)
+        #              :service_id - String (optional)
+        #              :dc - String (optional)
+        #              :tag - String (optional)
+        def service(service_id, params = nil)
+          if service_id.is_a?(Hash)
+            params = service_id
+            service_id = params[:service_id]
+          end
+
+          request_url = "catalog/service/#{service_id}"
+
+          params = {} if params.nil?
+          params = params.select { |key, _value| %w(tag dc).include?(key.to_s) }
+
+          response = ConsulClient.http.get(ConsulClient.request_url(request_url, params))
+          JSON.parse(response.body)
+        end
+
+        def node(node_name)
+          request_url = "catalog/node/#{node_name}"
+
+          response = ConsulClient.http.get(ConsulClient.request_url(request_url))
+          JSON.parse(response.body)
+        end
+      end
+    end
+
     class KeyValueStore
       class << self
         def put(key, value)
@@ -202,6 +241,8 @@ class FailoverAction
     end
 
     def add_primary_tag
+      remove_primary_tag
+
       service_info = CloudConductor::ConsulClient.services['postgresql']
 
       service_info['Tags'] = [] if service_info['Tags'].nil?
@@ -211,11 +252,38 @@ class FailoverAction
 
       service_config = CloudConductor::ConsulConfig.read('/etc/consul.d/postgresql.json')
 
-      unless service_config['services'].nil?
-        service_config['services']['tags'] = [] if service_config['services']['tags'].nil?
-        service_config['services']['tags'] << 'primary' unless service_config['services']['tags'].include? 'primary'
+      unless service_config['service'].nil?
+        service_config['service']['tags'] = [] if service_config['services']['tags'].nil?
+        service_config['service']['tags'] << 'primary' unless service_config['services']['tags'].include? 'primary'
 
         CloudConductor::ConsulConfig.write('/etc/consul.d/postgresql.json')
+      end
+    end
+
+    def remove_primary_tag
+      primary_svr = CloudConductor::ConsulClient::Catalog.service('postgresql', tag: 'primary')
+
+      logger.warn('primary database node is not one!') if primary_svr.size > 1
+      logger.warn('primary database node is not found!') if primary_svr.size <= 0
+
+      if primary_svr.size == 1
+        primary_svr = primary_svr.first
+
+        puts "primary => #{primary_svr}"
+
+        node_name = primary_svr['Node']
+
+        catalog_node_info = CloudConductor::ConsulClient::Catalog.node(node_name)
+
+        puts "node => #{catalog_node_info}"
+
+        data = {}
+        data = data.merge(catalog_node_info["Node"])
+        data["Service"] = catalog_node_info["Services"]["postgresql"]
+
+        data["Service"]["Tags"] = data["Service"]["Tags"] - ['primary']
+
+        CloudConductor::ConsulClient::Catalog.regist(data)
       end
     end
   end

@@ -71,4 +71,20 @@ if node['postgresql_part']['pgpool-II']['use']
     handler "#{File.join(event_handlers_dir, 'failover_event_handler')} failover"
     action :create
   end
+
+  cookbook_file 'check-state-event-handler' do
+    path "#{File.join(event_handlers_dir, 'check-state-event-handler')}"
+    mode 0755
+    owner 'root'
+    user 'root'
+  end
+
+  consul_config_dir = node['cloudconductor']['consul']['config_dir']
+
+  cookbook_file 'check-postgresql.json' do
+    path "#{File.join(consul_config_dir, 'check-postgresql.json')}"
+    mode 0644
+    owner 'root'
+    user 'root'
+  end
 end
