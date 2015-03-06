@@ -47,6 +47,21 @@
       "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
       "Type" : "String"
     },
+    "WebServerSize" : {
+      "Description" : "WebServer instance size",
+      "Type" : "String",
+      "Default" : "1"
+    },
+    "APServerSize" : {
+      "Description" : "APServer instance size",
+      "Type" : "String",
+      "Default" : "1"
+    },
+    "DBServerSize" : {
+      "Description" : "DBServer instance size",
+      "Type" : "String",
+      "Default" : "1"
+    },
     "CloudConductorLocation" : {
       "Description" : "The IP address range of CloudConductor server to enable Consul api access to frontend instance.",
       "Type" : "String",
