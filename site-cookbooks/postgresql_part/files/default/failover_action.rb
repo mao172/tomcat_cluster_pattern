@@ -144,7 +144,8 @@ module CloudConductor
         end
 
         def delete(key)
-          ConsulClient.http.delete ConsulClient.request_url("kv/#{key}")
+          response = ConsulClient.http.delete ConsulClient.request_url("kv/#{key}")
+          puts "#{response.status}"
         end
       end
     end
@@ -253,10 +254,10 @@ class FailoverAction
       service_config = CloudConductor::ConsulConfig.read('/etc/consul.d/postgresql.json')
 
       unless service_config['service'].nil?
-        service_config['service']['tags'] = [] if service_config['services']['tags'].nil?
-        service_config['service']['tags'] << 'primary' unless service_config['services']['tags'].include? 'primary'
+        service_config['service']['tags'] = [] if service_config['service']['tags'].nil?
+        service_config['service']['tags'] << 'primary' unless service_config['service']['tags'].include? 'primary'
 
-        CloudConductor::ConsulConfig.write('/etc/consul.d/postgresql.json')
+        CloudConductor::ConsulConfig.write('/etc/consul.d/postgresql.json', service_config)
       end
     end
 
