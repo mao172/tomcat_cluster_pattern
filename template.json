@@ -261,13 +261,41 @@
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable AJP access via port 8009",
-        "VpcId" : { "Ref" : "VPC" },
-        "SecurityGroupIngress" : [
-          {"IpProtocol" : "tcp", "FromPort" : "8009", "ToPort" : "8009", "SourceSecurityGroupId" : {"Ref": "WebSecurityGroup"}},
-          {"IpProtocol" : "tcp", "FromPort" : "9000", "ToPort" : "9000", "SourceSecurityGroupId" : {"Ref": "APSecurityGroup"}},
-          {"IpProtocol" : "tcp", "FromPort" : "9694", "ToPort" : "9694", "SourceSecurityGroupId" : {"Ref": "APSecurityGroup"}}
-        ]
+        "VpcId" : { "Ref" : "VPC" }
       }
+    },
+    "APSecurityGroupIngressFromWebSecurityGroupVia8009" : {
+      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "APSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "FromPort" : "8009",
+        "ToPort" : "8009",
+        "SourceSecurityGroupId" : { "Ref" : "WebSecurityGroup" }
+      },
+      "DependsOn" : "APSecurityGroup"
+    },
+    "APSecurityGroupIngressFromWebSecurityGroupVia9000" : {
+      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "APSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "FromPort" : "9000",
+        "ToPort" : "9000",
+        "SourceSecurityGroupId" : { "Ref" : "APSecurityGroup" }
+      },
+      "DependsOn" : "APSecurityGroup"
+    },
+    "APSecurityGroupIngressFromWebSecurityGroupVia9694" : {
+      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "APSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "FromPort" : "9694",
+        "ToPort" : "9694",
+        "SourceSecurityGroupId" : { "Ref" : "APSecurityGroup" }
+      },
+      "DependsOn" : "APSecurityGroup"
     },
     "DBServer" : {
       "Type" : "AWS::EC2::Instance",
@@ -319,13 +347,31 @@
     "DBSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable DB access via port 5432",
-        "VpcId" : { "Ref" : "VPC" },
-        "SecurityGroupIngress" : [
-          {"IpProtocol" : "tcp", "FromPort" : "5432", "ToPort" : "5432", "SourceSecurityGroupId" : {"Ref": "APSecurityGroup"}},
-          {"IpProtocol" : "tcp", "FromPort" : "5432", "ToPort" : "5432", "SourceSecurityGroupId" : {"Ref": "DBSecurityGroup"}}
-        ]
+        "GroupDescription" : "Enable DB access",
+        "VpcId" : { "Ref" : "VPC" }
       }
+    },
+    "DBSecurityGroupIngressFromAPSecurityGroupVia5432" : {
+      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "DBSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "FromPort" : "5432",
+        "ToPort" : "5432",
+        "SourceSecurityGroupId" : { "Ref" : "ApSecurityGroup" }
+      },
+      "DependsOn" : "DBSecurityGroup"
+    },
+    "DBSecurityGroupIngressFromDBSecurityGroupVia5432" : {
+      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "DBSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "FromPort" : "5432",
+        "ToPort" : "5432",
+        "SourceSecurityGroupId" : { "Ref" : "DBSecurityGroup" }
+      },
+      "DependsOn" : "DBSecurityGroup"
     },
     "WebWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
