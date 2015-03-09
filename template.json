@@ -265,7 +265,7 @@
       }
     },
     "APSecurityGroupIngressFromWebSecurityGroupVia8009" : {
-      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "APSecurityGroup" },
         "IpProtocol" : "tcp",
@@ -276,7 +276,7 @@
       "DependsOn" : "APSecurityGroup"
     },
     "APSecurityGroupIngressFromWebSecurityGroupVia9000" : {
-      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "APSecurityGroup" },
         "IpProtocol" : "tcp",
@@ -287,7 +287,7 @@
       "DependsOn" : "APSecurityGroup"
     },
     "APSecurityGroupIngressFromWebSecurityGroupVia9694" : {
-      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "APSecurityGroup" },
         "IpProtocol" : "tcp",
@@ -352,7 +352,7 @@
       }
     },
     "DBSecurityGroupIngressFromAPSecurityGroupVia5432" : {
-      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "DBSecurityGroup" },
         "IpProtocol" : "tcp",
@@ -363,7 +363,7 @@
       "DependsOn" : "DBSecurityGroup"
     },
     "DBSecurityGroupIngressFromDBSecurityGroupVia5432" : {
-      "Type" : "AWS::EC2;;SecurityGroupIngress",
+      "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "DBSecurityGroup" },
         "IpProtocol" : "tcp",
