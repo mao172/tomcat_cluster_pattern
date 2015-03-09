@@ -260,7 +260,7 @@
     "APSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable AJP access via port 8009",
+        "GroupDescription" : "Enable AP access",
         "VpcId" : { "Ref" : "VPC" }
       }
     },
