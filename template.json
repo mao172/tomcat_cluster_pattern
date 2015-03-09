@@ -49,17 +49,17 @@
     },
     "WebServerSize" : {
       "Description" : "WebServer instance size",
-      "Type" : "String",
+      "Type" : "Number",
       "Default" : "1"
     },
     "APServerSize" : {
       "Description" : "APServer instance size",
-      "Type" : "String",
+      "Type" : "Number",
       "Default" : "1"
     },
     "DBServerSize" : {
       "Description" : "DBServer instance size",
-      "Type" : "String",
+      "Type" : "Number",
       "Default" : "1"
     },
     "CloudConductorLocation" : {
