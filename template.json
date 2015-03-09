@@ -263,7 +263,9 @@
         "GroupDescription" : "Enable AJP access via port 8009",
         "VpcId" : { "Ref" : "VPC" },
         "SecurityGroupIngress" : [
-          {"IpProtocol" : "tcp", "FromPort" : "8009", "ToPort" : "8009", "SourceSecurityGroupId" : {"Ref": "WebSecurityGroup"}}
+          {"IpProtocol" : "tcp", "FromPort" : "8009", "ToPort" : "8009", "SourceSecurityGroupId" : {"Ref": "WebSecurityGroup"}},
+          {"IpProtocol" : "tcp", "FromPort" : "9000", "ToPort" : "9000", "SourceSecurityGroupId" : {"Ref": "APSecurityGroup"}},
+          {"IpProtocol" : "tcp", "FromPort" : "9694", "ToPort" : "9694", "SourceSecurityGroupId" : {"Ref": "APSecurityGroup"}}
         ]
       }
     },
