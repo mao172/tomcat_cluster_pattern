@@ -60,7 +60,8 @@
     "DBServerSize" : {
       "Description" : "DBServer instance size",
       "Type" : "Number",
-      "Default" : "1"
+      "Default" : "2",
+      "MinValue" : "2"
     },
     "CloudConductorLocation" : {
       "Description" : "The IP address range of CloudConductor server to enable Consul api access to frontend instance.",
