@@ -358,7 +358,7 @@
         "IpProtocol" : "tcp",
         "FromPort" : "5432",
         "ToPort" : "5432",
-        "SourceSecurityGroupId" : { "Ref" : "ApSecurityGroup" }
+        "SourceSecurityGroupId" : { "Ref" : "APSecurityGroup" }
       },
       "DependsOn" : "DBSecurityGroup"
     },
