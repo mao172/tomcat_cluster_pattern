@@ -20,13 +20,13 @@
       "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "WebInstanceType" : {
-      "Description" : "WebServer instance type",
+    "LbInstanceType" : {
+      "Description" : "LbServer instance type",
       "Type" : "String",
       "Default" : "t2.small"
     },
-    "ApInstanceType" : {
-      "Description" : "APServer instance type",
+    "WebApInstanceType" : {
+      "Description" : "WebApServer instance type",
       "Type" : "String",
       "Default" : "t2.small"
     },
@@ -35,25 +35,25 @@
       "Type" : "String",
       "Default" : "t2.small"
     },
-    "WebImageId" : {
-      "Description" : "[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor.",
+    "LbImageId" : {
+      "Description" : "[computed] LbServer Image Id. This parameter is automatically filled by CloudConductor.",
       "Type" : "String"
     },
-    "ApImageId" : {
-      "Description" : "[computed] APServer Image Id. This parameter is automatically filled by CloudConductor.",
+    "WebApImageId" : {
+      "Description" : "[computed] WebApServer Image Id. This parameter is automatically filled by CloudConductor.",
       "Type" : "String"
     },
     "DbImageId" : {
       "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
       "Type" : "String"
     },
-    "WebServerSize" : {
-      "Description" : "WebServer instance size",
+    "LbServerSize" : {
+      "Description" : "LbServer instance size",
       "Type" : "Number",
       "Default" : "1"
     },
-    "APServerSize" : {
-      "Description" : "APServer instance size",
+    "WebApServerSize" : {
+      "Description" : "WebApServer instance size",
       "Type" : "Number",
       "Default" : "1"
     },
@@ -122,32 +122,32 @@
         "RouteTableId" : { "Ref" : "RouteTable" }
       }
     },
-    "WebServer" : {
+    "LbServer" : {
       "Type" : "AWS::EC2::Instance",
       "Metadata" : {
-        "Role" : "web",
+        "Role" : "lb",
         "Frontend" : "true"
       },
       "Properties" : {
-        "ImageId" : { "Ref" : "WebImageId" },
-        "InstanceType" : { "Ref" : "WebInstanceType" },
+        "ImageId" : { "Ref" : "LbImageId" },
+        "InstanceType" : { "Ref" : "LbInstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
         "NetworkInterfaces" : [{
            "DeviceIndex" : "0",
-           "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface" }
+           "NetworkInterfaceId" : { "Ref" : "LbNetworkInterface" }
         }],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/sh -v\n",
           "# Helper function\n",
           "function error_exit\n",
           "{\n",
-          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "WebWaitHandle" }, "'\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "LbWaitHandle" }, "'\n",
           "  exit 1\n",
           "}\n",
           "# Set Parameters\n",
-          "/bin/echo 'ROLE=web' >> /opt/cloudconductor/config\n",
+          "/bin/echo 'ROLE=lb' >> /opt/cloudconductor/config\n",
           "/bin/echo 'STACK_NAME=", { "Ref": "AWS::StackName" }, "' >> /opt/cloudconductor/config\n",
-          "/bin/echo 'RESOURCE_NAME=WebServer' >> /opt/cloudconductor/config\n",
+          "/bin/echo 'RESOURCE_NAME=LbServer' >> /opt/cloudconductor/config\n",
           "/bin/echo 'REGION=", { "Ref": "AWS::Region" }, "' >> /opt/cloudconductor/config\n",
           "# Run Consul\n",
           "# this process is required because of init sequence.\n",
@@ -157,35 +157,35 @@
           "for i in `seq 10`; do\n",
           "  if [ ! -z \"`/usr/local/bin/consul members | grep ${host_name}`\" ]; then\n",
           "    # Send success signal\n",
-          "    /opt/aws/bin/cfn-signal -e 0 -r 'WebServer Setup complete' '", { "Ref" : "WebWaitHandle" }, "'\n",
+          "    /opt/aws/bin/cfn-signal -e 0 -r 'LbServer Setup complete' '", { "Ref" : "LbWaitHandle" }, "'\n",
           "    exit 0\n",
           "  fi\n",
           "  sleep 1\n",
           "done\n",
           "error_exit 'Failed to join the consul cluster.'\n"
         ]]}},
-        "Tags" : [{"Key": "Name", "Value": "WebServer"}, {"Key": "Role", "Value": "web"}]
+        "Tags" : [{"Key": "Name", "Value": "LbServer"}, {"Key": "Role", "Value": "lb"}]
       }
     },
-    "WebNetworkInterface" : {
+    "LbNetworkInterface" : {
       "Type" : "AWS::EC2::NetworkInterface",
       "Properties" : {
-        "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "WebSecurityGroup"}],
+        "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "LbSecurityGroup"}],
         "SubnetId" : { "Ref" : "AllSubnet" }
       }
     },
-    "WebFrontendEIP" : {
+    "LbFrontendEIP" : {
       "Type" : "AWS::EC2::EIP",
       "DependsOn" : ["VPCGatewayAttachment", "AllSubnetRouteTableAssociation"],
       "Properties" : {
         "Domain" : "vpc"
       }
     },
-    "WebEIPAssociation" : {
+    "LbEIPAssociation" : {
       "Type" : "AWS::EC2::EIPAssociation",
       "Properties" : {
-        "AllocationId" : { "Fn::GetAtt" : [ "WebFrontendEIP", "AllocationId" ]},
-        "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface" }
+        "AllocationId" : { "Fn::GetAtt" : [ "LbFrontendEIP", "AllocationId" ]},
+        "NetworkInterfaceId" : { "Ref" : "LbNetworkInterface" }
       }
     },
     "SharedSecurityGroup" : {
@@ -200,7 +200,7 @@
         ]
       }
     },
-    "WebSecurityGroup" : {
+    "LbSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access, HTTP access via port 80",
@@ -210,34 +210,34 @@
         ]
       }
     },
-    "APServer" : {
+    "WebApServer" : {
       "Type" : "AWS::EC2::Instance",
-      "DependsOn" : "WebWaitCondition",
+      "DependsOn" : "LbWaitCondition",
       "Metadata" : {
-        "Role" : "ap"
+        "Role" : "web,ap"
       },
       "Properties" : {
-        "ImageId" : { "Ref" : "ApImageId" },
-        "InstanceType" : { "Ref" : "ApInstanceType" },
+        "ImageId" : { "Ref" : "WebApImageId" },
+        "InstanceType" : { "Ref" : "WebApInstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
         "NetworkInterfaces" : [{
            "DeviceIndex" : "0",
            "AssociatePublicIpAddress" : true,
            "SubnetId" : { "Ref" : "AllSubnet" },
-           "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "APSecurityGroup"}]
+           "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "WebApSecurityGroup"}]
         }],
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/sh -v\n",
           "# Helper function\n",
           "function error_exit\n",
           "{\n",
-          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "APWaitHandle" }, "'\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "WebApWaitHandle" }, "'\n",
           "  exit 1\n",
           "}\n",
           "# Set Parameters\n",
-          "/bin/echo 'ROLE=ap' >> /opt/cloudconductor/config\n",
+          "/bin/echo 'ROLE=web,ap' >> /opt/cloudconductor/config\n",
           "/bin/echo 'STACK_NAME=", { "Ref": "AWS::StackName" }, "' >> /opt/cloudconductor/config\n",
-          "/bin/echo 'RESOURCE_NAME=APServer' >> /opt/cloudconductor/config\n",
+          "/bin/echo 'RESOURCE_NAME=WebApServer' >> /opt/cloudconductor/config\n",
           "/bin/echo 'REGION=", { "Ref": "AWS::Region" }, "' >> /opt/cloudconductor/config\n",
           "# Run Consul\n",
           "# this process is required because of init sequence.\n",
@@ -247,59 +247,59 @@
           "for i in `seq 10`; do\n",
           "  if [ ! -z \"`/usr/local/bin/consul members | grep ${host_name}`\" ]; then\n",
           "    # Send success signal\n",
-          "    /opt/aws/bin/cfn-signal -e 0 -r 'APServer Setup complete' '", { "Ref" : "APWaitHandle" }, "'\n",
+          "    /opt/aws/bin/cfn-signal -e 0 -r 'WebApServer Setup complete' '", { "Ref" : "WebApWaitHandle" }, "'\n",
           "    exit 0\n",
           "  fi\n",
           "  sleep 1\n",
           "done\n",
           "error_exit 'Failed to join the consul cluster.'\n"
         ]]}},
-        "Tags" : [{"Key": "Name", "Value": "APServer"}, {"Key": "Role", "Value": "ap"}]
+        "Tags" : [{"Key": "Name", "Value": "WebApServer"}, {"Key": "Role", "Value": "web,ap"}]
       }
     },
-    "APSecurityGroup" : {
+    "WebApSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
-        "GroupDescription" : "Enable AP access",
+        "GroupDescription" : "Enable WebAp access",
         "VpcId" : { "Ref" : "VPC" }
       }
     },
-    "APSecurityGroupIngressFromWebSecurityGroupVia8009" : {
+    "WebApSecurityGroupIngressFromLbSecurityGroupVia8009" : {
       "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
-        "GroupId" : { "Ref" : "APSecurityGroup" },
+        "GroupId" : { "Ref" : "WebApSecurityGroup" },
         "IpProtocol" : "tcp",
         "FromPort" : "8009",
         "ToPort" : "8009",
-        "SourceSecurityGroupId" : { "Ref" : "WebSecurityGroup" }
+        "SourceSecurityGroupId" : { "Ref" : "LbSecurityGroup" }
       },
-      "DependsOn" : "APSecurityGroup"
+      "DependsOn" : "WebApSecurityGroup"
     },
-    "APSecurityGroupIngressFromWebSecurityGroupVia9000" : {
+    "WebApSecurityGroupIngressFromLbSecurityGroupVia9000" : {
       "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
-        "GroupId" : { "Ref" : "APSecurityGroup" },
+        "GroupId" : { "Ref" : "WebApSecurityGroup" },
         "IpProtocol" : "tcp",
         "FromPort" : "9000",
         "ToPort" : "9000",
-        "SourceSecurityGroupId" : { "Ref" : "APSecurityGroup" }
+        "SourceSecurityGroupId" : { "Ref" : "WebApSecurityGroup" }
       },
-      "DependsOn" : "APSecurityGroup"
+      "DependsOn" : "WebApSecurityGroup"
     },
-    "APSecurityGroupIngressFromWebSecurityGroupVia9694" : {
+    "WebApSecurityGroupIngressFromLbSecurityGroupVia9694" : {
       "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
-        "GroupId" : { "Ref" : "APSecurityGroup" },
+        "GroupId" : { "Ref" : "WebApSecurityGroup" },
         "IpProtocol" : "tcp",
         "FromPort" : "9694",
         "ToPort" : "9694",
-        "SourceSecurityGroupId" : { "Ref" : "APSecurityGroup" }
+        "SourceSecurityGroupId" : { "Ref" : "WebApSecurityGroup" }
       },
-      "DependsOn" : "APSecurityGroup"
+      "DependsOn" : "WebApSecurityGroup"
     },
     "DBServer" : {
       "Type" : "AWS::EC2::Instance",
-      "DependsOn" : "WebWaitCondition",
+      "DependsOn" : "LbWaitCondition",
       "Metadata" : {
         "Role" : "db"
       },
@@ -351,14 +351,14 @@
         "VpcId" : { "Ref" : "VPC" }
       }
     },
-    "DBSecurityGroupIngressFromAPSecurityGroupVia5432" : {
+    "DBSecurityGroupIngressFromWebApSecurityGroupVia5432" : {
       "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "DBSecurityGroup" },
         "IpProtocol" : "tcp",
         "FromPort" : "5432",
         "ToPort" : "5432",
-        "SourceSecurityGroupId" : { "Ref" : "APSecurityGroup" }
+        "SourceSecurityGroupId" : { "Ref" : "WebApSecurityGroup" }
       },
       "DependsOn" : "DBSecurityGroup"
     },
@@ -373,25 +373,25 @@
       },
       "DependsOn" : "DBSecurityGroup"
     },
-    "WebWaitHandle" : {
+    "LbWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
-    "WebWaitCondition" : {
+    "LbWaitCondition" : {
       "Type" : "AWS::CloudFormation::WaitCondition",
-      "DependsOn" : "WebServer",
+      "DependsOn" : "LbServer",
       "Properties" : {
-        "Handle" : { "Ref" : "WebWaitHandle" },
+        "Handle" : { "Ref" : "LbWaitHandle" },
         "Timeout" : "600"
       }
     },
-    "APWaitHandle" : {
+    "WebApWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
-    "APWaitCondition" : {
+    "WebApWaitCondition" : {
       "Type" : "AWS::CloudFormation::WaitCondition",
-      "DependsOn" : "APServer",
+      "DependsOn" : "WebApServer",
       "Properties" : {
-        "Handle" : { "Ref" : "APWaitHandle" },
+        "Handle" : { "Ref" : "WebApWaitHandle" },
         "Timeout" : "600"
       }
     },
@@ -409,7 +409,7 @@
   },
   "Outputs" : {
     "FrontendAddress" : {
-      "Value" : { "Ref" : "WebFrontendEIP" },
+      "Value" : { "Ref" : "LbFrontendEIP" },
       "Description" : "Frontend DNS name or IP address to access Consul api port from CloudConductor server. This output is required."
     },
     "VpcId" : {
@@ -421,7 +421,7 @@
       "Description" : "Reference of subnet to connect same subnet when create instance in optional pattern. This output is required."
     },
     "ClusterAddresses" : {
-      "Value" : { "Fn::GetAtt" : ["WebNetworkInterface", "PrimaryPrivateIpAddress"] },
+      "Value" : { "Fn::GetAtt" : ["LbNetworkInterface", "PrimaryPrivateIpAddress"] },
       "Description" : "Private IP Address to join cluster. This output is required."
     },
     "SharedSecurityGroup" : {
