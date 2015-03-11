@@ -7,6 +7,7 @@ describe 'pgpool-II_part::configure' do
 
   before do
     allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('db_application').and_return('dummy_passwd')
+    allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('tomcat').and_return('dummy_passwd')
 
     allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('pcp').and_return('foobarbaz')
     allow(Digest::MD5).to receive(:hexdigest).with('foobarbaz').and_return('dummy_passwd')
@@ -97,6 +98,9 @@ describe 'pgpool-II_part::configure' do
   end
 
   describe 'node of ap role is own node only' do
+    it 'use_watchdog setting attribute is off' do
+      expect(chef_run.node['pgpool_part']['pgconf']['use_watchdog']).to be_falsey
+    end
     it 'other_pgpool_hostname settings attribute is not create' do
       expect(chef_run.node['pgpool_part']['pgconf'].include?('other_pgpool_hostname')).to be_falsey
     end
@@ -106,10 +110,15 @@ describe 'pgpool-II_part::configure' do
     it 'other_wd_port settings attribute is not create' do
       expect(chef_run.node['pgpool_part']['pgconf'].include?('other_wd_port')).to be_falsey
     end
+    it 'use_watchdogsettings is write to pgpool.conf' do
+      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
+        .with_content(/#{"use_watchdog".ljust(25)} = off/)
+    end
   end
 
   describe 'only one node of ap role other than its own node' do
     before do
+      chef_run.node.set['pgpool_part']['pgconf']['use_watchdog'] = true
       chef_run.node.set['cloudconductor']['servers'] = {
         'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
         'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' },
@@ -118,6 +127,9 @@ describe 'pgpool-II_part::configure' do
       chef_run.converge(described_recipe)
     end
 
+    it 'use_watchdog setting attribute is off' do
+      expect(chef_run.node['pgpool_part']['pgconf']['use_watchdog']).to be_truthy
+    end
     it 'other_pgpool_hostname settings is one made and value is not own private_ip of ap role node' do
       expect(chef_run.node['pgpool_part']['pgconf']['other_pgpool_hostname0']).to eq('127.0.0.102')
     end
@@ -140,6 +152,8 @@ describe 'pgpool-II_part::configure' do
     end
     it 'each settings is write to pgpool.conf' do
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
+        .with_content(/#{"use_watchdog".ljust(25)} = on/)
+      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"other_pgpool_hostname0".ljust(25)} = '127.0.0.102'/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"other_pgpool_port0".ljust(25)} = 9999/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"other_wd_port0".ljust(25)} = 9000/)
@@ -151,6 +165,7 @@ describe 'pgpool-II_part::configure' do
   end
   describe 'multiple node of ap role other than its own node' do
     before do
+      chef_run.node.set['pgpool_part']['pgconf']['use_watchdog'] = true
       chef_run.node.set['cloudconductor']['servers'] = {
         'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
         'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' },
@@ -160,6 +175,9 @@ describe 'pgpool-II_part::configure' do
       chef_run.converge(described_recipe)
     end
 
+    it 'use_watchdog setting attribute is off' do
+      expect(chef_run.node['pgpool_part']['pgconf']['use_watchdog']).to be_truthy
+    end
     it 'other_pgpool_hostname settings is made the number of other ap nodes and value is private_ip of thatnode' do
       expect(chef_run.node['pgpool_part']['pgconf']['other_pgpool_hostname0']).to eq('127.0.0.102')
       expect(chef_run.node['pgpool_part']['pgconf']['other_pgpool_hostname1']).to eq('127.0.0.103')
@@ -187,6 +205,8 @@ describe 'pgpool-II_part::configure' do
         .to eq(chef_run.node['pgpool_part']['pgconf']['wd_heartbeat_port'])
     end
     it 'each settings is write to pgpool.conf' do
+      expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
+        .with_content(/#{"use_watchdog".ljust(25)} = on/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf")
         .with_content(/#{"other_pgpool_hostname0".ljust(25)} = '127.0.0.102'/)
       expect(chef_run).to render_file("#{pgpool_dir}/pgpool.conf").with_content(/#{"other_pgpool_port0".ljust(25)} = 9999/)

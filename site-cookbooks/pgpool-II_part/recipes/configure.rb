@@ -18,12 +18,16 @@ end
 
 other_ap_servers = servers('ap').delete_if { |_key, val| val['private_ip'] == node[:ipaddress] }
 
-other_ap_servers.each_with_index do | (_name, server), index |
-  node.set['pgpool_part']['pgconf']["other_pgpool_hostname#{index}"] = server['private_ip']
-  node.set['pgpool_part']['pgconf']["other_pgpool_port#{index}"] = node['pgpool_part']['pgconf']['port']
-  node.set['pgpool_part']['pgconf']["other_wd_port#{index}"] = node['pgpool_part']['pgconf']['wd_port']
-  node.set['pgpool_part']['pgconf']["heartbeat_destination#{index}"] = server['private_ip']
-  node.set['pgpool_part']['pgconf']["heartbeat_destination_port#{index}"] = node['pgpool_part']['pgconf']['wd_heartbeat_port']
+if other_ap_servers.length < 1
+  node.set['pgpool_part']['pgconf']['use_watchdog'] = false
+else
+  other_ap_servers.each_with_index do | (_name, server), index |
+    node.set['pgpool_part']['pgconf']["other_pgpool_hostname#{index}"] = server['private_ip']
+    node.set['pgpool_part']['pgconf']["other_pgpool_port#{index}"] = node['pgpool_part']['pgconf']['port']
+    node.set['pgpool_part']['pgconf']["other_wd_port#{index}"] = node['pgpool_part']['pgconf']['wd_port']
+    node.set['pgpool_part']['pgconf']["heartbeat_destination#{index}"] = server['private_ip']
+    node.set['pgpool_part']['pgconf']["heartbeat_destination_port#{index}"] = node['pgpool_part']['pgconf']['wd_heartbeat_port']
+  end
 end
 
 file "#{node['pgpool_part']['config']['dir']}/pcp.conf" do
@@ -49,11 +53,12 @@ template "#{node['pgpool_part']['config']['dir']}/pool_hba.conf" do
 end
 
 bash 'create md5 auth setting' do
- code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['application']['user']} #{generate_password('db_application')}"
+  code ["pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['application']['user']} ",
+        "#{generate_password('db_application')}"].join
 end
 
 bash 'create md5 auth setting for tomcat user' do
- code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['tomcat']['user']} #{generate_password('tomcat')}"
+  code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['tomcat']['user']} #{generate_password('tomcat')}"
 end
 
 service 'pgpool' do
