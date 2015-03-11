@@ -27,12 +27,21 @@ def read_pem_resource_from_file
   ::File.read(node[:haproxy_part][:pem_file][:uri])
 end
 
+def read_pem_resource_from_node
+  Chef::Log.info("read pem file from node")
+
+  key = node[:haproxy_part][:pem_file][:node][:key]
+  node[:haproxy_part][key]
+end
+
 def read_pem
   case node[:haproxy_part][:pem_file][:protocol].to_sym
   when :consul
     src = read_pem_resource_from_consul
   when :local
     src = read_pem_resource_from_file
+  when :node
+    src = read_pem_resource_from_node
   end
 
   src

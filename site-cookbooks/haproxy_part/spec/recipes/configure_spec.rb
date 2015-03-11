@@ -55,6 +55,8 @@ describe 'haproxy_part::configure' do
     chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
     chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
 
+    chef_run.node.set[:haproxy_part][:pem_file][:protocol] = 'consul'
+
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:get).with('ssl_pem').and_return('simple result text')
     chef_run.converge(described_recipe)
@@ -317,38 +319,61 @@ describe 'haproxy_part::configure' do
       end
     end
 
-    it 'with ssl proxy' do
-      method = chef_run.node[:haproxy][:install_method]
-      prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
+    describe 'with ssl proxy' do
+      before do
+        method = chef_run.node[:haproxy][:install_method]
+        prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
 
-      chef_run.node.set['haproxy_part']['enable_ssl_proxy'] = true
-      chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
-      chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
-      chef_run.converge(described_recipe)
+        chef_run.node.set['haproxy_part']['enable_ssl_proxy'] = true
+        chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path
+        chef_run.node.set[:haproxy_part][:ssl_pem_file] = pem_file_path
+        chef_run.node.set[:haproxy_part][:pem_file][:protocol] = 'node'
+        chef_run.node.set[:haproxy_part][:ssl_pem] = '<!-- PEM FILE -->'
 
-      config_pool = {}
+        chef_run.converge(described_recipe)
+      end
 
-      params = {
-        server: [
-          "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
-          "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
-        ],
-        option: []
-      }
+      it 'pem file' do
+        method = chef_run.node[:haproxy][:install_method]
+        prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
 
-      config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+        expect(chef_run).to create_file("#{prefix}#{pem_file_path}").with(
+          content: '<!-- PEM FILE -->',
+          owner: 'root',
+          group: 'root',
+          mode: '0644'
+        )
+      end
 
-      config_pool['frontend ssl-proxy'] = {
-        maxconn: 2000,
-        bind: "0.0.0.0:443 ssl crt #{prefix}#{pem_file_path}",
-        'mode' => :http,
-        default_backend: 'servers-http'
-      }
+      it 'configure do' do
+        method = chef_run.node[:haproxy][:install_method]
+        prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
 
-      config_pool = merge(make_hash(config), config_pool)
-      expect(chef_run).to create_haproxy('myhaproxy').with(
-        config: config_pool
-      )
+        config_pool = {}
+
+        params = {
+          server: [
+            "#{web01_server_nm} #{web01_private_ip}:80 weight 1 maxconn 100 check",
+            "#{web02_server_nm} #{web02_private_ip}:80 weight 1 maxconn 100 check"
+          ],
+          option: []
+        }
+
+        config_pool['backend servers-http'] = merge(make_hash(chef_run.node[:haproxy_part][:backend_params]), params)
+
+        config_pool['frontend ssl-proxy'] = {
+          maxconn: 2000,
+          bind: "0.0.0.0:443 ssl crt #{prefix}#{pem_file_path}",
+          'mode' => :http,
+          default_backend: 'servers-http'
+        }
+
+        config_pool = merge(make_hash(config), config_pool)
+
+        expect(chef_run).to create_haproxy('myhaproxy').with(
+          config: config_pool
+        )
+      end
     end
   end
 end

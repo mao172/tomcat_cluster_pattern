@@ -23,11 +23,12 @@ default[:haproxy_part][:ssl_pem_dir] = "#{node['haproxy']['conf_dir']}"
 default[:haproxy_part][:ssl_pem_file] = "#{node[:haproxy_part][:ssl_pem_dir]}/server.pem"
 
 # for pem file received
-default[:haproxy_part][:pem_file][:protocol] = 'consul'
+default[:haproxy_part][:pem_file][:protocol] = 'node'
 default[:haproxy_part][:pem_file][:uri] = '/shared/ssl/server.pem'
 default[:haproxy_part][:pem_file][:consul][:key] = 'ssl_pem'
 default[:haproxy_part][:pem_file][:consul][:value_type] = 'text'
 default[:haproxy_part][:pem_file][:property_nm] = nil
+default[:haproxy_part][:pem_file][:node][:key] = 'ssl_pem'
 
 # for sticky session
 default[:haproxy_part][:enable_sticky_session] = true
