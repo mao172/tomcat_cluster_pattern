@@ -130,7 +130,17 @@ else
 
     file_path = "#{conf[conf['install_method']]['prefix']}#{node[:haproxy_part][:ssl_pem_file]}"
 
-    haproxy_part_pem_file file_path
+    if node[:haproxy_part][:pem_file][:protocol] == 'remote'
+      remote_file 'ssl_pem' do
+        source node[:haproxy_part][:pem_file][:remote][:url]
+        path file_path
+        owner 'root'
+        group 'root'
+        mode  '0644'
+      end
+    else
+      haproxy_part_pem_file file_path
+    end
 
     bind = "#{conf['ssl_incoming_address']}:#{conf['ssl_incoming_port']} ssl crt #{file_path}"
 

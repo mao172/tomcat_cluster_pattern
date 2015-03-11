@@ -345,6 +345,14 @@ describe 'haproxy_part::configure' do
         )
       end
 
+      it 'pem file form remote' do
+        chef_run.node.set[:haproxy_part][:pem_file][:protocol] = 'remote'
+        chef_run.node.set[:haproxy_part][:pem_file][:remote][:url] = 'https://s3-us-west-1.amazonaws.com/okamoto-cloudconductor/%EF%BD%83ertificate/server.pem'
+        chef_run.converge(described_recipe)
+
+        expect(chef_run).to create_remote_file('ssl_pem')
+      end
+
       it 'configure do' do
         method = chef_run.node[:haproxy][:install_method]
         prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
