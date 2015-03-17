@@ -265,7 +265,7 @@
         "VpcId" : { "Ref" : "VPC" }
       }
     },
-    "WebApSecurityGroupIngressFromLbSecurityGroupVia8009" : {
+    "WebApSecurityGroupIngressFromLbSecurityGroupVia80" : {
       "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {
         "GroupId" : { "Ref" : "WebApSecurityGroup" },
