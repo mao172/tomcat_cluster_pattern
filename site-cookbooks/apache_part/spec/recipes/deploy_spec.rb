@@ -16,7 +16,9 @@ describe 'apache_part::deploy' do
       }
     }
     chef_run.node.set['cloudconductor']['applications'] = {
-      app_name =>  {}
+      app_name =>  {
+        type: 'dynamic'
+      }
     }
     chef_run.converge(described_recipe)
   end
