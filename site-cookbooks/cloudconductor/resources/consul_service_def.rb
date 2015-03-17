@@ -14,10 +14,12 @@ attribute :id, kind_of: String
 attribute :port, kind_of: Integer
 attribute :tags, kind_of: Array, default: nil
 attribute :check, kind_of: Hash, default: nil, callbacks: {
-  'Checks must be a hash containing either a `:ttl` key/value or a `:script` and `:interval` key/value' => ->(check) do
-    Chef::Resource::CloudconductorConsulServiceDef.validate_check(check)
+  'Checks must be a hash containing either a `:ttl` key/value or a `:script` and `:interval` key/value' => lambda do
+    |check| Chef::Resource::CloudconductorConsulServiceDef.validate_check(check)
   end
 }
+
+private
 
 def self.validate_check(check)
   return false unless check.is_a?(Hash)
@@ -28,6 +30,8 @@ def self.validate_check(check)
 
   false
 end
+
+public
 
 def user
   node['cloudconductor']['consul']['service_user']

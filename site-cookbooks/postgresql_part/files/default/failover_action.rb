@@ -14,7 +14,7 @@ module CloudConductor
       end
 
       def token
-        CGI::escape("#{ENV['CONSUL_SECRET_KEY']}")
+        CGI.escape("#{ENV['CONSUL_SECRET_KEY']}")
       end
 
       def acl_token?
@@ -94,7 +94,7 @@ module CloudConductor
       class << self
         def regist(data)
           data = JSON.generate(data) if data.is_a?(Hash)
-          response = ConsulClient.http.put(ConsulClient.request_url("catalog/register"), data)
+          response = ConsulClient.http.put(ConsulClient.request_url('catalog/register'), data)
           puts "#{response.status}"
         end
         #
@@ -130,9 +130,7 @@ module CloudConductor
     class KeyValueStore
       class << self
         def put(key, value)
-          if value.is_a?(Hash)
-            value = JSON.generate(value)
-          end
+          value = JSON.generate(value) if value.is_a?(Hash)
 
           ConsulClient.http.put ConsulClient.request_url("kv/#{key}"), value
         end
@@ -253,12 +251,12 @@ class FailoverAction
 
       service_config = CloudConductor::ConsulConfig.read('/etc/consul.d/postgresql.json')
 
-      unless service_config['service'].nil?
-        service_config['service']['tags'] = [] if service_config['service']['tags'].nil?
-        service_config['service']['tags'] << 'primary' unless service_config['service']['tags'].include? 'primary'
+      return if service_config['service'].nil?
 
-        CloudConductor::ConsulConfig.write('/etc/consul.d/postgresql.json', service_config)
-      end
+      service_config['service']['tags'] = [] if service_config['service']['tags'].nil?
+      service_config['service']['tags'] << 'primary' unless service_config['service']['tags'].include? 'primary'
+
+      CloudConductor::ConsulConfig.write('/etc/consul.d/postgresql.json', service_config)
     end
 
     def remove_primary_tag
@@ -267,29 +265,27 @@ class FailoverAction
       logger.warn('primary database node is not one!') if primary_svr.size > 1
       logger.warn('primary database node is not found!') if primary_svr.size <= 0
 
-      if primary_svr.size == 1
-        primary_svr = primary_svr.first
+      return unless primary_svr.size == 1
 
-        puts "primary => #{primary_svr}"
+      primary_svr = primary_svr.first
 
-        node_name = primary_svr['Node']
+      puts "primary => #{primary_svr}"
 
-        catalog_node_info = CloudConductor::ConsulClient::Catalog.node(node_name)
+      node_name = primary_svr['Node']
 
-        puts "node => #{catalog_node_info}"
+      catalog_node_info = CloudConductor::ConsulClient::Catalog.node(node_name)
 
-        data = {}
-        data = data.merge(catalog_node_info["Node"])
-        data["Service"] = catalog_node_info["Services"]["postgresql"]
+      puts "node => #{catalog_node_info}"
 
-        data["Service"]["Tags"] = data["Service"]["Tags"] - ['primary']
+      data = {}
+      data = data.merge(catalog_node_info['Node'])
+      data['Service'] = catalog_node_info['Services']['postgresql']
 
-        CloudConductor::ConsulClient::Catalog.regist(data)
-      end
+      data['Service']['Tags'] = data['Service']['Tags'] - ['primary']
+
+      CloudConductor::ConsulClient::Catalog.regist(data)
     end
   end
 end
 
-if __FILE__ == $PROGRAM_NAME
-  FailoverAction.execute
-end
+FailoverAction.execute if __FILE__ == $PROGRAM_NAME

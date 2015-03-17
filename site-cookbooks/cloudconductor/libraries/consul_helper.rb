@@ -25,7 +25,7 @@ module CloudConductor
       end
 
       def token
-        CGI::escape("#{ENV['CONSUL_SECRET_KEY']}")
+        CGI.escape("#{ENV['CONSUL_SECRET_KEY']}")
       end
 
       def acl_token?

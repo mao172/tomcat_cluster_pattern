@@ -15,7 +15,7 @@ default['pgpool_part']['config']['dir'] = '/etc/pgpool-II'
 
 default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'host', db: 'all', user: 'all', addr: '127.0.0.1/32', method: 'md5' },
-  { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' },
+  { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' }
 ]
 
 default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'
@@ -81,7 +81,12 @@ default['pgpool_part']['pgconf']['health_check_password'] = ''
 default['pgpool_part']['pgconf']['health_check_max_retries'] = 0
 default['pgpool_part']['pgconf']['health_check_retry_delay'] = 1
 default['pgpool_part']['pgconf']['connect_timeout'] = 10000
-default['pgpool_part']['pgconf']['failover_command'] = 'NEWPRIMARYNODE=`consul members | grep %H | awk "{print $1}"`;consul event -name="failover" -node="$NEWPRIMARYNODE"'
+
+failover_command = []
+failover_command << 'NEWPRIMARYNODE=`consul members | grep %H | awk "{print $1}"`'
+failover_command << 'consul event -name="failover" -node="$NEWPRIMARYNODE"'
+
+default['pgpool_part']['pgconf']['failover_command'] = failover_command.join(';')
 default['pgpool_part']['pgconf']['failback_command'] = ''
 default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = true
 default['pgpool_part']['pgconf']['search_primary_node_timeout'] = 10

@@ -321,8 +321,8 @@ describe 'haproxy_part::configure' do
 
     describe 'with ssl proxy' do
       before do
-        method = chef_run.node[:haproxy][:install_method]
-        prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
+        # method = chef_run.node[:haproxy][:install_method]
+        # prefix = "#{chef_run.node[:haproxy][method][:prefix]}"
 
         chef_run.node.set['haproxy_part']['enable_ssl_proxy'] = true
         chef_run.node.set[:haproxy_part][:ssl_pem_dir] = pem_dir_path

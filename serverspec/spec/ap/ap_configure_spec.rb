@@ -1,10 +1,10 @@
 require 'spec_helper'
 require 'socket'
 
-def private_ip()
-  Socket.getifaddrs.select{|x|
-    x.name == "eth0" and x.addr.ipv4?
-  }.first.addr.ip_address
+def private_ip
+  Socket.getifaddrs.select do|x|
+    x.name == 'eth0' && x.addr.ipv4?
+  end.first.addr.ip_address
 end
 
 def servers(role)

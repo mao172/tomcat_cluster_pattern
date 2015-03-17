@@ -28,7 +28,7 @@ def read_pem_resource_from_file
 end
 
 def read_pem_resource_from_node
-  Chef::Log.info("read pem file from node")
+  Chef::Log.info('read pem file from node')
 
   key = node[:haproxy_part][:pem_file][:node][:key]
   node[:haproxy_part][key]

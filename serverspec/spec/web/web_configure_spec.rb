@@ -12,6 +12,6 @@ describe port(80) do
 end
 
 # Check connect ap servers
-describe command("hping3 -S localhost -p 8009 -c 5") do
+describe command('hping3 -S localhost -p 8009 -c 5') do
   its(:stdout) { should match(/sport=8009 flags=SA/) }
 end

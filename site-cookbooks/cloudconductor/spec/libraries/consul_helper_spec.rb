@@ -2,8 +2,7 @@ require_relative '../spec_helper'
 require_relative '../../libraries/consul_helper'
 
 describe CloudConductor::ConsulClient do
-
-  token='++token_key++'
+  token = '++token_key++'
 
   describe '::Catalog #service' do
     before do
