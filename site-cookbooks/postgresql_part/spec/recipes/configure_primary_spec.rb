@@ -306,9 +306,9 @@ describe 'postgresql_part::configure_primary' do
       query = ["SELECT * FROM pg_create_physical_replication_slot('",
                "#{chef_run.node['postgresql_part']['replication']['replication_slot']}');"].join
       expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
-      :postgresql_database,
-      :query,
-      'postgres'
+        :postgresql_database,
+        :query,
+        'postgres'
     ).with(
       connection: postgresql_connection_info,
       sql: query

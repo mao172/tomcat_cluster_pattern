@@ -98,7 +98,7 @@ describe 'postgresql_part::default' do
 
   it 'extract archive file' do
     expect(chef_run).to run_bash('extract_archive_file').with(
-     code: "tar xvf #{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0.tar.gz -C #{Chef::Config[:file_cache_path]}/"
+      code: "tar xvf #{Chef::Config[:file_cache_path]}/pgpool-II-3.4.0.tar.gz -C #{Chef::Config[:file_cache_path]}/"
     )
   end
 

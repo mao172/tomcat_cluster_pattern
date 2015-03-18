@@ -8,7 +8,7 @@ node.set['pgpool_part']['pgconf']['sr_check_password'] = generate_password('db_r
 
 db_servers = servers('db')
 
-db_servers.each_with_index do | (_name, server), index |
+db_servers.each_with_index do |(_name, server), index|
   node.set['pgpool_part']['pgconf']["backend_hostname#{index}"] = server['private_ip']
   node.set['pgpool_part']['pgconf']["backend_port#{index}"] = node['pgpool_part']['postgresql']['port'].to_i
   node.set['pgpool_part']['pgconf']["backend_data_directory#{index}"] = node['pgpool_part']['postgresql']['dir']
@@ -21,7 +21,7 @@ other_ap_servers = servers('ap').delete_if { |_key, val| val['private_ip'] == no
 if other_ap_servers.length < 1
   node.set['pgpool_part']['pgconf']['use_watchdog'] = false
 else
-  other_ap_servers.each_with_index do | (_name, server), index |
+  other_ap_servers.each_with_index do |(_name, server), index|
     node.set['pgpool_part']['pgconf']["other_pgpool_hostname#{index}"] = server['private_ip']
     node.set['pgpool_part']['pgconf']["other_pgpool_port#{index}"] = node['pgpool_part']['pgconf']['port']
     node.set['pgpool_part']['pgconf']["other_wd_port#{index}"] = node['pgpool_part']['pgconf']['wd_port']
