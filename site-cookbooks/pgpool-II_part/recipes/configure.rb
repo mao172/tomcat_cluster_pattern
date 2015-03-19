@@ -1,4 +1,15 @@
 require 'digest/md5'
+require 'timeout'
+
+timeout = node[:pgpool_part][:wait_timeout]
+interval = node[:pgpool_part][:wait_interval]
+
+Timeout.timeout(timeout) do
+  while CloudConductor::ConsulClient::Catalog.service('postgresql', tag: 'primary').empty?
+    puts 'waiting for primary ...'
+    sleep interval
+  end
+end
 
 def servers(role)
   node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?(role) }
@@ -30,26 +41,36 @@ else
   end
 end
 
-file "#{node['pgpool_part']['config']['dir']}/pcp.conf" do
-  owner 'root'
-  group 'root'
-  mode '0764'
-  content "#{node['pgpool_part']['user']}:#{Digest::MD5.hexdigest(generate_password('pcp'))}"
-  notifies :restart, 'service[pgpool]', :delayed
+ruby_block 'wait-unless-completed-database' do
+  block do
+    require 'timeout'
+
+    def servers(role)
+      node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?(role) }
+    end
+
+    timeout = node[:pgpool_part][:wait_timeout]
+    interval = node[:pgpool_part][:wait_interval]
+    port = node[:pgpool_part][:postgresql][:port]
+
+    Timeout.timeout(timeout) do
+      servers('db').each do |_name, server|
+        until system("hping3 -S #{server[:private_ip]} -p #{port} -c 5 ")
+          puts "... waiting for completed database (#{server[:private_ip]}:#{port}) ..."
+          sleep interval
+        end
+      end
+    end
+  end
+  notifies :restart, 'service[pgpool]', :immediately
+  action :nothing
 end
 
-template "#{node['pgpool_part']['config']['dir']}/pgpool.conf" do
+pgpool_II_part_config_file 'create-conf-file' do
   owner 'root'
   group 'root'
-  mode '0764'
-  notifies :restart, 'service[pgpool]', :delayed
-end
-
-template "#{node['pgpool_part']['config']['dir']}/pool_hba.conf" do
-  owner 'root'
-  group 'root'
-  mode '0764'
-  notifies :restart, 'service[pgpool]', :delayed
+  mode  '0764'
+  notifies :run, 'ruby_block[wait-unless-completed-database]', :delayed
 end
 
 bash 'create md5 auth setting' do

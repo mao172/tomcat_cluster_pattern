@@ -18,6 +18,9 @@ default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' }
 ]
 
+default[:pgpool_part][:wait_timeout] = 180
+default[:pgpool_part][:wait_interval] = 10
+
 default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'
 default['pgpool_part']['pgconf']['port'] = 9999
 default['pgpool_part']['pgconf']['socket_dir'] = '/tmp'
