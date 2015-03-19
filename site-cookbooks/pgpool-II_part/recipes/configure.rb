@@ -55,7 +55,7 @@ ruby_block 'wait-unless-completed-database' do
 
     Timeout.timeout(timeout) do
       servers('db').each do |_name, server|
-        until system("hping3 -S #{server[:private_ip]} -p #{port} -c 5 ")
+        until system("hping3 -S #{server[:private_ip]} -p #{port} -c 5 | grep 'sport=#{port} flags=SA'")
           puts "... waiting for completed database (#{server[:private_ip]}:#{port}) ..."
           sleep interval
         end
