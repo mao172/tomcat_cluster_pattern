@@ -5,6 +5,14 @@ action :create do
     end
   end
 
+  directory "#{node['tomcat']['context_dir']}" do
+    owner node['tomcat']['user']
+    group node['tomcat']['group']
+    mode  '0755'
+    recursive true
+    action :create
+  end
+
   app_name = new_resource.app_name
 
   case new_resource.session_replication
