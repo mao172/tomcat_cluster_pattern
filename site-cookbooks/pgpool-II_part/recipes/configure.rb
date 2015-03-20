@@ -63,6 +63,7 @@ ruby_block 'wait-unless-completed-database' do
     end
   end
   notifies :restart, 'service[pgpool]', :immediately
+  notifies :run, 'ruby_block[status-check]', :delayed
   action :nothing
 end
 
@@ -82,7 +83,40 @@ bash 'create md5 auth setting for tomcat user' do
   code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['tomcat']['user']} #{generate_password('tomcat')}"
 end
 
-service 'pgpool' do
+pgpool_service = service 'pgpool' do
   service_name node['pgpool_part']['service']
+  action :nothing
+end
+
+ruby_block 'status-check' do
+  block do
+    require 'timeout'
+
+    timeout = node[:pgpool_part][:wait_timeout]
+    interval = node[:pgpool_part][:wait_interval]
+
+    params = []
+    params << '0'
+    params << 'localhost'
+    params << '9898'
+    params << "#{node['pgpool_part']['user']}"
+    params << generate_password('pcp')
+
+    Timeout.timeout(timeout) do
+      while system("pcp_node_info --verbose #{params.join(' ')} 0 | grep -E 'Status *: +[0]' ")
+        puts "... #{node['pgpool_part']['pgconf']['backend_hostname0']} is during the initialization ..."
+        system("pcp_attach_node #{params.join(' ')} 0")
+        pgpool_service.run_action(:restart)
+        sleep interval
+      end
+
+      while system("pcp_node_info --verbose #{params.join(' ')} 1 | grep -E 'Status *: +[0]'")
+        puts "... #{node['pgpool_part']['pgconf']['backend_hostname1']} is during the initialization ..."
+        system("pcp_attach_node #{params.join(' ')} 1")
+        pgpool_service.run_action(:restart)
+        sleep interval
+      end
+    end
+  end
   action :nothing
 end
