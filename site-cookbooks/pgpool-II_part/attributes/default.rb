@@ -86,7 +86,7 @@ default['pgpool_part']['pgconf']['health_check_retry_delay'] = 1
 default['pgpool_part']['pgconf']['connect_timeout'] = 10000
 
 failover_command = []
-failover_command << 'NEWPRIMARYNODE=`consul members | grep %H | awk "{print $1}"`'
+failover_command << "NEWPRIMARYNODE=`consul members | grep %H | awk \\'{print $1}\\'`"
 failover_command << 'consul event -name="failover" -node="$NEWPRIMARYNODE"'
 
 default['pgpool_part']['pgconf']['failover_command'] = failover_command.join(';')
