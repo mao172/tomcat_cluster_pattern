@@ -34,8 +34,16 @@ if [ "${STATUS}" = "passing" ] ; then
     fi
   fi
 else
-  curl -s http://localhost:8500/v1/agent/services | jq '.postgresql|{id:.ID,name:.Service,tags:(.Tags - ["primary"]),address:.Address,port:.Port}' | curl -s -XPUT http://localhost:8500/v1/agent/service/register -d @-
+  TAGS=`curl -s http://localhost:8500/v1/agent/services | jq '.postgresql | .Tags '`
+
+  if [ "$TAGS" != null ] ; then
+    curl -s http://localhost:8500/v1/agent/services | jq '.postgresql|{id:.ID,name:.Service,tags:(.Tags - ["primary"]),address:.Address,port:.Port}' | curl -s -XPUT http://localhost:8500/v1/agent/service/register -d @-
+  fi
 
   FILE_DATA="`cat /etc/consul.d/postgresql.json`"
-  echo "${FILE_DATA}" | jq '.service | {name: .name, tags: (.tags - ["primary"]), address: .address, port: .port, checks: .checks} | {service: .}' > /etc/consul.d/postgresql.json
+  TAGS=`echo "${FILE_DATA}" | jq '.service | .tags '`
+
+  if [ "$TAGS" != null ] ; then
+    echo "${FILE_DATA}" | jq '.service | {name: .name, tags: (.tags - ["primary"]), address: .address, port: .port, checks: .checks} | {service: .}' > /etc/consul.d/postgresql.json
+  fi
 fi
