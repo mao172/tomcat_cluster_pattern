@@ -29,5 +29,12 @@ action :create do
     mode '0764'
   end
 
+  cookbook_file 'failover.sh' do
+    path "#{node['pgpool_part']['config']['dir']}/failover.sh"
+    mode 0755
+    owner 'root'
+    user  'root'
+  end
+
   new_resource.updated_by_last_action(true)
 end

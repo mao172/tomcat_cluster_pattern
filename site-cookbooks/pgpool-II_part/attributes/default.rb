@@ -85,13 +85,9 @@ default['pgpool_part']['pgconf']['health_check_max_retries'] = 0
 default['pgpool_part']['pgconf']['health_check_retry_delay'] = 1
 default['pgpool_part']['pgconf']['connect_timeout'] = 10000
 
-failover_command = []
-failover_command << "NEWPRIMARYNODE=`consul members | grep %H | awk \\'{print $1}\\'`"
-failover_command << 'consul event -name="failover" -node="$NEWPRIMARYNODE"'
-
-default['pgpool_part']['pgconf']['failover_command'] = failover_command.join(';')
+default['pgpool_part']['pgconf']['failover_command'] = "#{node['pgpool_part']['config']['dir']}/failover.sh %H"
 default['pgpool_part']['pgconf']['failback_command'] = ''
-default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = true
+default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = false
 default['pgpool_part']['pgconf']['search_primary_node_timeout'] = 10
 default['pgpool_part']['pgconf']['recovery_user'] = 'nobody'
 default['pgpool_part']['pgconf']['recovery_password'] = ''
