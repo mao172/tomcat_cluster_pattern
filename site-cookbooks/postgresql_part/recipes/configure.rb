@@ -8,7 +8,7 @@ require 'timeout'
 
 pgpass = [
   {
-    'ip' => 'localhost',
+    'ip' => '172.0.0.1',
     'port' => "#{node['postgresql']['config']['port']}",
     'db_name' => 'replication',
     'user' => "#{node['postgresql_part']['replication']['user']}",
