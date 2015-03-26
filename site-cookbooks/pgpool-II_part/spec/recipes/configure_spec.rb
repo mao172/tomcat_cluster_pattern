@@ -1,4 +1,5 @@
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper.rb'
 
 describe 'pgpool-II_part::configure' do
   let(:chef_run) { ChefSpec::SoloRunner.new(step_into: ['pgpool_II_part_config_file']) }
@@ -6,6 +7,7 @@ describe 'pgpool-II_part::configure' do
   pgpool_dir = '/etc/pgpool-II'
 
   before do
+    allow(CloudConductor::ConsulClient::Catalog).to receive(:service).and_return('dummy')
     allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('db_application').and_return('dummy_passwd')
     allow_any_instance_of(Chef::Resource).to receive(:generate_password).with('tomcat').and_return('dummy_passwd')
 
