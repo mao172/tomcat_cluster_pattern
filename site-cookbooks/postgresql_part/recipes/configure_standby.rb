@@ -4,28 +4,6 @@
 #
 #
 
-# puts "primary ip=#{primary_db_ip}"
-# puts "standby ip=#{standby_db_ip}"
-# puts "host ip= #{node[:ipaddress]}"
-
-pgpass = {
-  'ip' => "#{primary_db_ip}",
-  'port' => "#{node['postgresql']['config']['port']}",
-  'db_name' => 'replication',
-  'user' => "#{node['postgresql_part']['replication']['user']}",
-  'passwd' => generate_password('db_replication')
-}
-
-template "#{node['postgresql_part']['home_dir']}/.pgpass" do
-  source 'pgpass.erb'
-  mode '0600'
-  owner 'postgres'
-  group 'postgres'
-  variables(
-    pgpass: pgpass
-  )
-end
-
 ruby_block 'stop_postgresql' do
   block {}
   notifies :stop, 'service[postgresql]', :immediately

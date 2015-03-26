@@ -268,28 +268,6 @@ describe 'postgresql_part::configure_primary' do
       end
     end
 
-    it 'create pgpass' do
-      pgpass = {
-        'ip' => partner_ip,
-        'port' => chef_run.node['postgresql']['config']['port'],
-        'db_name' => 'replication',
-        'user' => chef_run.node['postgresql_part']['replication']['user'],
-        'passwd' => generate_rep_passwd
-      }
-      chef_run.node.set['postgres_part']['pgpass'] = pgpass
-      chef_run.converge(described_recipe)
-
-      expect(chef_run).to create_template("#{chef_run.node['postgresql_part']['home_dir']}/.pgpass").with(
-        source: 'pgpass.erb',
-        mode: '0600',
-        owner: 'postgres',
-        group: 'postgres',
-        variables: {
-          pgpass: pgpass
-        }
-      )
-    end
-
     it 'restart posgresql service' do
       service_name = 'postgresql'
       chef_run.node.set['postgresql']['server']['service_name'] = service_name

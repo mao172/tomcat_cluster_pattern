@@ -82,28 +82,6 @@ describe 'postgresql_part::configure_standby' do
       chef_run.converge(described_recipe)
     end
 
-    it 'create pgpass' do
-      pgpass = {
-        'ip' => primary_ip,
-        'port' => chef_run.node['postgresql']['config']['port'],
-        'db_name' => 'replication',
-        'user' => chef_run.node['postgresql_part']['replication']['user'],
-        'passwd' => generate_rep_passwd
-      }
-      chef_run.node.set['postgres_part']['pgpass'] = pgpass
-      chef_run.converge(described_recipe)
-
-      expect(chef_run).to create_template("#{chef_run.node['postgresql_part']['home_dir']}/.pgpass").with(
-        source: 'pgpass.erb',
-        mode: '0600',
-        owner: 'postgres',
-        group: 'postgres',
-        variables: {
-          pgpass: pgpass
-        }
-      )
-    end
-
     it 'stop postgresql' do
       expect(chef_run.ruby_block('stop_postgresql'))
         .to notify('service[postgresql]').to(:stop).immediately

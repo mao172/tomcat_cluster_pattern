@@ -4,24 +4,6 @@
 #
 #
 
-pgpass = {
-  'ip' => "#{standby_db_ip}",
-  'port' => "#{node['postgresql']['config']['port']}",
-  'db_name' => 'replication',
-  'user' => "#{node['postgresql_part']['replication']['user']}",
-  'passwd' => generate_password('db_replication')
-}
-
-template "#{node['postgresql_part']['home_dir']}/.pgpass" do
-  source 'pgpass.erb'
-  mode '0600'
-  owner 'postgres'
-  group 'postgres'
-  variables(
-    pgpass: pgpass
-  )
-end
-
 postgresql_connection_info = {
   host: '127.0.0.1',
   port: node['postgresql']['config']['port'],
