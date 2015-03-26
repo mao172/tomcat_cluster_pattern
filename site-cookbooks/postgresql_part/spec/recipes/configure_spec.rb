@@ -64,7 +64,7 @@ describe 'postgresql_part::configure' do
 
   it 'create pgpass' do
     pgpass = [{
-      'ip' => 'localhost',
+      'ip' => '127.0.0.1',
       'port' => "#{chef_run.node['postgresql']['config']['port']}",
       'db_name' => 'replication',
       'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
