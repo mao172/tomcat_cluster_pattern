@@ -56,28 +56,26 @@ describe 'postgresql_part::configure' do
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('tomcat').and_return(generate_passwd)
 
-
     chef_run.converge(described_recipe)
 
     allow(CloudConductor::ConsulClient::Catalog).to receive_message_chain(:service, :empty?).and_return(false)
     chef_run.converge(described_recipe)
   end
 
-
   it 'create pgpass' do
     pgpass = [{
-      'ip' => "localhost",
+      'ip' => 'localhost',
       'port' => "#{chef_run.node['postgresql']['config']['port']}",
       'db_name' => 'replication',
       'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
       'passwd' => generate_passwd
-    },{
+    }, {
       'ip' => primary_ip,
       'port' => "#{chef_run.node['postgresql']['config']['port']}",
       'db_name' => 'replication',
       'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
       'passwd' => generate_passwd
-    },{
+    }, {
       'ip' => standby_ip,
       'port' => "#{chef_run.node['postgresql']['config']['port']}",
       'db_name' => 'replication',
