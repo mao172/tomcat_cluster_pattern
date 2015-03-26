@@ -23,55 +23,55 @@ describe CloudConductor do
 
       allow(@client).to receive_message_chain(:http, :put)
         .with(:no_args)
-        .with("agent/service/register?token=++token_key++", json)
+        .with('agent/service/register?token=++token_key++', json)
         .and_return('dummy')
 
       expect(@client.regist_service('db')).to eq('dummy')
     end
 
     it 'service regist with id' do
-      option = {id: 'db1'}
+      option = { id: 'db1' }
       option[:name] = 'db'
       json = JSON.generate(option)
 
       allow(@client).to receive_message_chain(:http, :put)
         .with(:no_args)
-        .with("agent/service/register?token=++token_key++", json)
+        .with('agent/service/register?token=++token_key++', json)
         .and_return('dummy')
 
-      expect(@client.regist_service('db', id:'db1')).to eq('dummy')
+      expect(@client.regist_service('db', id: 'db1')).to eq('dummy')
     end
 
     it 'service regist with tags' do
-      option = {id: 'db2', tags: %w(hoge fuga)}
+      option = { id: 'db2', tags: %w(hoge fuga) }
       option[:name] = 'db'
       json = JSON.generate(option)
 
       allow(@client).to receive_message_chain(:http, :put)
         .with(:no_args)
-        .with("agent/service/register?token=++token_key++", json)
+        .with('agent/service/register?token=++token_key++', json)
         .and_return('dummy')
-      expect(@client.regist_service('db', id:'db2', tags: %w(hoge fuga))).to eq('dummy')
+      expect(@client.regist_service('db', id: 'db2', tags: %w(hoge fuga))).to eq('dummy')
     end
 
     it 'service regist from hash' do
-      option = {name: 'db', port: 5432}
+      option = { name: 'db', port: 5432 }
       json = JSON.generate(option)
 
       allow(@client).to receive_message_chain(:http, :put)
         .with(:no_args)
-        .with("agent/service/register?token=++token_key++", json)
+        .with('agent/service/register?token=++token_key++', json)
         .and_return('dummy')
-      expect(@client.regist_service(name: 'db', port:5432)).to eq('dummy')
+      expect(@client.regist_service(name: 'db', port: 5432)).to eq('dummy')
     end
 
     it 'service regist from hash with tags' do
-      option = {id: 'db3', name: 'db', port: 5432, tags: %w(a b)}
+      option = { id: 'db3', name: 'db', port: 5432, tags: %w(a b) }
       json = JSON.generate(option)
 
       allow(@client).to receive_message_chain(:http, :put)
         .with(:no_args)
-        .with("agent/service/register?token=++token_key++", json)
+        .with('agent/service/register?token=++token_key++', json)
         .and_return('dummy')
       expect(@client.regist_service(id: 'db3', name: 'db', port: 5432, tags: %w(a b))).to eq('dummy')
     end
@@ -80,7 +80,7 @@ describe CloudConductor do
       it 'test' do
         allow(@client).to receive_message_chain(:http, :put)
           .with(:no_args)
-          .with("agent/service/deregister/db?token=++token_key++")
+          .with('agent/service/deregister/db?token=++token_key++')
           .and_return('dummy')
 
         expect(@helper::ConsulClient.remove_service('db')).to eq('dummy')

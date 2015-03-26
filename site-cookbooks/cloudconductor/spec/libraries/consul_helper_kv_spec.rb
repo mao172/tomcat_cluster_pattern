@@ -13,7 +13,7 @@ describe CloudConductor::ConsulClient::KeyValueStore do
   before do
     @helper = CloudConductor
     @client = CloudConductor::ConsulClient
-      allow(@client).to receive_message_chain(:token).and_return(token)
+    allow(@client).to receive_message_chain(:token).and_return(token)
   end
 
   it 'put' do
