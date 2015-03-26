@@ -113,6 +113,10 @@ describe 'postgresql_part::configure_primary' do
         { 'type' => 'host', 'db' => 'all', 'user' => 'postgres', 'addr' => '0.0.0.0/0', 'method' => 'reject' },
         {
           'type' => 'host', 'db' => 'replication', 'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
+          'addr' => '127.0.0.1/32', 'method' => 'md5'
+        },
+        {
+          'type' => 'host', 'db' => 'replication', 'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
           'addr' => "#{myself_ip}/32", 'method' => 'md5'
         },
         {
@@ -164,6 +168,10 @@ describe 'postgresql_part::configure_primary' do
           { 'type' => 'host', 'db' => 'all', 'user' => 'all', 'addr' => '127.0.0.1/32', 'method' => 'md5' },
           { 'type' => 'host', 'db' => 'all', 'user' => 'all', 'addr' => '::1/128', 'method' => 'md5' },
           { 'type' => 'host', 'db' => 'all', 'user' => 'postgres', 'addr' => '0.0.0.0/0', 'method' => 'reject' },
+          {
+            'type' => 'host', 'db' => 'replication', 'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
+            'addr' => '127.0.0.1/32', 'method' => 'md5'
+          },
           {
             'type' => 'host', 'db' => 'replication', 'user' => "#{chef_run.node['postgresql_part']['replication']['user']}",
             'addr' => "#{myself_ip}/32", 'method' => 'md5'
