@@ -3,144 +3,87 @@ require_relative '../../libraries/consul_helper.rb'
 require_relative '../../libraries/consul_helper_agent.rb'
 
 describe CloudConductor do
+  token = '++token_key++'
+
   before do
     # @helper = Object.new
     @helper = CloudConductor
   end
 
   describe '::ConsulClient' do
+    before do
+      @client = CloudConductor::ConsulClient
+      allow(@client).to receive_message_chain(:token).and_return(token)
+    end
+
     it 'service regist simple' do
-      @helper::ConsulClient.regist_service('db')
+      option = {}
+      option[:name] = 'db'
+      json = JSON.generate(option)
 
-      ret = @helper::ConsulClient.services['db']
+      allow(@client).to receive_message_chain(:http, :put)
+        .with(:no_args)
+        .with("agent/service/register?token=++token_key++", json)
+        .and_return('dummy')
 
-      param = {
-        'ID' => 'db',
-        'Service' => 'db',
-        'Tags' => nil,
-        'Address' => '',
-        'Port' => 0
-      }
-
-      expect(ret).to eq(param)
+      expect(@client.regist_service('db')).to eq('dummy')
     end
 
     it 'service regist with id' do
-      @helper::ConsulClient.regist_service('db', id: 'db1')
+      option = {id: 'db1'}
+      option[:name] = 'db'
+      json = JSON.generate(option)
 
-      ret = @helper::ConsulClient.services['db1']
+      allow(@client).to receive_message_chain(:http, :put)
+        .with(:no_args)
+        .with("agent/service/register?token=++token_key++", json)
+        .and_return('dummy')
 
-      param = {
-        'ID' => 'db1',
-        'Service' => 'db',
-        'Tags' => nil,
-        'Address' => '',
-        'Port' => 0
-      }
-
-      expect(ret).to eq(param)
-
-      @helper::ConsulClient.remove_service('db1')
-
-      expect(@helper::ConsulClient.services['db1']).to eq(nil)
+      expect(@client.regist_service('db', id:'db1')).to eq('dummy')
     end
 
     it 'service regist with tags' do
-      @helper::ConsulClient.regist_service('db', id: 'db2', tags: %w(hoge fuga))
+      option = {id: 'db2', tags: %w(hoge fuga)}
+      option[:name] = 'db'
+      json = JSON.generate(option)
 
-      ret = @helper::ConsulClient.services['db2']
-
-      param = {
-        'ID' => 'db2',
-        'Service' => 'db',
-        'Tags' => %w(hoge fuga),
-        'Address' => '',
-        'Port' => 0
-      }
-
-      expect(ret).to eq(param)
-
-      @helper::ConsulClient.remove_service('db2')
-
-      expect(@helper::ConsulClient.services['db2']).to eq(nil)
+      allow(@client).to receive_message_chain(:http, :put)
+        .with(:no_args)
+        .with("agent/service/register?token=++token_key++", json)
+        .and_return('dummy')
+      expect(@client.regist_service('db', id:'db2', tags: %w(hoge fuga))).to eq('dummy')
     end
 
     it 'service regist from hash' do
-      @helper::ConsulClient.regist_service(name: 'db', port: 5432)
+      option = {name: 'db', port: 5432}
+      json = JSON.generate(option)
 
-      ret = @helper::ConsulClient.services['db']
-
-      param = {
-        'ID' => 'db',
-        'Service' => 'db',
-        'Tags' => nil,
-        'Address' => '',
-        'Port' => 5432
-      }
-
-      expect(ret).to eq(param)
+      allow(@client).to receive_message_chain(:http, :put)
+        .with(:no_args)
+        .with("agent/service/register?token=++token_key++", json)
+        .and_return('dummy')
+      expect(@client.regist_service(name: 'db', port:5432)).to eq('dummy')
     end
 
     it 'service regist from hash with tags' do
-      @helper::ConsulClient.regist_service(id: 'db3', name: 'db', port: 5432, tags: %w(a b))
+      option = {id: 'db3', name: 'db', port: 5432, tags: %w(a b)}
+      json = JSON.generate(option)
 
-      ret = @helper::ConsulClient.services['db3']
-
-      param = {
-        'ID' => 'db3',
-        'Service' => 'db',
-        'Tags' => %w(a b),
-        'Address' => '',
-        'Port' => 5432
-      }
-
-      expect(ret).to eq(param)
-
-      @helper::ConsulClient.remove_service('db3')
-
-      expect(@helper::ConsulClient.services['db3']).to eq(nil)
-    end
-
-    it 'changed tags' do
-      @helper::ConsulClient.regist_service('db')
-
-      ret = @helper::ConsulClient.services['db']
-
-      ret['Tags'] = [] if ret['Tags'].nil?
-      ret['Tags'] << 'primary'
-      name = ret['Service']
-
-      @helper::ConsulClient.regist_service(name, ret)
-
-      ret = @helper::ConsulClient.services['db']
-
-      param = {
-        'ID' => 'db',
-        'Service' => 'db',
-        'Tags' => %w(primary),
-        'Address' => '',
-        'Port' => 0
-      }
-
-      expect(ret).to eq(param)
-
-      @helper::ConsulClient.remove_service('db')
-
-      expect(@helper::ConsulClient.services['db']).to eq(nil)
+      allow(@client).to receive_message_chain(:http, :put)
+        .with(:no_args)
+        .with("agent/service/register?token=++token_key++", json)
+        .and_return('dummy')
+      expect(@client.regist_service(id: 'db3', name: 'db', port: 5432, tags: %w(a b))).to eq('dummy')
     end
 
     describe 'service remove' do
-      before do
-        @helper::ConsulClient.regist_service(id: 'db', name: 'db')
-        # @helper::ConsulClient.regist_service(id: 'db1', name: 'db')
-        # @helper::ConsulClient.regist_service(id: 'db2', name: 'db')
-        # @helper::ConsulClient.regist_service(id: 'db3', name: 'db')
-      end
-
       it 'test' do
-        @helper::ConsulClient.remove_service('db')
+        allow(@client).to receive_message_chain(:http, :put)
+          .with(:no_args)
+          .with("agent/service/deregister/db?token=++token_key++")
+          .and_return('dummy')
 
-        expect(@helper::ConsulClient.services['db']).to eq(nil)
+        expect(@helper::ConsulClient.remove_service('db')).to eq('dummy')
       end
     end
   end
