@@ -1,0 +1,4 @@
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+<% node['pgpool_part']['pg_hba']['auth'].each do |auth| %>
+<%= auth['type'].ljust(7) %> <%= auth['db'].ljust(15) %> <%= auth['user'].ljust(15) %><%= (auth['addr'] || '').ljust(23) %> <%= auth['method'] %>
+<% end %>

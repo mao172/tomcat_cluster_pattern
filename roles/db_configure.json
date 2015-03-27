@@ -1,0 +1,9 @@
+{
+  "name": "db_configure",
+  "description": "Configures PostgreSQL",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "run_list": [
+    "postgresql_part::configure"
+  ]
+}

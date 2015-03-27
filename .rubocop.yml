@@ -1,0 +1,34 @@
+AllCops:
+  Exclude:
+    - cookbooks/**/*
+    - site-cookbooks/**/metadata.rb
+    - vendor/**/*
+    - site-cookbooks/postgresql_part/libraries/http_redirect_patch.rb
+    - tmp/**/*
+
+LineLength:
+  Max: 130
+
+MethodLength:
+  Max: 20
+
+AbcSize:
+  Enabled: false
+
+AsciiComments:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/SingleSpaceBeforeFirstArg:
+  Enabled: false
+
+Style/NumericLiterals:
+  Enabled: false
+
+CyclomaticComplexity:
+  Max: 7

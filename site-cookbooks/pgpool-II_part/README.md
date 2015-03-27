@@ -1,31 +1,7 @@
 About
 =====
-
-This is the platform pattern designed to build the system hosts Apache Tomcat based application.
-
-* CentOS (6.5)
-* Java (>= 1.7)
-* Apache Tomcat (>= 7)
-* PostgreSQL (>= 9.3)
-
-For more information, please visit [official web site](http://cloudconductor.org/).
-
-Requirements
-============
-
-Prerequisites
--------------
-
-- cloudconductor (>= 1.0)
-
-How to use patterns
-============
-
-You can apply this pattern by using CloudConductor CLI tools or REST API.
-Please see [Getting started](http://cloudconductor.org/) in official web site to know
-how the parameters you input to CloudConductor CLI tools or REST API are converted into
-chef attributes.
-
+This is the designed to build postgresql of tomcat cluster pattern
+For more information, please visit README of tomcat cluster pattern
 
 Copyright and License
 =====================

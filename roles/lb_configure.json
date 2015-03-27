@@ -1,0 +1,9 @@
+{
+  "name": "lb_setup",
+  "description": "Installs HAProxy",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "run_list": [
+    "haproxy_part::configure"
+  ]
+}

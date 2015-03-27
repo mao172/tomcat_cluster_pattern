@@ -1,0 +1,4 @@
+# hostname:port:db:_name:user:passwd
+<% @pgpass.each do |item| %>
+<%= item['ip'] %>:<%= item['port'] %>:<%= item['db_name'] %>:<%= (item['user']) %>:<%= item['passwd'] %>
+<% end %>
