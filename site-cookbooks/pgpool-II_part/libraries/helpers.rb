@@ -61,7 +61,7 @@ class Pgpool2Part
       params << conf('user')
       params << generate_password('pcp')
 
-      while exec_command("pcp_node_info --verbose #{params.join(' ')} #{index} | grep -E 'Status *: +[0]' ")
+      while exec_command("pcp_node_info --verbose #{params.join(' ')} #{index} | grep -E 'Status *: +[03]' ")
         puts "... #{backend_hostname(index)} is during the initialization ..."
         exec_command("pcp_attach_node #{params.join(' ')} #{index}")
         pgpool_service.run_action(:restart)
