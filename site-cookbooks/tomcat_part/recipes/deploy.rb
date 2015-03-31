@@ -21,7 +21,7 @@ applications = node['cloudconductor']['applications'].select { |_app_name, app| 
 applications.each do |app_name, app|
   case app['protocol']
   when 'git'
-    source_path = File.join(Dir.tmpdir, "#{app_name}")
+    source_path = File.join(Dir.tmpdir, app_name)
 
     deploy app_name do
       repo app['url']
@@ -61,7 +61,7 @@ applications.each do |app_name, app|
     end
   end
 
-  tomcat_part_context "#{app_name}" do
+  tomcat_part_context app_name do
     use_db true
     database database_spec
     sessionTableName "#{app_name}_session"

@@ -4,18 +4,22 @@
 #
 #
 
-# require 'cloud_conductor_utils/consul'
+def whyrun_supported?
+  true
+end
+
+use_inline_resources
 
 def read_pem_resource_from_consul
-  Chef::Log.info("read pem from consul [key: #{node[:haproxy_part][:pem_file][:consul][:key]}]")
+  Chef::Log.info("read pem from consul [key: #{node['haproxy_part']['pem_file']['consul']['key']}]")
 
-  key = node[:haproxy_part][:pem_file][:consul][:key]
-  type = node[:haproxy_part][:pem_file][:consul][:value_type].to_sym
+  key = node['haproxy_part']['pem_file']['consul']['key']
+  type = node['haproxy_part']['pem_file']['consul']['value_type'].to_sym
 
   ret = ConsulUtils.get_value(key, type)
 
-  if node[:haproxy_part][:pem_file][:property_nm]
-    prop = node[:haproxy_part][:pem_file][:property_nm]
+  if node['haproxy_part']['pem_file']['property_nm']
+    prop = node['haproxy_part']['pem_file']['property_nm']
     ret = ret[prop]
   end
 
@@ -23,19 +27,19 @@ def read_pem_resource_from_consul
 end
 
 def read_pem_resource_from_file
-  Chef::Log.info("read pem file : #{node[:haproxy_part][:pem_file][:uri]}")
-  ::File.read(node[:haproxy_part][:pem_file][:uri])
+  Chef::Log.info("read pem file : #{node['haproxy_part']['pem_file']['uri']}")
+  ::File.read(node['haproxy_part']['pem_file']['uri'])
 end
 
 def read_pem_resource_from_node
   Chef::Log.info('read pem file from node')
 
-  key = node[:haproxy_part][:pem_file][:node][:key]
-  node[:haproxy_part][key]
+  key = node['haproxy_part']['pem_file']['node']['key']
+  node['haproxy_part'][key]
 end
 
 def read_pem
-  case node[:haproxy_part][:pem_file][:protocol].to_sym
+  case node['haproxy_part']['pem_file']['protocol'].to_sym
   when :consul
     src = read_pem_resource_from_consul
   when :local
@@ -62,4 +66,6 @@ action :create do
     mode  '0644'
     action :create
   end
+
+  new_resource.updated_by_last_action(true)
 end

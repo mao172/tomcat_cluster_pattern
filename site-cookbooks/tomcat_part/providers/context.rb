@@ -1,3 +1,14 @@
+#
+# Cookbook Name:: tomcat_part
+# Provider:: context
+#
+
+def whyrun_supported?
+  true
+end
+
+use_inline_resources
+
 action :create do
   %w(session_replication use_jndi use_db datasource database session_db session_table).each do |attr|
     unless new_resource.instance_variable_get("@#{attr}")
@@ -5,7 +16,7 @@ action :create do
     end
   end
 
-  directory "#{node['tomcat']['context_dir']}" do
+  directory node['tomcat']['context_dir'] do
     owner node['tomcat']['user']
     group node['tomcat']['group']
     mode  '0755'
@@ -58,4 +69,6 @@ action :create do
       )
     end
   end
+
+  new_resource.updated_by_last_action(true)
 end

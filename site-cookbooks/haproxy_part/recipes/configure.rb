@@ -18,22 +18,22 @@ conf = node['haproxy']
 if conf['enable_stats_socket']
   stats_socket = "#{conf['stats_socket_path']} user #{conf['stats_socket_user']} group #{conf['stats_socket_group']}"
 
-  node.default[:haproxy][:config][:global]['stats socket'] = stats_socket
+  node.default['haproxy']['config']['global']['stats socket'] = stats_socket
 end
 
 if conf['enable_admin']
-  node.default[:haproxy][:config]['listen admin'] = conf['admin']['options']
+  node.default['haproxy']['config']['listen admin'] = conf['admin']['options']
   bind = "#{conf['admin']['address_bind']}:#{conf['admin']['port']}"
-  node.default[:haproxy][:config]['listen admin'][:bind] = bind
-  node.default[:haproxy][:config]['listen admin'][:mode] = :http
+  node.default['haproxy']['config']['listen admin']['bind'] = bind
+  node.default['haproxy']['config']['listen admin']['mode'] = :http
 end
 
 # for HTTP
 if conf['enable_default_http']
 
   config_pool['frontend http'] = {
-    maxconn: conf[:frontend_max_connections],
-    bind: "#{conf[:incoming_address]}:#{conf[:incoming_port]}",
+    maxconn: conf['frontend_max_connections'],
+    bind: "#{conf['incoming_address']}:#{conf['incoming_port']}",
     default_backend: 'servers-http'
   }
 end
@@ -41,21 +41,21 @@ end
 cookie = nil
 appsession = nil
 
-if node[:haproxy_part][:enable_sticky_session]
-  case node[:haproxy_part][:sticky_session_method].to_sym
+if node['haproxy_part']['enable_sticky_session']
+  case node['haproxy_part']['sticky_session_method'].to_sym
   when :cookie
-    cookie = node[:haproxy_part][:cookie]
+    cookie = node['haproxy_part']['cookie']
   when :appsession
-    appsession = node[:haproxy_part][:appsession]
+    appsession = node['haproxy_part']['appsession']
   end
 end
 
 # default backend (http)
-if conf['enable_default_http'] || node[:haproxy_part][:enable_ssl_proxy]
+if conf['enable_default_http'] || node['haproxy_part']['enable_ssl_proxy']
 
   servers_http = web_servers.map do |hostname, server|
     sv = []
-    sv << "#{hostname}"
+    sv << hostname
     sv << "#{server['private_ip']}:#{conf['member_port']}"
     sv << 'weight 1'
     sv << "maxconn #{conf['member_max_connections']}"
@@ -77,7 +77,7 @@ if conf['enable_default_http'] || node[:haproxy_part][:enable_ssl_proxy]
   params['cookie'] = cookie unless cookie.nil? || cookie.empty?
   params['appsession'] = appsession unless appsession.nil? || appsession.empty?
 
-  config_pool['backend servers-http'] = merge(node[:haproxy_part][:backend_params], params)
+  config_pool['backend servers-http'] = merge(node['haproxy_part']['backend_params'], params)
 
 end
 
@@ -92,7 +92,7 @@ if conf['enable_ssl']
 
   servers_https = web_servers.map do |hostname, server|
     sv = []
-    sv << "#{hostname}"
+    sv << hostname
     sv << "#{server['private_ip']}:#{conf['ssl_member_port']}"
     sv << 'weight 1'
     sv << "maxconn #{conf['member_max_connections']}"
@@ -115,12 +115,12 @@ if conf['enable_ssl']
   params['cookie'] = cookie unless cookie.nil? || cookie.empty?
   params['appsession'] = appsession unless appsession.nil? || appsession.empty?
 
-  config_pool['backend servers-https'] = merge(node[:haproxy_part][:backend_params], params)
+  config_pool['backend servers-https'] = merge(node['haproxy_part']['backend_params'], params)
 
 else
   # SSL Proxy
-  if node[:haproxy_part][:enable_ssl_proxy]
-    dir_path = "#{conf[conf['install_method']]['prefix']}#{node[:haproxy_part][:ssl_pem_dir]}"
+  if node['haproxy_part']['enable_ssl_proxy']
+    dir_path = "#{conf[conf['install_method']]['prefix']}#{node['haproxy_part']['ssl_pem_dir']}"
 
     directory dir_path do
       owner 'root'
@@ -128,11 +128,11 @@ else
       mode  '0755'
     end
 
-    file_path = "#{conf[conf['install_method']]['prefix']}#{node[:haproxy_part][:ssl_pem_file]}"
+    file_path = "#{conf[conf['install_method']]['prefix']}#{node['haproxy_part']['ssl_pem_file']}"
 
-    if node[:haproxy_part][:pem_file][:protocol] == 'remote'
+    if node['haproxy_part']['pem_file']['protocol'] == 'remote'
       remote_file 'ssl_pem' do
-        source node[:haproxy_part][:pem_file][:remote][:url]
+        source node['haproxy_part']['pem_file']['remote']['url']
         path file_path
         owner 'root'
         group 'root'

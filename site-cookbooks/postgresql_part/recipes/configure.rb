@@ -9,21 +9,21 @@ require 'timeout'
 pgpass = [
   {
     'ip' => '127.0.0.1',
-    'port' => "#{node['postgresql']['config']['port']}",
+    'port' => node['postgresql']['config']['port'],
     'db_name' => 'replication',
-    'user' => "#{node['postgresql_part']['replication']['user']}",
+    'user' => node['postgresql_part']['replication']['user'],
     'passwd' => generate_password('db_replication')
   }, {
-    'ip' => "#{primary_db_ip}",
-    'port' => "#{node['postgresql']['config']['port']}",
+    'ip' => primary_db_ip,
+    'port' => node['postgresql']['config']['port'],
     'db_name' => 'replication',
-    'user' => "#{node['postgresql_part']['replication']['user']}",
+    'user' => node['postgresql_part']['replication']['user'],
     'passwd' => generate_password('db_replication')
   }, {
-    'ip' => "#{standby_db_ip}",
-    'port' => "#{node['postgresql']['config']['port']}",
+    'ip' => standby_db_ip,
+    'port' => node['postgresql']['config']['port'],
     'db_name' => 'replication',
-    'user' => "#{node['postgresql_part']['replication']['user']}",
+    'user' => node['postgresql_part']['replication']['user'],
     'passwd' => generate_password('db_replication')
   }
 ]
@@ -38,14 +38,14 @@ template "#{node['postgresql_part']['home_dir']}/.pgpass" do
   )
 end
 
-if primary_db?(node[:ipaddress])
+if primary_db?(node['ipaddress'])
   include_recipe 'postgresql_part::configure_primary'
 
 else
 
   # wait_until_completed_primary
-  timeout = node[:postgresql_part][:wait_timeout]
-  interval = node[:postgresql_part][:wait_interval]
+  timeout = node['postgresql_part']['wait_timeout']
+  interval = node['postgresql_part']['wait_interval']
 
   Timeout.timeout(timeout) do
     while CloudConductor::ConsulClient::Catalog.service('postgresql', tag: 'primary').empty?

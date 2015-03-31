@@ -9,18 +9,18 @@ ruby_block 'stop_postgresql' do
   notifies :stop, 'service[postgresql]', :immediately
 end
 
-directory "#{node['postgresql']['dir']}" do
+directory node['postgresql']['dir'] do
   action :delete
   recursive true
 end
 
 cmd_params = []
 cmd_params << '-D'
-cmd_params << "#{node['postgresql']['dir']}"
+cmd_params << node['postgresql']['dir']
 cmd_params << '--xlog'
 cmd_params << '--verbose'
 cmd_params << '-h'
-cmd_params << "#{primary_db_ip}"
+cmd_params << primary_db_ip
 cmd_params << '-U'
 cmd_params << 'replication'
 

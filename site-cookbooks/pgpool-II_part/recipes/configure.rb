@@ -1,19 +1,15 @@
+#
+# Cookbook Name:: pgpool-II_part
+# Recipe:: configure
+#
+#
+
 require 'digest/md5'
 require 'timeout'
 
-timeout = node[:pgpool_part][:wait_timeout]
-interval = node[:pgpool_part][:wait_interval]
+extend Pgpool2Part::Helpers
 
-Timeout.timeout(timeout) do
-  while CloudConductor::ConsulClient::Catalog.service('postgresql', tag: 'primary').empty?
-    puts 'waiting for primary ...'
-    sleep interval
-  end
-end
-
-def servers(role)
-  node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?(role) }
-end
+wait_unless_completed_primary
 
 node.set['pgpool_part']['pgconf']['sr_check_password'] = generate_password('db_replication_check')
 
@@ -27,7 +23,7 @@ db_servers.each_with_index do |(_name, server), index|
   node.set['pgpool_part']['pgconf']["backend_weight#{index}"] = node['pgpool_part']['pgconf']['backend_weight0']
 end
 
-other_ap_servers = servers('ap').delete_if { |_key, val| val['private_ip'] == node[:ipaddress] }
+other_ap_servers = servers('ap').delete_if { |_key, val| val['private_ip'] == node['ipaddress'] }
 
 if other_ap_servers.length < 1
   node.set['pgpool_part']['pgconf']['use_watchdog'] = false
@@ -43,24 +39,9 @@ end
 
 ruby_block 'wait-unless-completed-database' do
   block do
-    require 'timeout'
+    extend Pgpool2Part::Helpers
 
-    def servers(role)
-      node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?(role) }
-    end
-
-    timeout = node[:pgpool_part][:wait_timeout]
-    interval = node[:pgpool_part][:wait_interval]
-    port = node[:pgpool_part][:postgresql][:port]
-
-    Timeout.timeout(timeout) do
-      servers('db').each do |_name, server|
-        until system("hping3 -S #{server[:private_ip]} -p #{port} -c 5 | grep 'sport=#{port} flags=SA'")
-          puts "... waiting for completed database (#{server[:private_ip]}:#{port}) ..."
-          sleep interval
-        end
-      end
-    end
+    wait_unless_completed_database
   end
   notifies :restart, 'service[pgpool]', :immediately
   notifies :run, 'ruby_block[status-check]', :delayed
@@ -76,47 +57,23 @@ end
 
 bash 'create md5 auth setting' do
   code ["pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['application']['user']} ",
-        "#{generate_password('db_application')}"].join
+        generate_password('db_application')].join
 end
 
 bash 'create md5 auth setting for tomcat user' do
   code "pg_md5 --md5auth --username=#{node['pgpool_part']['postgresql']['tomcat']['user']} #{generate_password('tomcat')}"
 end
 
-pgpool_service = service 'pgpool' do
+service 'pgpool' do
   service_name node['pgpool_part']['service']
   action :nothing
 end
 
 ruby_block 'status-check' do
   block do
-    require 'timeout'
+    extend Pgpool2Part::Helpers
 
-    timeout = node[:pgpool_part][:wait_timeout]
-    interval = node[:pgpool_part][:wait_interval]
-
-    params = []
-    params << '0'
-    params << 'localhost'
-    params << '9898'
-    params << "#{node['pgpool_part']['user']}"
-    params << generate_password('pcp')
-
-    Timeout.timeout(timeout) do
-      while system("pcp_node_info --verbose #{params.join(' ')} 0 | grep -E 'Status *: +[0]' ")
-        puts "... #{node['pgpool_part']['pgconf']['backend_hostname0']} is during the initialization ..."
-        system("pcp_attach_node #{params.join(' ')} 0")
-        pgpool_service.run_action(:restart)
-        sleep interval
-      end
-
-      while system("pcp_node_info --verbose #{params.join(' ')} 1 | grep -E 'Status *: +[0]'")
-        puts "... #{node['pgpool_part']['pgconf']['backend_hostname1']} is during the initialization ..."
-        system("pcp_attach_node #{params.join(' ')} 1")
-        pgpool_service.run_action(:restart)
-        sleep interval
-      end
-    end
+    wait_until_attached_to_backend
   end
   action :nothing
 end

@@ -3,13 +3,12 @@
 # Recipe:: setup
 #
 
-if platform_family?('rhel') && node['tomcat_part']['use_jpackage']
-  yum_repository 'jpackage' do
-    description 'JPackage 6 generic'
-    mirrorlist 'http://www.jpackage.org/mirrorlist.php?dist=generic&type=free&release=6.0'
-    gpgcheck false
-    action :create
-  end
+yum_repository 'jpackage' do
+  description 'JPackage 6 generic'
+  mirrorlist 'http://www.jpackage.org/mirrorlist.php?dist=generic&type=free&release=6.0'
+  gpgcheck false
+  action :create
+  only_if { platform_family?('rhel') && node['tomcat_part']['use_jpackage'] }
 end
 
 include_recipe 'java'

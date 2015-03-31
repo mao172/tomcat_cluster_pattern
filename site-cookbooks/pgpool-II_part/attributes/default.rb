@@ -18,8 +18,8 @@ default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' }
 ]
 
-default[:pgpool_part][:wait_timeout] = 180
-default[:pgpool_part][:wait_interval] = 10
+default['pgpool_part']['wait_timeout'] = 180
+default['pgpool_part']['wait_interval'] = 10
 
 default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'
 default['pgpool_part']['pgconf']['port'] = 9999
@@ -98,7 +98,7 @@ default['pgpool_part']['pgconf']['client_idle_limit_in_recovery'] = 0
 default['pgpool_part']['pgconf']['use_watchdog'] = true
 default['pgpool_part']['pgconf']['trusted_servers'] = ''
 default['pgpool_part']['pgconf']['ping_path'] = '/bin'
-default['pgpool_part']['pgconf']['wd_hostname'] = node[:ipaddress]
+default['pgpool_part']['pgconf']['wd_hostname'] = node['ipaddress']
 default['pgpool_part']['pgconf']['wd_port'] = 9000
 default['pgpool_part']['pgconf']['wd_authkey'] = ''
 default['pgpool_part']['pgconf']['delegate_IP'] = ''

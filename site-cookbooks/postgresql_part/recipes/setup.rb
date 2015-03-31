@@ -50,14 +50,14 @@ if node['postgresql_part']['pgpool-II']['use']
   end
 
   cookbook_file 'failover_action.rb' do
-    path "#{File.join(event_handlers_dir, 'failover_action.rb')}"
+    path File.join(event_handlers_dir, 'failover_action.rb')
     mode 0755
     owner 'root'
     user 'root'
     action :create
   end
 
-  template "#{File.join(event_handlers_dir, 'failover_event_handler')}" do
+  template File.join(event_handlers_dir, 'failover_event_handler') do
     source 'failover_event_handler'
     mode 0755
     owner 'root'
@@ -73,7 +73,7 @@ if node['postgresql_part']['pgpool-II']['use']
   end
 
   cookbook_file 'check-state-event-handler' do
-    path "#{File.join(event_handlers_dir, 'check-state-event-handler')}"
+    path File.join(event_handlers_dir, 'check-state-event-handler')
     mode 0755
     owner 'root'
     user 'root'
@@ -82,7 +82,7 @@ if node['postgresql_part']['pgpool-II']['use']
   consul_config_dir = node['cloudconductor']['consul']['config_dir']
 
   cookbook_file 'check-postgresql.json' do
-    path "#{File.join(consul_config_dir, 'check-postgresql.json')}"
+    path File.join(consul_config_dir, 'check-postgresql.json')
     mode 0644
     owner 'root'
     user 'root'
