@@ -295,10 +295,10 @@ describe 'postgresql_part::configure_primary' do
         :postgresql_database,
         :query,
         'postgres'
-    ).with(
-      connection: postgresql_connection_info,
-      sql: query
-    )
+      ).with(
+        connection: postgresql_connection_info,
+        sql: query
+      )
     end
 
     it 'include configure_tomcat_session recipe ' do
