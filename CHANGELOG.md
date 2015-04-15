@@ -3,7 +3,7 @@ CHANGELOG
 
 ## version 1.0.1 (2015/04/15)
 
-  - Fix restore script to sync recovery between master and slave correctly.
+  - Fix restore script in backup_restore.yml to sync restore process among db master, slave, and application servers correctly.
 
 ## version 1.0.0 (2015/03/27)
 
