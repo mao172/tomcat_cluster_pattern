@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-## version 1.0.1 (2015/04/15)
+## version 1.0.1 (2015/04/16)
 
   - Fix restore script in backup_restore.yml to sync restore process among db master, slave, and application servers correctly.
 
