@@ -103,14 +103,14 @@ ruby_block 'status-check' do
     params << generate_password('pcp')
 
     Timeout.timeout(timeout) do
-      while system("pcp_node_info --verbose #{params.join(' ')} 0 | grep -E 'Status *: +[0]' ")
+      while system("pcp_node_info --verbose #{params.join(' ')} 0 | grep -E 'Status *: +[03]' ")
         puts "... #{node['pgpool_part']['pgconf']['backend_hostname0']} is during the initialization ..."
         system("pcp_attach_node #{params.join(' ')} 0")
         pgpool_service.run_action(:restart)
         sleep interval
       end
 
-      while system("pcp_node_info --verbose #{params.join(' ')} 1 | grep -E 'Status *: +[0]'")
+      while system("pcp_node_info --verbose #{params.join(' ')} 1 | grep -E 'Status *: +[03]'")
         puts "... #{node['pgpool_part']['pgconf']['backend_hostname1']} is during the initialization ..."
         system("pcp_attach_node #{params.join(' ')} 1")
         pgpool_service.run_action(:restart)
