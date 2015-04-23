@@ -1,0 +1,35 @@
+FROM centos:centos6
+
+<% if @lang %>
+ENV LANG <%= @lang %>
+<% end %>
+<% if @http_proxy %>
+ENV http_proxy <%= @http_proxy %>
+<% end %>
+<% if @https_proxy %>
+ENV https_proxy <%= @https_proxy %>
+<% end %>
+
+<% if @yum_conf && @yum_conf['include_only'] %>
+RUN echo 'include_only=<%= @yum_conf['include_only'] %>' >> /etc/yum/pluginconf.d/fastestmirror.conf
+<% end %>
+RUN yum clean all
+RUN yum update -y
+RUN yum install -y sudo passwd git tar wget which curl autoconf unzip gcc gcc-c++
+
+RUN curl -L http://www.opscode.com/chef/install.sh | bash -s -- -v 12.2
+RUN /opt/chef/embedded/bin/gem install berkshelf
+
+RUN yum install -y sudo passwd openssh-server openssh-clients bind-utils git tar wget which curl-devel perl-devel autoconf unzip gcc gcc-c++
+
+<% if @yum_conf && @yum_conf['include_only'] %>
+  #RUN sed -ie '/include_only=<%= @yum_conf['include_only'] %>/d' /etc/yum/pluginconf.d/fastestmirror.conf
+<% end %>
+
+ENV PATH ${PATH}:/opt/chef/embedded/bin
+
+ADD startup.sh /root/
+ADD bootstrap /tmp/bootstrap/
+ADD test-data /tmp/test-data/
+
+RUN bash -x /tmp/bootstrap/install.sh

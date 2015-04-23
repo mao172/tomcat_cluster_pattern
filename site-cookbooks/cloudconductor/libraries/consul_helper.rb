@@ -74,8 +74,12 @@ module CloudConductor
           request_url = "catalog/service/#{service_id}"
           filters = filters.select { |key, _value| %w(tag dc).include?(key.to_s) }
 
-          response = ConsulClient.http.get(ConsulClient.request_url(request_url, filters))
-          JSON.parse(response.body)
+          begin
+            response = ConsulClient.http.get(ConsulClient.request_url(request_url, filters))
+            JSON.parse(response.body)
+          rescue Faraday::ConnectionFailed
+            {}
+          end
         end
       end
     end

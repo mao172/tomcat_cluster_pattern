@@ -52,7 +52,7 @@ pgpool_II_part_config_file 'create-conf-file' do
   owner 'root'
   group 'root'
   mode  '0764'
-  notifies :run, 'ruby_block[wait-unless-completed-database]', :delayed
+  notifies :run, 'ruby_block[wait-unless-completed-database]', :immediately
 end
 
 bash 'create md5 auth setting' do

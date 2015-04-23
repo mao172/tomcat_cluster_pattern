@@ -6,6 +6,12 @@
 
 extend Chef::Mixin::DeepMerge
 
+if node['haproxy']['conf_dir'].start_with?(node['haproxy']['source']['prefix'])
+  source_prefix = Pathname(node['haproxy']['source']['prefix'])
+  conf_dir = Pathname(node.default['haproxy']['conf_dir'])
+  node.default['haproxy']['conf_dir'] = conf_dir.relative_path_from(source_prefix).to_s
+end
+
 web_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('web') }
 
 config_pool = Mash.new
