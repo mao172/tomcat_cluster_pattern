@@ -6,6 +6,35 @@ driver:
 
 provisioner:
   name: chef_solo
+  attributes:
+    yum:
+      jpackage:
+        mirrorlist: 'false'
+        baseurl: 'http://mirrors.dotsrc.org/jpackage/6.0/generic/free'
+    haproxy_part:
+      pem_file:
+        remote:
+          url: 'https://s3-us-west-1.amazonaws.com/okamoto-cloudconductor/certificate/server.pem'
+    cloudconductor:
+      servers:
+        ap_01:
+          roles: 'web,ap'
+          private_ip: '<%= ENV["ap_node_ip"] %>'
+        primary_node:
+          roles: 'db'
+          private_ip: '<%= ENV["db_primary_ip"] %>'
+        standby_node:
+          roles: 'db'
+          private_ip: '<%= ENV["db_standby_ip"] %>'
+      applications:
+        jpetstore:
+          type: 'dynamic'
+          protocol: 'http'
+          url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore.war'
+          parameters:
+            migration:
+              type: 'sql'
+              url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore_postgres.sql'
 
 platforms:
   - name: centos-6
@@ -22,27 +51,6 @@ suites:
       - role[db_setup]
       - role[db_configure]
       - role[db_deploy]
-    attributes:
-      cloudconductor:
-        servers:
-          ap_01:
-            roles: 'web,ap'
-            private_ip: '<%= ENV["ap_node_ip"] %>'
-          primary_node:
-            roles: 'db'
-            private_ip: '<%= ENV["db_primary_ip"] %>'
-          standby_node:
-            roles: 'db'
-            private_ip: '<%= ENV["db_standby_ip"] %>'
-        applications:
-          jpetstore:
-            type: 'dynamic'
-            protocol: 'http'
-            url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore.war'
-            parameters:
-              migration:
-                type: 'sql'
-                url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore_postgres.sql'
 
   - name: db-standby-server
     driver:
@@ -53,27 +61,6 @@ suites:
       - role[db_setup]
       - role[db_configure]
       - role[db_deploy]
-    attributes:
-      cloudconductor:
-        servers:
-          ap_01:
-            roles: 'web,ap'
-            private_ip: '<%= ENV["ap_node_ip"] %>'
-          primary_node:
-            roles: 'db'
-            private_ip: '<%= ENV["db_primary_ip"] %>'
-          standby_node:
-            roles: 'db'
-            private_ip: '<%= ENV["db_standby_ip"] %>'
-        applications:
-          jpetstore:
-            type: 'dynamic'
-            protocol: 'http'
-            url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore.war'
-            parameters:
-              migration:
-                type: 'sql'
-                url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore_postgres.sql'
 
   - name: web-ap-server
     driver:
@@ -86,27 +73,6 @@ suites:
       - role[ap_configure]
       - role[web_deploy]
       - role[ap_deploy]
-    attributes:
-      cloudconductor:
-        servers:
-          ap_01:
-            roles: 'web,ap'
-            private_ip: '<%= ENV["ap_node_ip"] %>'
-          primary_node:
-            roles: 'db'
-            private_ip: '<%= ENV["db_primary_ip"] %>'
-          standby_node:
-            roles: 'db'
-            private_ip: '<%= ENV["db_standby_ip"] %>'
-        applications:
-          jpetstore:
-            type: 'dynamic'
-            protocol: 'http'
-            url: 'https://s3-ap-northeast-1.amazonaws.com/cloudconductor-test/sources/public/jpetstore.war'
-      yum:
-        jpackage:
-          mirrorlist: 'false'
-          baseurl: 'http://mirrors.dotsrc.org/jpackage/6.0/generic/free'
 
   - name: lb-server
     driver:
@@ -115,13 +81,3 @@ suites:
       - role[lb_setup]
       - role[lb_configure]
       - role[lb_deploy]
-    attributes:
-      cloudconductor:
-        servers:
-          ap_01:
-            roles: 'web,ap'
-            private_ip: '<%= ENV["ap_node_ip"] %>'
-      haproxy_part:
-        pem_file:
-          remote:
-            url: 'https://s3-us-west-1.amazonaws.com/okamoto-cloudconductor/certificate/server.pem'
