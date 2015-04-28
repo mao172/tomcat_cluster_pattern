@@ -47,8 +47,8 @@ applications.each do |app_name, app|
     code "mv #{source_path} #{node['tomcat']['webapp_dir']}"
   end
 
-  app_root = "#{node['tomcat']['webapp_dir']}/#{app_name}"
-  app_dir = "#{app_root}/WEB-INF"
+  app_root = "#{node['tomcat']['webapp_dir']}"
+  app_dir = "#{app_root}"
 
   bash "pre_deploy_script_#{app_name}" do
     cwd app_dir
