@@ -47,6 +47,12 @@ applications.each do |app_name, app|
     code "mv #{source_path} #{node['tomcat']['webapp_dir']}"
   end
 
+  bash "pre_deploy_script_#{app_name}" do
+    cwd app_dir
+    code app['pre_deploy']
+    only_if { app['pre_deploy'] && !app['pre_deploy'].empty? }
+  end
+
   database_spec = {
     'type' => node['tomcat_part']['database']['type'],
     'name' => node['tomcat_part']['database']['name'],
@@ -65,5 +71,11 @@ applications.each do |app_name, app|
     use_db true
     database database_spec
     sessionTableName "#{app_name}_session"
+  end
+
+  bash "post_deploy_script_#{app_name}" do
+    cwd app_dir
+    code app['post_deploy']
+    only_if { app['post_deploy'] && !app['post_deploy'].empty? }
   end
 end
