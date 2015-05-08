@@ -184,6 +184,7 @@
     },
     "LbEIPAssociation" : {
       "Type" : "AWS::EC2::EIPAssociation",
+      "DependsOn" : "LbServer",
       "Properties" : {
         "AllocationId" : { "Fn::GetAtt" : [ "LbFrontendEIP", "AllocationId" ]},
         "NetworkInterfaceId" : { "Ref" : "LbNetworkInterface" }
