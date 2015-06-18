@@ -109,6 +109,7 @@
     },
     "RouteToInternetGateway" : {
       "Type" : "AWS::EC2::Route",
+      "DependsOn" : "VPCGatewayAttachment",
       "Properties" : {
         "DestinationCidrBlock" : "0.0.0.0/0",
         "GatewayId" : { "Ref" : "InternetGateway" },
@@ -183,6 +184,7 @@
     },
     "LbEIPAssociation" : {
       "Type" : "AWS::EC2::EIPAssociation",
+      "DependsOn" : "LbServer",
       "Properties" : {
         "AllocationId" : { "Fn::GetAtt" : [ "LbFrontendEIP", "AllocationId" ]},
         "NetworkInterfaceId" : { "Ref" : "LbNetworkInterface" }

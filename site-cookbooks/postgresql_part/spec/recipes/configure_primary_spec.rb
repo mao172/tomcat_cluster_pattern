@@ -306,16 +306,18 @@ describe 'postgresql_part::configure_primary' do
     end
 
     it 'create consul service def' do
-      expect(chef_run).to ChefSpec::Matchers::ResourceMatcher.new(
-        :cloudconductor_consul_service_def,
-        :create,
-        'postgresql'
-      ).with(
-        id: 'postgresql',
-        port: 5432,
-        tags: ['primary'],
-        check: nil
-      )
+      chef_run.node.set['postgresql']['server']['service_name'] = 'postgresql'
+      chef_run.converge(described_recipe)
+
+      resource = chef_run.find_resource('cloudconductor_consul_service_def', 'postgresql')
+      expect(resource).to do_nothing
+      expect(resource.id).to eq('postgresql')
+      expect(resource.port).to eq(5432)
+      expect(resource.tags).to eq(['primary'])
+      expect(resource.check).to be_nil
+
+      expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/pg_hba.conf"))
+        .to notify('cloudconductor_consul_service_def[postgresql]').to(:create).delayed
     end
   end
 end

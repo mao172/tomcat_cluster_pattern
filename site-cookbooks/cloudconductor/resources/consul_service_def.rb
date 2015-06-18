@@ -6,7 +6,7 @@
 
 require 'json'
 
-actions :create, :delete
+actions :create, :delete, :nothing
 default_action :create
 
 attribute :name, name_attribute: true, required: true, kind_of: String
