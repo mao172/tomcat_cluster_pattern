@@ -5,6 +5,14 @@ default:
   chef_config: solo.rb
 
 tasks:
+  - name: setup
+    trigger: setup
+    description: Execute setup chef
+    operations:
+      - chef:
+          run_list:
+            - role[{{role}}_setup]
+
   - name: configure
     trigger: configure
     description: Execute configure chef
@@ -12,6 +20,7 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_configure]
+
   - name: deploy
     trigger: deploy
     description: Execute deploy chef
@@ -19,6 +28,7 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_deploy]
+
   - name: backup
     trigger: backup
     description: Execute backup chef
@@ -26,6 +36,7 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_backup]
+
   - name: restore
     trigger: restore
     description: Execute restore chef
@@ -33,6 +44,7 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_restore]
+
   - name: spec
     trigger: spec
     description: Execute spec chef
