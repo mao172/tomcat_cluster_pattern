@@ -23,6 +23,10 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_configure]
+      - consul-event:
+          name: configure-part
+          filter:
+            service: haproxy
 
   - name: deploy
     trigger: deploy
