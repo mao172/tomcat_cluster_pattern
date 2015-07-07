@@ -28,6 +28,14 @@ tasks:
           filter:
             service: haproxy
 
+  - name: configure-part
+    trigger: configure-part
+    description: Execute configure chef
+    operations:
+      - chef:
+          run_list:
+            - role[{{role}}_configure]
+
   - name: deploy
     trigger: deploy
     description: Execute deploy chef
