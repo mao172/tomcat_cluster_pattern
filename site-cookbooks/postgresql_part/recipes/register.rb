@@ -17,6 +17,6 @@ unless service_info.nil?
     port service_info['Port']
     tags service_info['Tags']
     check service_info['Checks']
-    action :nothing
+    action :create
   end
 end
