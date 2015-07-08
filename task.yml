@@ -18,7 +18,7 @@ tasks:
     description: Execute configure chef
     filter:
       service: postgresql
-      tag: master
+      tag: primary
     operations:
       - chef:
           run_list:
