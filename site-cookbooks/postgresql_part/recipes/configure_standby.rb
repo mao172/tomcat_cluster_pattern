@@ -59,21 +59,3 @@ service 'postgresql' do
   supports [:restart, :reload, :status]
   action :nothing
 end
-
-# postgresql_part_append_service_tag 'standby'
-
-service_info = consul_service_info('postgresql')
-
-unless service_info.nil?
-  service_info['Tags'] = [] if service_info['Tags'].nil?
-
-  service_info['Tags'] << 'standby' unless service_info['Tags'].include? 'standby'
-
-  cloudconductor_consul_service_def 'postgresql' do
-    id service_info['ID']
-    port service_info['Port']
-    tags service_info['Tags']
-    check service_info['Checks']
-    action :nothing
-  end
-end

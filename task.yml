@@ -13,6 +13,14 @@ tasks:
           run_list:
             - role[{{role}}_setup]
 
+  - name: register
+    trigger: register
+    description: Register service to consul catalog
+    operations:
+      - chef:
+          run_list:
+            - role[{{role}}_register]
+
   - name: configure
     trigger: configure
     description: Execute configure chef
