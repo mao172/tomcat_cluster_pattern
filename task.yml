@@ -31,22 +31,21 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_configure]
-      - consul-event:
-          name: configure-part
+      - task:
+          name: inner-configure
           filter:
             service: haproxy
-      - consul-event:
-          name: configure-part
+      - task:
+          name: inner-configure
           filter:
             service: pgpool-II
-      - consul-event:
-          name: configure-part
+      - task:
+          name: inner-configure
           filter:
             service: postgresql
             tag: standby
 
-  - name: configure-part
-    trigger: configure-part
+  - name: inner-configure
     description: Execute configure chef
     operations:
       - chef:
