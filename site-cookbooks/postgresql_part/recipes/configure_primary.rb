@@ -66,7 +66,6 @@ template "#{node['postgresql']['dir']}/pg_hba.conf" do
     pg_hba: node['postgresql']['pg_hba']
   )
   notifies :reload, 'service[postgresql]', :delayed
-  notifies :create, 'cloudconductor_consul_service_def[postgresql]', :delayed
 end
 
 postgresql_database 'postgres' do
