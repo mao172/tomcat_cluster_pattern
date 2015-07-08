@@ -27,6 +27,15 @@ tasks:
           name: configure-part
           filter:
             service: haproxy
+      - consul-event:
+          name: configure-part
+          filter:
+            service: pgpool-II
+      - consul-event:
+          name: configure-part
+          filter:
+            service: postgresql
+            tag: standby
 
   - name: configure-part
     trigger: configure-part
