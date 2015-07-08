@@ -9,8 +9,6 @@ require 'timeout'
 
 extend Pgpool2Part::Helpers
 
-wait_unless_completed_primary
-
 node.set['pgpool_part']['pgconf']['sr_check_password'] = generate_password('db_replication_check')
 
 db_servers = servers('db')

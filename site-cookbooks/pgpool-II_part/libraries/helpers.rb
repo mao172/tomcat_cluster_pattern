@@ -17,15 +17,6 @@ class Pgpool2Part
       node['pgpool_part'][key]
     end
 
-    def wait_unless_completed_primary
-      Timeout.timeout(conf('wait_timeout')) do
-        while CloudConductor::ConsulClient::Catalog.service('postgresql', tag: 'primary').empty?
-          puts 'waiting for primary ...'
-          sleep conf('wait_interval')
-        end
-      end
-    end
-
     def exec_command(cmd)
       context = Mixlib::ShellOut.new(cmd)
       context.run_command
