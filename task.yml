@@ -1,85 +1,147 @@
 variables:
+  backup_directory: /var/cloudconductor/backups/postgresql
 
 default:
   timeout: 1800
-  chef_config: solo.rb
+
+events:
+  setup:
+    description: Execute setup
+    task: setup
+
+  configure:
+    description: Execute configure chef
+    priority: 50
+    ordered_tasks:
+      - service: postgresql
+        task: register_tag
+      - service: postgresql
+        tag: primary
+        task: configure
+      - service: postgresql
+        tag: standby
+        task: configure
+      - service: pgpool-II
+        task: configure
+      - service: haproxy
+        task: configure
+      - service: postgresql
+        tag: standby
+        task: post-configure
+
+  deploy:
+    description: Execute deploy
+    task: deploy
+
+  backup:
+    description: Execute backup
+    priority: 20
+    ordered_tasks:
+      - service: postgresql
+        tag: primary
+        task: dump_database
+
+  restore:
+    description: Execute restore
+    priority: 80
+    ordered_tasks:
+      - service: postgresql
+        tag: primary
+        task: restore_database
+      - service: postgresql
+        tag: secondary
+        task: start_replication
+      - service: pgpool-II
+        task: configure
 
 tasks:
-  - name: setup
-    trigger: setup
+  setup:
     description: Execute setup chef
     operations:
       - chef:
           run_list:
             - role[{{role}}_setup]
 
-  - name: register
-    trigger: register
+  register_tag:
     description: Register service to consul catalog
     operations:
       - chef:
           run_list:
             - role[{{role}}_register]
 
-  - name: configure
-    trigger: configure
-    description: Execute configure chef
-    filter:
-      service: postgresql
-      tag: primary
-    operations:
-      - chef:
-          run_list:
-            - role[{{role}}_configure]
-      - task:
-          name: inner-configure
-          filter:
-            service: haproxy
-      - task:
-          name: inner-configure
-          filter:
-            service: pgpool-II
-      - task:
-          name: inner-configure
-          filter:
-            service: postgresql
-            tag: standby
-
-  - name: inner-configure
-    description: Execute configure chef
+  configure:
+    description: Register service to consul catalog
     operations:
       - chef:
           run_list:
             - role[{{role}}_configure]
 
-  - name: deploy
-    trigger: deploy
+  deploy:
     description: Execute deploy chef
     operations:
       - chef:
           run_list:
             - role[{{role}}_deploy]
 
-  - name: backup
-    trigger: backup
-    description: Execute backup chef
+  backup:
+    description: Backup database on primary
+    service: postgresql
+    tag: master
     operations:
-      - chef:
-          run_list:
-            - role[{{role}}_backup]
+      - execute: |
+          rm -rf {{backup_directory}}
+          sudo -u postgres pg_basebackup -D {{backup_directory}} --xlog --verbose -h 127.0.0.1 -U replication
+          chown -R amandabackup:disk {{backup_directory}}
 
-  - name: restore
-    trigger: restore
-    description: Execute restore chef
+  restore_database:
+    description: Restore database on primary
+    service: postgresql
+    tag: primary
     operations:
-      - chef:
-          run_list:
-            - role[{{role}}_restore]
+      - consul-kvs:
+          action: put
+          key: cloudconductor/postgresql/failover-event/lock
+          value: true
+      - service:
+          name: postgresql-9.4
+          action: stop
+      - execute: |
+          rm -rf /var/lib/pgsql/9.4/data/*
+          mv {{backup_directory}}/* /var/lib/pgsql/9.4/data
+          chown -R postgres:postgres /var/lib/pgsql/9.4/data
+          chmod 700 /var/lib/pgsql/9.4/data
+      - service:
+          name: postgresql-9.4
+          action: start
+      - consul-kvs:
+          action: delete
+          key: cloudconductor/postgresql/failover-event/lock
+      - task:
+          name: configure
 
-  - name: spec
-    trigger: spec
-    description: Execute spec chef
+  start_replication:
+    description: Restore database on standby
+    service: postgresql
+    tag: standby
     operations:
-      - chef:
-          run_list:
-            - role[{{role}}_spec]
+      - service:
+          name: postgresql-9.4
+          action: stop
+      - execute: |
+          json=`curl http://localhost:8500/v1/catalog/service/postgresql?tag=primary`
+          primary_ip=`echo $json | jq '.[] | .Address' | sed -e 's/[^"]*"\([^"]*\)".*/\1/'`
+
+          rm -rf {{backup_directory}}
+          mkdir -p {{backup_directory}}
+          chown amandabackup:disk {{backup_directory}}
+          chmod 777 {{backup_directory}}
+          sudo -u postgres pg_basebackup -D {{backup_directory}} --xlog --verbose -h $primary_ip -U replication
+          rm -rf /var/lib/pgsql/9.4/data/*
+          mv {{restore_dir}}/* /var/lib/pgsql/9.4/data
+          chown -R postgres:postgres /var/lib/pgsql/9.4/data
+          chmod 700 /var/lib/pgsql/9.4/data
+          mv /var/lib/pgsql/9.4/data/recovery.done /var/lib/pgsql/9.4/data/recovery.conf
+          sed -ri "s/host=[^ ]+ /host=$primary_ip /" /var/lib/pgsql/9.4/data/recovery.conf
+      - service:
+          name: postgresql-9.4
+          action: start
