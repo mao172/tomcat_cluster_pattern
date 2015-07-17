@@ -9,7 +9,11 @@ ENV https_proxy <%= @https_proxy %>
 <% end %>
 
 <% if @http_proxy %>
-RUN echo "proxy=<%= @http_proxy %>" >> /etc/yum.conf
+RUN echo "proxy=http://10.255.197.145:3128" >> /etc/yum.conf
+<% end %>
+
+<% if @yum_conf && @yum_conf['include_only'] %>
+#RUN echo 'include_only=<%= @yum_conf['include_only'] %>' >> /etc/yum/pluginconf.d/fastestmirror.conf
 <% end %>
 
 ## for test-kitchen + kitchen-docker
@@ -24,6 +28,10 @@ RUN mkdir -p /var/run/sshd
 RUN useradd -d /home/<%= @username %> -m -s /bin/bash <%= @username %>
 RUN echo <%= "#{@username}:#{@password}" %> | chpasswd
 RUN echo '<%= @username %> ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+<% if @yum_conf && @yum_conf['include_only'] %>
+#RUN sed -ie '/include_only=<%= @yum_conf['include_only'] %>/d' /etc/yum/pluginconf.d/fastestmirror.conf
+<% end %>
 
 ## configuration for curl command
 #

@@ -7,12 +7,14 @@ docker_prebuild() {
 
   docker_context=`dirname ${2}`
 
+#  docker_image=`kitchen diagnose ${1} | ruby -e "require 'yaml'; require 'json'; print JSON.generate(YAML.load($<.read))" | jq -r ".instances[\"${1}\"].driver.image"`
   docker_image=`kitchen diagnose ${1} | ruby -e "require 'yaml'; print YAML.load($<.read)['instances'][\"${1}\"]['driver']['image']"`
 
   docker build -t ${docker_image} ${docker_context}
 }
 
 func_prebuild() {
+  # docker images | awk '{ print $1 ":" $2 }' | grep ${instances[0]}
 
   docker_prebuild ${instances[0]} ./test/platforms/centos-6/prebuild/Dockerfile
 
@@ -23,7 +25,7 @@ func_create() {
 
   kitchen create || exit $?
 
-  containers=($(kitchen diagnose | ruby -e "require 'yaml'; YAML.load($<.read)['instances'].each do |key, instance|; puts \"#{instance['state_file']['container_id']}\"; end "))
+  containers=(`kitchen diagnose | ruby -e "require 'yaml'; YAML.load($<.read)['instances'].each do |key, instance|; puts \"#{instance['state_file']['container_id']}\"; end "`)
 
   db_primary_ip=`docker inspect ${containers[0]} | jq -r '.[] | .NetworkSettings.IPAddress'`
   export db_primary_ip
@@ -59,16 +61,19 @@ func_optional() {
 }
 
 func_preconfig() {
+#  state=`get_status`
   join_addr=${db_primary_ip}
   kitchen exec -c "sudo /tmp/bootstrap/consul_join.sh ${join_addr}" || exit $?
 
   kitchen exec -c 'sudo /root/startup.sh echo' || exit $?
 
+  #func_optional ${instances[2]}
 }
 
 func_converge() {
 
   if kitchen list | grep '<Not Created>' ; then
+  #if [ ! -f .kitchen.local.yml ] ; then
     func_create
   fi
 
@@ -78,6 +83,7 @@ func_converge() {
 func_setup() {
 
   if kitchen list | grep '<Not Created>' ; then
+  #if [ ! -f .kitchen.local.yml ] ; then
     func_create
   fi
 
@@ -87,6 +93,7 @@ func_setup() {
 func_verify() {
 
   if kitchen list | grep '<Not Created>' ; then
+  #if [ ! -f .kitchen.local.yml ] ; then
     func_create
   fi
 
