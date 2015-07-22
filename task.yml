@@ -36,7 +36,7 @@ events:
     ordered_tasks:
       - service: postgresql
         tag: primary
-        task: dump_database
+        task: backup
 
   restore:
     description: Execute restore
