@@ -25,9 +25,6 @@ events:
         task: configure
       - service: haproxy
         task: configure
-      - service: postgresql
-        tag: standby
-        task: post-configure
 
   deploy:
     description: Execute deploy
