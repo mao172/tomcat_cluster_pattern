@@ -86,7 +86,7 @@ tasks:
     tag: master
     operations:
       - execute: |
-          rm -rf {{backup_directory}}
+          rm -rf {{backup_directory}}/*
           sudo -u postgres pg_basebackup -D {{backup_directory}} --xlog --verbose -h 127.0.0.1 -U replication
           chown -R amandabackup:disk {{backup_directory}}
 
