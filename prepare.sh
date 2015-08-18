@@ -42,6 +42,19 @@ set_ruby_path() {
     echo "export PATH=\$PATH:${ruby_home}/bin" > ${CHEF_ENV_FILE}
     export PATH=${ruby_home}/bin:${PATH}
   fi
+
+  run grep "^path:" /etc/metronome/config.yml
+  if [ $status -eq 0 ]; then
+    read head body <<<"$output"
+
+    run which ruby
+    path=$body:`dirname $output`
+    sed -i -e "s@^path:.*@path: $path@" /etc/metronome/config.yml
+  else
+    run which ruby
+    path=`dirname $output`
+    sed -i -e "\$a\\path: $path" /etc/metronome/config.yml
+  fi
 }
 
 install_berkshelf() {
