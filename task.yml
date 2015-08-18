@@ -26,6 +26,10 @@ events:
       - service: haproxy
         task: configure
 
+  spec:
+    description: Execute spec
+    task: spec
+
   deploy:
     description: Execute deploy
     task: deploy
@@ -77,6 +81,12 @@ tasks:
       - chef:
           run_list:
             - role[{{role}}_configure]
+
+  spec:
+    description: Execute serverspec
+    operations:
+      - execute:
+          script: python lib/event_handler.py {{role}} spec
 
   deploy:
     description: Execute deploy chef
