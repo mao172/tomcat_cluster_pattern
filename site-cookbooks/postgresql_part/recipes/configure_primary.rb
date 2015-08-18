@@ -40,19 +40,17 @@ pg_hba = [
     user: node['postgresql_part']['replication']['user'], addr: '127.0.0.1/32', method: 'md5' }
 ]
 
-pg_hba += db_servers.map do |_name, server|
+pg_hba += db_servers.map do |server|
   {
     type: 'host',
     db: 'replication',
     user: node['postgresql_part']['replication']['user'],
-    addr: "#{server['private_ip']}/32", method: 'md5'
+    addr: "#{primary_private_ip(server['hostname'])}/32", method: 'md5'
   }
 end
 
-ap_servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('ap') }
-
-pg_hba += ap_servers.map do |_name, server|
-  { type: 'host', db: 'all', user: 'all', addr: "#{server['private_ip']}/32", method: 'md5' }
+pg_hba += ap_servers.map do |server|
+  { type: 'host', db: 'all', user: 'all', addr: "#{primary_private_ip(server['hostname'])}/32", method: 'md5' }
 end
 
 node.set['postgresql']['pg_hba'] = pg_hba

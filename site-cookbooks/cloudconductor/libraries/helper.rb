@@ -22,6 +22,44 @@ module CloudConductor
     def generate_password(key = '')
       OpenSSL::Digest::SHA256.hexdigest(node['cloudconductor']['salt'] + key)
     end
+    def primary_private_ip(hostname)
+      servers = node['cloudconductor']['servers']
+      return nil unless node['cloudconductor']['servers'][hostname]
+
+      return node['cloudconductor']['servers'][hostname]['private_ip'] unless node['cloudconductor']['networks'] && node['cloudconductor']['networks'][hostname]
+
+      first_port_vertual_ip = node['cloudconductor']['networks'][hostname][node['cloudconductor']['networks'][hostname].keys.first]['vertual_address']
+    end
+    def pick_servers_as_role(role)
+      if node['cloudconductor'] && node['cloudconductor']['servers']
+        servers = node['cloudconductor']['servers'].to_hash.select do |_, s|
+          s['roles'].include?(role)
+        end
+        result = servers.map do |hostname, server_info|
+          server_info['hostname'] = hostname
+          server_info
+        end
+      else
+        result = {}
+      end
+      result
+    end
+
+    def ap_servers
+      pick_servers_as_role('ap')
+    end
+
+    def db_servers
+      pick_servers_as_role('db')
+    end
+
+    def first_ap_server
+      ap_servers.first
+    end
+
+    def first_db_server
+      db_servers.first
+    end
   end unless defined?(Helper)
 end # unless defined?(CloudConductor)
 

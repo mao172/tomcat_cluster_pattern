@@ -7,12 +7,11 @@ extend ApachePart::ModJkHelper
 target_worker = worker_name
 
 # set workers.properties
-tomcat_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('ap') }
-tomcat_servers = tomcat_servers.map do |hostname, server|
+tomcat_servers = ap_servers.map do |hostname, server|
   {
     'name' => hostname,
-    'host' => server['private_ip'],
-    'route' => server['private_ip'],
+    'host' => primary_private_ip(hostname),
+    'route' => primary_private_ip(hostname),
     'weight' => server['weight'] || 1
   }
 end

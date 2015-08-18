@@ -1,5 +1,6 @@
 require_relative '../spec_helper'
 require_relative '../../../cloudconductor/libraries/consul_helper'
+require_relative '../../../cloudconductor/libraries/helper'
 require_relative '../../libraries/db_helper'
 
 describe 'DbHelper' do
@@ -7,20 +8,30 @@ describe 'DbHelper' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
+      @helper.extend CloudConductor::Helper
       node = { 'cloudconductor' => { 'servers' => { 'db' => { 'roles' => 'db' }, 'ab' => { 'roles' => 'ap' } } } }
       allow(@helper).to receive(:node).and_return(node)
     end
 
     it 'return db role hash' do
-      expect(@helper.db_servers).to eq('db' => { 'roles' => 'db' })
+      expect(@helper.db_servers).to eq([{'roles' => 'db','hostname' => 'db' }])
     end
   end
   describe '#standby_db_ip' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
-      allow(@helper).to receive(:db_servers)
-        .and_return('db1' => { 'private_ip' => '127.0.0.1' }, 'db2' => { 'private_ip' => '127.0.0.2' })
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
+            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.2' },
+            'ap' => { 'roles' => 'ap' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
     end
     describe 'if 1st hash of db_servers is the primary db' do
       before do
@@ -43,6 +54,16 @@ describe 'DbHelper' do
     before do
       @helper = Object.new
       @helper.extend DbHelper
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' } ,
+            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.111' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
     end
     describe 'if found at the consul' do
       before do
@@ -50,28 +71,31 @@ describe 'DbHelper' do
       end
       describe 'and registerd private_ip is same as the argument' do
         it 'return true' do
-          expect(@helper.primary_db?('127.0.0.1')).to eq(true)
+          node = @helper.db_servers[0]
+          expect(@helper.primary_db?(node)).to eq(true)
         end
       end
       describe 'and registerd private_ip is different as the argument' do
         it 'return false' do
-          expect(@helper.primary_db?('127.0.0.111')).to eq(false)
+          node = @helper.db_servers[1]
+          expect(@helper.primary_db?(node)).to eq(false)
         end
       end
     end
     describe 'if not found at the consul' do
       before do
         allow(CloudConductor::ConsulClient::Catalog).to receive(:service).and_return([])
-        allow(@helper).to receive(:db_servers).and_return('db1' => { 'private_ip' => '127.0.0.1' })
       end
       describe 'and first node private_ip of db_servers is same as the argument' do
         it 'return true' do
-          expect(@helper.primary_db?('127.0.0.1')).to eq(true)
+          node = @helper.db_servers[0]
+          expect(@helper.primary_db?(node)).to eq(true)
         end
       end
       describe 'and first node private_ip of db_servers is diffeerent as the argument' do
         it 'return false' do
-          expect(@helper.primary_db?('127.0.0.111')).to eq(false)
+          node = @helper.db_servers[1]
+          expect(@helper.primary_db?(node)).to eq(false)
         end
       end
     end

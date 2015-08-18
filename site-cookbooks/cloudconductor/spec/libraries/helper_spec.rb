@@ -38,4 +38,187 @@ describe CloudConductor::Helper do
       expect(random1).not_to eq(random2)
     end
   end
+  describe '#primary_private_ip' do
+    before do
+      @helper = Object.new
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'server1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.1' }
+          },
+          'networks' => {
+            'server1' => {
+              'port1' => {
+                'vertual_address' => '10.0.0.1'
+              }
+            }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
+    end
+
+    it 'return vertual address on host from cloudconductor attributes' do
+      expect(@helper.primary_private_ip('server1')).to match('10.0.0.1')
+    end
+
+    describe 'no hostname on servers attributes' do
+      it 'return nil' do
+        expect(@helper.primary_private_ip('server100')).to match(nil)
+      end
+    end
+
+    describe 'no networks on cloudconductor attributes' do
+      it 'return private ip of host' do
+        node = {
+          'cloudconductor' => {
+            'servers' => {
+              'server1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.1' }
+            }
+          }
+        }
+        allow(@helper).to receive(:node).and_return(node)
+        expect(@helper.primary_private_ip('server1')).to match('127.0.0.1')
+      end
+    end
+
+    describe 'no hostname on networks attributes' do
+      it 'return private ip of host' do
+        node = {
+          'cloudconductor' => {
+            'servers' => {
+              'server1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.1' }
+            },
+            'networks' => {
+              'server2' => {
+                'port1' => {
+                  'vertual_address' => '10.0.0.1'
+                }
+              }
+            }
+          }
+        }
+        allow(@helper).to receive(:node).and_return(node)
+        expect(@helper.primary_private_ip('server1')).to match('127.0.0.1')
+      end
+    end
+  end
+
+  describe '#pick_servers_as_role' do
+    before do
+      @helper = Object.new
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'web' => { 'roles' => 'web', 'private_ip' => '127.0.0.1' },
+            'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.2' },
+            'ap2' => { 'roles' => 'ap', 'private_ip' => '127.0.0.3' },
+            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.4' },
+            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.5' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
+    end
+    it 'return hash of argument roll' do
+      expect(@helper.pick_servers_as_role('web')).to eq(
+        ['roles' => 'web', 'private_ip' => '127.0.0.1', 'hostname' => 'web']
+      )
+      expect(@helper.pick_servers_as_role('ap')).to eq(
+        [{ 'roles' => 'ap', 'private_ip' => '127.0.0.2', 'hostname' => 'ap1' },
+         { 'roles' => 'ap', 'private_ip' => '127.0.0.3', 'hostname' => 'ap2' }]
+      )
+      expect(@helper.pick_servers_as_role('db')).to eq(
+        [{ 'roles' => 'db', 'private_ip' => '127.0.0.4', 'hostname' => 'db1' },
+         { 'roles' => 'db', 'private_ip' => '127.0.0.5', 'hostname' => 'db2' }]
+      )
+    end
+  end
+  describe '#ap_servers' do
+    before do
+      @helper = Object.new
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'web' => { 'roles' => 'web', 'private_ip' => '127.0.0.1' },
+            'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.2' },
+            'ap2' => { 'roles' => 'ap', 'private_ip' => '127.0.0.3' },
+            'db' => { 'roles' => 'db', 'private_ip' => '127.0.0.4' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
+    end
+    it 'return hash of ap roll only' do
+      expect(@helper.ap_servers).to eq(
+        [{ 'roles' => 'ap', 'private_ip' => '127.0.0.2', 'hostname' => 'ap1' },
+         { 'roles' => 'ap', 'private_ip' => '127.0.0.3', 'hostname' => 'ap2' }]
+      )
+    end
+  end
+  describe '#db_servers' do
+    before do
+      @helper = Object.new
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'ap' => { 'roles' => 'ap', 'private_ip' => '127.0.0.2' },
+            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.4' },
+            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.5' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
+    end
+    it 'return hash of db roll only' do
+      expect(@helper.db_servers).to eq(
+        [{ 'roles' => 'db', 'private_ip' => '127.0.0.4', 'hostname' => 'db1' },
+         { 'roles' => 'db', 'private_ip' => '127.0.0.5', 'hostname' => 'db2' }]
+      )
+    end
+  end
+  describe '#first_ap_server' do
+    before do
+      @helper = Object.new
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.2' },
+            'ap2' => { 'roles' => 'ap', 'private_ip' => '127.0.0.3' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
+    end
+    it 'return hash of ap roll of first' do
+      expect(@helper.first_ap_server).to eq(
+        'roles' => 'ap', 'private_ip' => '127.0.0.2', 'hostname' => 'ap1'
+      )
+    end
+  end
+  describe '#first_db_server' do
+    before do
+      @helper = Object.new
+      @helper.extend CloudConductor::Helper
+      node = {
+        'cloudconductor' => {
+          'servers' => {
+            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.2' },
+            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.3' }
+          }
+        }
+      }
+      allow(@helper).to receive(:node).and_return(node)
+    end
+    it 'return hash of db roll of first' do
+      expect(@helper.first_db_server).to eq(
+        'roles' => 'db', 'private_ip' => '127.0.0.2', 'hostname' => 'db1'
+      )
+    end
+  end
 end

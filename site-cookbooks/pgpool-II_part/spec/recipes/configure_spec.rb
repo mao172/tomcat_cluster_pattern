@@ -25,7 +25,7 @@ describe 'pgpool-II_part::configure' do
     chef_run.node.set['pgpool_part']['pgconf']['wd_heartbeat_port'] = 9694
     chef_run.node.set['cloudconductor']['servers'] = {
       'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
-      'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' }
+      'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' },
     }
     chef_run.node.automatic_attrs['ipaddress'] = '127.0.0.101'
     chef_run.converge(described_recipe)

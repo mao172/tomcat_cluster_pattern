@@ -27,9 +27,10 @@ class Pgpool2Part
       port = conf('postgresql')['port']
 
       Timeout.timeout(conf('wait_timeout')) do
-        servers('db').each do |_name, server|
-          until exec_command("hping3 -S #{server[:private_ip]} -p #{port} -c 5 | grep 'sport=#{port} flags=SA'")
-            puts "... waiting for completed database (#{server[:private_ip]}:#{port}) ..."
+        p db_servers
+        servers('db').each do |hostname, server|
+          until exec_command("hping3 -S #{primary_private_ip(hostname)} -p #{port} -c 5 | grep 'sport=#{port} flags=SA'")
+            puts "... waiting for completed database (#{primary_private_ip(hostname)}):#{port}) ..."
             sleep conf('wait_interval')
           end
         end

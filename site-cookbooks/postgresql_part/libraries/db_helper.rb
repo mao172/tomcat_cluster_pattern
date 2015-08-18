@@ -14,33 +14,30 @@
 # limitations under the License.
 
 module DbHelper
-  def db_servers
-    node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('db') }
-  end
-
   def standby_db_ip
-    first_node_ip = db_servers[db_servers.keys[0]]['private_ip']
-    if primary_db?(first_node_ip)
-      db_servers[db_servers.keys[1]]['private_ip']
+    if primary_db?(db_servers[0])
+      primary_private_ip(db_servers[1]['hostname'])
     else
-      first_node_ip
+      primary_private_ip(db_servers[0]['hostname'])
     end
   end
 
   def primary_db_ip
-    node_ip = db_servers[db_servers.keys[0]]['private_ip']
-    node_ip = db_servers[db_servers.keys[1]]['private_ip'] unless primary_db?(node_ip)
-    node_ip
+    if primary_db?(db_servers[0])
+      primary_private_ip(db_servers[0]['hostname'])
+    else
+      primary_private_ip(db_servers[1]['hostname'])
+    end
   end
 
-  def primary_db?(ipaddress)
+  def primary_db?(node)
     catalog = CloudConductor::ConsulClient::Catalog
     primary_node = catalog.service('postgresql', tag: 'primary')
 
     if primary_node.empty?
-      db_servers[db_servers.keys.first]['private_ip'] == ipaddress ? true : false
+      first_db_server['private_ip'] == node['private_ip'] ? true : false
     else
-      primary_node.first['Address'] == ipaddress ? true : false
+      primary_node.first['Address'] == node['private_ip'] ? true : false
     end
   end
 

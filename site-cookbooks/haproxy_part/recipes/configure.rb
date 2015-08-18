@@ -56,7 +56,7 @@ if conf['enable_default_http'] || node['haproxy_part']['enable_ssl_proxy']
   servers_http = web_servers.map do |hostname, server|
     sv = []
     sv << hostname
-    sv << "#{server['private_ip']}:#{conf['member_port']}"
+    sv << "#{primary_private_ip(hostname)}:#{conf['member_port']}"
     sv << 'weight 1'
     sv << "maxconn #{conf['member_max_connections']}"
     sv << 'check'
@@ -93,7 +93,7 @@ if conf['enable_ssl']
   servers_https = web_servers.map do |hostname, server|
     sv = []
     sv << hostname
-    sv << "#{server['private_ip']}:#{conf['ssl_member_port']}"
+    sv << "#{primary_private_ip(hostname)}:#{conf['ssl_member_port']}"
     sv << 'weight 1'
     sv << "maxconn #{conf['member_max_connections']}"
     sv << 'check'
