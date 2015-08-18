@@ -17,11 +17,6 @@ describe 'tomcat_part::setup' do
     )
   end
 
-  it 'include default recipe of java cookbook' do
-    expect(chef_run).to include_recipe('java::default')
-    expect(chef_run).to include_recipe('java::openjdk')
-  end
-
   it 'include default recipe of tomcat cookbook' do
     expect(chef_run).to include_recipe('tomcat::default')
   end
