@@ -14,7 +14,7 @@ describe 'DbHelper' do
     end
 
     it 'return db role hash' do
-      expect(@helper.db_servers).to eq([{'roles' => 'db','hostname' => 'db' }])
+      expect(@helper.db_servers).to eq([{ 'roles' => 'db', 'hostname' => 'db' }])
     end
   end
   describe '#standby_db_ip' do
@@ -58,7 +58,7 @@ describe 'DbHelper' do
       node = {
         'cloudconductor' => {
           'servers' => {
-            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' } ,
+            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
             'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.111' }
           }
         }

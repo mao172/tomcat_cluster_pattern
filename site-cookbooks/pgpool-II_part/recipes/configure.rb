@@ -11,7 +11,7 @@ extend Pgpool2Part::Helpers
 
 node.set['pgpool_part']['pgconf']['sr_check_password'] = generate_password('db_replication_check')
 
-db_servers.each_with_index do | server, index|
+db_servers.each_with_index do |server, index|
   node.set['pgpool_part']['pgconf']["backend_hostname#{index}"] = primary_private_ip(server['hostname'])
   node.set['pgpool_part']['pgconf']["backend_port#{index}"] = node['pgpool_part']['postgresql']['port'].to_i
   node.set['pgpool_part']['pgconf']["backend_data_directory#{index}"] = node['pgpool_part']['postgresql']['dir']

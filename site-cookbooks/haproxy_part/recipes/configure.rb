@@ -53,7 +53,7 @@ end
 # default backend (http)
 if conf['enable_default_http'] || node['haproxy_part']['enable_ssl_proxy']
 
-  servers_http = web_servers.map do |hostname, server|
+  servers_http = web_servers.map do |hostname, _server|
     sv = []
     sv << hostname
     sv << "#{primary_private_ip(hostname)}:#{conf['member_port']}"
@@ -90,7 +90,7 @@ if conf['enable_ssl']
     'default_backend' => 'servers-https'
   }
 
-  servers_https = web_servers.map do |hostname, server|
+  servers_https = web_servers.map do |hostname, _server|
     sv = []
     sv << hostname
     sv << "#{primary_private_ip(hostname)}:#{conf['ssl_member_port']}"
