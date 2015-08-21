@@ -69,7 +69,7 @@ tasks:
     description: Execute setup chef
     operations:
       - execute:
-          file: prepare.sh
+          file: ./prepare.sh
       - chef:
           run_list:
             - role[{{role}}_setup]
@@ -150,6 +150,7 @@ tasks:
       - execute:
           script: |
             if [ -d {{backup_directory}} ]; then
+              sleep 10
               json=`curl http://localhost:8500/v1/catalog/service/postgresql?tag=primary`
               primary_ip=`echo $json | jq '.[] | .Address' | sed -e 's/[^"]*"\([^"]*\)".*/\1/'`
 
