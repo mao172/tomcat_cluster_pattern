@@ -1,0 +1,74 @@
+
+# networks
+networks:
+  vnet1:
+
+# servers:
+servers:
+  lb_server:
+    role: lb
+    services:
+      - haproxy
+    interfaces:
+      tap1:
+        type: gretap
+        network: vnet1
+        security_groups:
+          - sg-httpd
+          - sg-shared
+  web_server:
+    role: web
+    services:
+      - httpd
+    interfaces:
+      tap1:
+        type: gretap
+        network: vnet1
+        security_groups:
+          - sg-httpd
+          - sg-shared
+  ap_server:
+    role: ap
+    services:
+      - tomcat
+      - pgpool-II
+    interfaces:
+      tap1:
+        type: gretap
+        network: vnet1
+        security_groups:
+          - sg-tomcat
+          - sg-pgpool2
+          - sg-shared
+  db_server:
+    role: db
+    services:
+      - postgres
+    interfaces:
+      tap1:
+        type: gretap
+        network: vnet1
+        security_groups:
+          - sg-postgres
+          - sg-shared
+
+# security_groups
+security_groups:
+  sg-lb:
+    rules:
+      - tcp:80:0.0.0.0/0
+      - tcp:443:0.0.0.0/0
+  sg-httpd:
+    rules:
+      - tcp:80:sg-lb
+  sg-tomcat:
+    rules:
+      - tcp:8009:sg-httpd
+  sg-pgpool2:
+    roles:
+      - tcp:9999:sg-tomcat
+      - tcp:9000:sg-pgpool2
+      - tcp:9694:sg-pgpool2
+  sg-postgres:
+    rules:
+      - tcp:5432:sg-pgpool2
