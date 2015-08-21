@@ -4,20 +4,3 @@ db:
       prepare_path: true
       schedule: "0 0 * * *"
       restore_enabled: true
-  privileges:
-    - user: postgres
-      command: /usr/bin/pg_basebackup
-    - user: root
-      command: /bin/chmod
-    - user: root
-      command: /bin/chown
-    - user: root
-      command: /bin/mkdir
-    - user: root
-      command: /bin/mv
-    - user: root
-      command: /bin/rm
-    - user: root
-      command: /bin/sed
-    - user: root
-      command: /sbin/service
