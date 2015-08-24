@@ -1,4 +1,6 @@
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv'
 
 describe 'tomcat_part::deploy' do
   let(:chef_run) { ChefSpec::SoloRunner.new(step_into: %w(tomcat_part_context tomcat_part_tables)) }
@@ -20,6 +22,9 @@ describe 'tomcat_part::deploy' do
     chef_run.node.set['cloudconductor']['applications'] = {
       app_name => {}
     }
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
+
     chef_run.converge(described_recipe)
   end
 

@@ -23,8 +23,39 @@ module CloudConductor
       OpenSSL::Digest::SHA256.hexdigest(node['cloudconductor']['salt'] + key)
     end
 
+    def keys(prefix)
+      data = CloudConductor::ConsulClient::KeyValueStore.keys(prefix)
+      keys = JSON.parse(data) if data && data.length > 0
+      keys
+    end
+
+    def load_network_config
+      networks = {}
+
+      prefix = 'cloudconductor/networks'
+
+      keys(prefix).each do |key|
+        next if key == prefix
+
+        hostname = key.slice(%r{#{prefix}/(?<hostname>[^/]*)}, 'hostname')
+        next if hostname == 'base'
+
+        ifname = key.slice(%r{#{prefix}/#{hostname}/(?<ifname>[^/]*)}, 'ifname')
+        next if ifname == 'vna'
+
+        data = CloudConductor::ConsulClient::KeyValueStore.get(key)
+
+        networks[hostname] ||= {}
+        networks[hostname][ifname] = JSON.parse(data) if data && data.length > 0
+      end if keys
+
+      networks
+    end
+
     def primary_private_ip(hostname)
       return nil unless node['cloudconductor']['servers'][hostname]
+
+      node.set['cloudconductor']['networks'] = load_network_config unless node['cloudconductor']['networks']
 
       if node['cloudconductor']['networks'] && node['cloudconductor']['networks'][hostname]
         node['cloudconductor']['networks'][hostname][node['cloudconductor']['networks'][hostname].keys.first]['virtual_address']

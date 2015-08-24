@@ -60,6 +60,8 @@ describe 'haproxy_part::configure' do
 
     allow(CloudConductor::ConsulClient::KeyValueStore)
       .to receive(:get).with('ssl_pem').and_return('simple result text')
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
+
     chef_run.converge(described_recipe)
   end
 

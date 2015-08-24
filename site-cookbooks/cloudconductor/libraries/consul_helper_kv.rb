@@ -16,9 +16,14 @@ module CloudConductor
         end
 
         def get(key, _optional = nil)
-          puts "#{ConsulClient.request_url("kv/#{key}?raw")}"
+          # puts "#{ConsulClient.request_url("kv/#{key}?raw")}"
           response = ConsulClient.http.get ConsulClient.request_url("kv/#{key}?raw")
 
+          response.body
+        end
+
+        def keys(key)
+          response = ConsulClient.http.get ConsulClient.request_url("kv/#{key}?keys")
           response.body
         end
 

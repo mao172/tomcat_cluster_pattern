@@ -46,4 +46,17 @@ describe CloudConductor::ConsulClient::KeyValueStore do
 
     expect(@helper::ConsulClient::KeyValueStore.get(key)).to eq(response_body)
   end
+
+  it 'keys' do
+    response_body = 'dummy'
+    response = Faraday::Response
+    allow(response).to receive(:body).and_return(response_body)
+
+    allow(@client).to receive_message_chain(:http, :get)
+      .with(:no_args)
+      .with("kv/#{key}?keys&token=++token_key++")
+      .and_return(response)
+
+    expect(@helper::ConsulClient::KeyValueStore.keys(key)).to eq(response_body)
+  end
 end

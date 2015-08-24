@@ -1,5 +1,6 @@
 require_relative '../spec_helper'
 require_relative '../../../cloudconductor/libraries/consul_helper.rb'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 
 describe 'pgpool-II_part::configure' do
   let(:chef_run) { ChefSpec::SoloRunner.new(step_into: ['pgpool_II_part_config_file']) }
@@ -28,6 +29,9 @@ describe 'pgpool-II_part::configure' do
       'ap1' => { 'roles' => 'ap', 'private_ip' => '127.0.0.101' }
     }
     chef_run.node.automatic_attrs['ipaddress'] = '127.0.0.101'
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
+
     chef_run.converge(described_recipe)
   end
 

@@ -1,4 +1,6 @@
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper.rb'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 require 'chefspec'
 
 describe 'postgresql_part::configure_primary' do
@@ -58,6 +60,8 @@ describe 'postgresql_part::configure_primary' do
 
     allow_any_instance_of(Chef::Recipe)
       .to receive(:consul_service_info).with('postgresql').and_return(service_info)
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
 
     chef_run.converge(described_recipe)
 

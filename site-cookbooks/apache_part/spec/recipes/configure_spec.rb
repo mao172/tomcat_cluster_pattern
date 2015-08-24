@@ -1,5 +1,7 @@
 require_relative '../spec_helper'
 require_relative '../../../cloudconductor/libraries/helper'
+require_relative '../../../cloudconductor/libraries/consul_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv'
 
 describe 'apache_part::configure' do
   let(:chef_run) { ChefSpec::SoloRunner.new }
@@ -14,6 +16,8 @@ describe 'apache_part::configure' do
         private_ip: private_ip
       }
     }
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
+
     chef_run.converge(described_recipe)
   end
 

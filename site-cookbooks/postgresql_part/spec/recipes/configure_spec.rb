@@ -1,4 +1,6 @@
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper.rb'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 require 'chefspec'
 
 describe 'postgresql_part::configure' do
@@ -55,6 +57,8 @@ describe 'postgresql_part::configure' do
       .to receive(:generate_password).with('db_replication_check').and_return(generate_passwd)
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('tomcat').and_return(generate_passwd)
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
 
     chef_run.converge(described_recipe)
 

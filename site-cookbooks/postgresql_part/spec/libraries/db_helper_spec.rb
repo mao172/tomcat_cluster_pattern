@@ -1,16 +1,36 @@
 require_relative '../spec_helper'
 require_relative '../../../cloudconductor/libraries/consul_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv'
 require_relative '../../../cloudconductor/libraries/helper'
 require_relative '../../libraries/db_helper'
 
 describe 'DbHelper' do
+  def cookbook_root
+    File.expand_path('../../', File.dirname(__FILE__))
+  end
+
+  def cookbook_name
+    File.basename(cookbook_root)
+  end
+
+  let(:recipe) do
+    cookbook_version = Chef::CookbookVersion.new(cookbook_name, cookbook_root)
+    cookbook_versions = { cookbook_name => cookbook_version }
+    cookbook_collection = Chef::CookbookCollection.new(cookbook_versions)
+    node = Chef::Node.new
+    node.set['cloudconductor']['servers'] = {}
+
+    events = Chef::EventDispatch::Dispatcher.new
+    run_context = Chef::RunContext.new(node, cookbook_collection, events)
+    Chef::Recipe.new(cookbook_name, 'test', run_context)
+  end
+
   describe '#db_servers' do
     before do
-      @helper = Object.new
+      @helper = recipe
       @helper.extend DbHelper
       @helper.extend CloudConductor::Helper
-      node = { 'cloudconductor' => { 'servers' => { 'db' => { 'roles' => 'db' }, 'ab' => { 'roles' => 'ap' } } } }
-      allow(@helper).to receive(:node).and_return(node)
+      @helper.run_context.node.set['cloudconductor']['servers'] = { 'db' => { 'roles' => 'db' }, 'ab' => { 'roles' => 'ap' } }
     end
 
     it 'return db role hash' do
@@ -19,19 +39,15 @@ describe 'DbHelper' do
   end
   describe '#standby_db_ip' do
     before do
-      @helper = Object.new
+      @helper = recipe
       @helper.extend DbHelper
       @helper.extend CloudConductor::Helper
-      node = {
-        'cloudconductor' => {
-          'servers' => {
-            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
-            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.2' },
-            'ap' => { 'roles' => 'ap' }
-          }
-        }
+      @helper.run_context.node.set['cloudconductor']['servers'] = {
+        'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
+        'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.2' },
+        'ap' => { 'roles' => 'ap' }
       }
-      allow(@helper).to receive(:node).and_return(node)
+      allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
     end
     describe 'if 1st hash of db_servers is the primary db' do
       before do
@@ -52,18 +68,13 @@ describe 'DbHelper' do
   end
   describe '#primary_db?' do
     before do
-      @helper = Object.new
+      @helper = recipe
       @helper.extend DbHelper
       @helper.extend CloudConductor::Helper
-      node = {
-        'cloudconductor' => {
-          'servers' => {
-            'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
-            'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.111' }
-          }
-        }
+      @helper.run_context.node.set['cloudconductor']['servers'] = {
+        'db1' => { 'roles' => 'db', 'private_ip' => '127.0.0.1' },
+        'db2' => { 'roles' => 'db', 'private_ip' => '127.0.0.111' }
       }
-      allow(@helper).to receive(:node).and_return(node)
     end
     describe 'if found at the consul' do
       before do

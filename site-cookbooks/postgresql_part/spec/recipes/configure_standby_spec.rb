@@ -1,4 +1,6 @@
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper.rb'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv.rb'
 require 'chefspec'
 
 describe 'postgresql_part::configure_standby' do
@@ -47,6 +49,8 @@ describe 'postgresql_part::configure_standby' do
 
     allow_any_instance_of(Chef::Recipe).to receive(:primary_db?).and_return(false)
     allow_any_instance_of(Chef::Recipe).to receive(:standby_db_ip).and_return(standby_ip)
+
+    allow(CloudConductor::ConsulClient::KeyValueStore).to receive(:keys).and_return('')
 
     chef_run.converge(described_recipe)
 
