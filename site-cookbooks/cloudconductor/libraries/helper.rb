@@ -47,7 +47,7 @@ module CloudConductor
 
         networks[hostname] ||= {}
         networks[hostname][ifname] = JSON.parse(data) if data && data.length > 0
-      end if keys
+      end if keys(prefix)
 
       networks
     end
