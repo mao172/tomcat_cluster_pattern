@@ -50,7 +50,7 @@ describe CloudConductor::Helper do
           'networks' => {
             'server1' => {
               'port1' => {
-                'vertual_address' => '10.0.0.1'
+                'virtual_address' => '10.0.0.1'
               }
             }
           }
@@ -59,7 +59,7 @@ describe CloudConductor::Helper do
       allow(@helper).to receive(:node).and_return(node)
     end
 
-    it 'return vertual address on host from cloudconductor attributes' do
+    it 'return virtual address on host from cloudconductor attributes' do
       expect(@helper.primary_private_ip('server1')).to match('10.0.0.1')
     end
 
@@ -93,7 +93,7 @@ describe CloudConductor::Helper do
             'networks' => {
               'server2' => {
                 'port1' => {
-                  'vertual_address' => '10.0.0.1'
+                  'virtual_address' => '10.0.0.1'
                 }
               }
             }

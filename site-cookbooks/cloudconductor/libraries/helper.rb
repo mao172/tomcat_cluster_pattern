@@ -27,7 +27,7 @@ module CloudConductor
       return nil unless node['cloudconductor']['servers'][hostname]
 
       if node['cloudconductor']['networks'] && node['cloudconductor']['networks'][hostname]
-        node['cloudconductor']['networks'][hostname][node['cloudconductor']['networks'][hostname].keys.first]['vertual_address']
+        node['cloudconductor']['networks'][hostname][node['cloudconductor']['networks'][hostname].keys.first]['virtual_address']
       else
         return node['cloudconductor']['servers'][hostname]['private_ip']
       end
