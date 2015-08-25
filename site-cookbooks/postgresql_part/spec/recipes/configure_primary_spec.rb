@@ -235,10 +235,10 @@ describe 'postgresql_part::configure_primary' do
         chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
         chef_run.converge(described_recipe)
 
-        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{generate_rep_passwd} ",
-                             "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
+        primary_conninfo = ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                            "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                            "password=#{generate_rep_passwd} ",
+                            "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
@@ -259,9 +259,9 @@ describe 'postgresql_part::configure_primary' do
         chef_run.node.set['postgresql_part']['replication']['application_name'] = 'application'
         chef_run.converge(described_recipe)
 
-        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{generate_rep_passwd}"].join
+        primary_conninfo = ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                            "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                            "password=#{generate_rep_passwd}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])

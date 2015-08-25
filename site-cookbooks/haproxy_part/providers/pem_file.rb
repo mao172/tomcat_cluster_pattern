@@ -60,7 +60,7 @@ action :create do
   fail 'SSL server certificate could not be retrieved.' if pem_source.nil? || pem_source.empty?
 
   file new_resource.file_name do
-    content  pem_source
+    content pem_source
     owner 'root'
     group 'root'
     mode  '0644'
