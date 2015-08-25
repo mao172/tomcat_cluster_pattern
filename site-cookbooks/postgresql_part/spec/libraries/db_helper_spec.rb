@@ -71,14 +71,14 @@ describe 'DbHelper' do
       end
       describe 'and registerd private_ip is same as the argument' do
         it 'return true' do
-          node = @helper.db_servers[0]
-          expect(@helper.primary_db?(node)).to eq(true)
+          ip = @helper.db_servers[0]['private_ip']
+          expect(@helper.primary_db?(ip)).to eq(true)
         end
       end
       describe 'and registerd private_ip is different as the argument' do
         it 'return false' do
-          node = @helper.db_servers[1]
-          expect(@helper.primary_db?(node)).to eq(false)
+          ip = @helper.db_servers[1]['private_ip']
+          expect(@helper.primary_db?(ip)).to eq(false)
         end
       end
     end
@@ -88,14 +88,14 @@ describe 'DbHelper' do
       end
       describe 'and first node private_ip of db_servers is same as the argument' do
         it 'return true' do
-          node = @helper.db_servers[0]
-          expect(@helper.primary_db?(node)).to eq(true)
+          ip = @helper.db_servers[0]['private_ip']
+          expect(@helper.primary_db?(ip)).to eq(true)
         end
       end
       describe 'and first node private_ip of db_servers is diffeerent as the argument' do
         it 'return false' do
-          node = @helper.db_servers[1]
-          expect(@helper.primary_db?(node)).to eq(false)
+          ip = @helper.db_servers[1]['private_ip']
+          expect(@helper.primary_db?(ip)).to eq(false)
         end
       end
     end
