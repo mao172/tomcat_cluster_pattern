@@ -106,8 +106,6 @@ tasks:
 
   backup:
     description: Backup database on primary
-    service: postgresql
-    tag: master
     operations:
       - execute:
           script: |
@@ -117,8 +115,6 @@ tasks:
 
   restore_database:
     description: Restore database on primary
-    service: postgresql
-    tag: primary
     operations:
       - consul-kvs:
           action: put
@@ -144,8 +140,6 @@ tasks:
 
   start_replication:
     description: Restore database on standby
-    service: postgresql
-    tag: standby
     operations:
       - service:
           name: postgresql-9.4
