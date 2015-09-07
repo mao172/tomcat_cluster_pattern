@@ -65,7 +65,7 @@ security_groups:
     rules:
       - tcp:8009:sg-httpd
   sg-pgpool2:
-    roles:
+    rules:
       - tcp:9999:sg-tomcat
       - tcp:9000:sg-pgpool2
       - tcp:9694:sg-pgpool2
