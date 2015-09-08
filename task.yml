@@ -56,11 +56,17 @@ events:
     priority: 80
     ordered_tasks:
       - service: postgresql
+        tag: standby
+        task: stop_standby_database
+      - service: postgresql
         tag: primary
         task: restore_database
       - service: postgresql
         tag: primary
         task: configure
+      - service: postgresql
+        tag: standby
+        task: start_standby_database
       - service: postgresql
         tag: standby
         task: start_replication
@@ -113,6 +119,13 @@ tasks:
             sudo -u postgres pg_basebackup -D {{backup_directory}} --xlog --verbose -h 127.0.0.1 -U replication
             chown -R amandabackup:disk {{backup_directory}}
 
+  stop_standby_database:
+    description: Stop database on standby
+    operations:
+      - service:
+          name: postgresql-9.4
+          action: stop
+
   restore_database:
     description: Restore database on primary
     operations:
@@ -137,6 +150,13 @@ tasks:
       - consul-kvs:
           action: delete
           key: cloudconductor/postgresql/failover-event/lock
+
+  start_standby_database:
+    description: Start database on standby
+    operations:
+      - service:
+          name: postgresql-9.4
+          action: start
 
   start_replication:
     description: Restore database on standby
