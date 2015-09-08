@@ -67,8 +67,8 @@ security_groups:
   sg-pgpool2:
     rules:
       - tcp:9999:sg-tomcat
-      - tcp:9000:sg-pgpool2
-      - tcp:9694:sg-pgpool2
+      - tcp:9000:sg-tomcat
+      - tcp:9694:sg-tomcat
   sg-postgres:
     rules:
       - tcp:5432:sg-pgpool2
