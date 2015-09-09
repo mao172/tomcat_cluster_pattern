@@ -23,6 +23,14 @@ describe port(8009) do
   it { should be_listening.with('tcp') }
 end
 
+describe port(12345) do
+  it { should be_listening.with('tcp') }
+end
+
+describe port(12346) do
+  it { should be_listening.with('tcp') }
+end
+
 params = property[:consul_parameters]
 
 if params['pgpool_part'] && params['pgpool_part']['pgconf'] && params['pgpool_part']['pgconf']['port']
