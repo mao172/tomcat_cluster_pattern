@@ -101,7 +101,7 @@ tasks:
     description: Execute serverspec
     operations:
       - execute:
-          script: python lib/event_handler.py {{role}} spec
+          script: python lib/serverspec.py {{role}}
 
   deploy:
     description: Execute deploy chef
