@@ -5,6 +5,7 @@
 #
 
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/consul_helper_kv'
 
 RSpec.configure do |config|
   config.extend Chef::Mixin::DeepMerge

@@ -1,8 +1,5 @@
 if node['cloudconductor']['servers']
-  db_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('db') }
-  node.set['tomcat_part']['database']['host'] = db_servers.map { |_, s| s['private_ip'] }.first
-
-  ap_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('ap') }
+  node.set['tomcat_part']['database']['host'] = primary_private_ip(first_db_server['hostname'])
 end
 
 if node['tomcat_part']['pgpool2'] == true
@@ -66,7 +63,7 @@ applications.each do |app_name, app|
 
   if node['tomcat_part']['session_replication'] == 'jdbcStore'
     tomcat_part_tables "#{app_name}_session" do
-      only_if { ap_servers.map { |_, s| s['private_ip'] }.first == node['ipaddress'] }
+      only_if { first_ap_server['private_ip'] == node['ipaddress'] }
     end
   end
 
