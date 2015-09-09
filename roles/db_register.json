@@ -1,0 +1,9 @@
+{
+  "name": "db_register",
+  "description": "Register PostgreSQL service with tag to consul catalog",
+  "chef_type": "role",
+  "json_class": "Chef::Role",
+  "run_list": [
+    "postgresql_part::register"
+  ]
+}

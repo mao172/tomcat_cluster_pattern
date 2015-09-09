@@ -41,7 +41,7 @@ fi
 script_dir=`dirname $0`
 
 export PATH=`chefdk_path`:${PATH}
-export CONSUL_SECRET_KEY=`read_config_value "CONSUL_SECRET_KEY"`
+export CONSUL_SECRET_KEY=`jq -r .acl_master_token /etc/consul.d/default.json`
 START_DATETIME="`date --iso-8601=seconds`"
 
 action_result_log="`ruby ${script_dir}/<%= @action_script %> 2>&1`"
