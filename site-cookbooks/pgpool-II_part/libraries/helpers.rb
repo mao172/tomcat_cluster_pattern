@@ -54,7 +54,7 @@ class Pgpool2Part
       params << generate_password('pcp')
 
       until exec_command("pcp_node_info --verbose #{params.join(' ')} #{index}")
-        puts "... pcp server is during the initialization ..."
+        puts '... pcp server is during the initialization ...'
         sleep conf('wait_interval')
       end
 
