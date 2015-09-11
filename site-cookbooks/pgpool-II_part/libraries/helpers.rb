@@ -53,6 +53,11 @@ class Pgpool2Part
       params << conf('user')
       params << generate_password('pcp')
 
+      until exec_command("pcp_node_info --verbose #{params.join(' ')} #{index}")
+        puts "... pcp server is during the initialization ..."
+        sleep conf('wait_interval')
+      end
+
       while exec_command("pcp_node_info --verbose #{params.join(' ')} #{index} | grep -E 'Status *: +[03]' ")
         puts "... #{backend_hostname(index)} is during the initialization ..."
         exec_command("pcp_attach_node #{params.join(' ')} #{index}")
