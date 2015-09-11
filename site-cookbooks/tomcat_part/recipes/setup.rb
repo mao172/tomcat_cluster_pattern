@@ -11,6 +11,7 @@ yum_repository 'jpackage' do
   only_if { platform_family?('rhel') && node['tomcat_part']['use_jpackage'] }
 end
 
+include_recipe 'java'
 include_recipe 'tomcat'
 
 # Install JDBC Driver
