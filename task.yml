@@ -115,6 +115,8 @@ tasks:
     operations:
       - execute:
           script: |
+            mkdir -p {{backup_directory}}
+            chmod 777 {{backup_directory}}
             rm -rf {{backup_directory}}/*
             sudo -u postgres pg_basebackup -D {{backup_directory}} --xlog --verbose -h 127.0.0.1 -U replication
             chown -R amandabackup:disk {{backup_directory}}
