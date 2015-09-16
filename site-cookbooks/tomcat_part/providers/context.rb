@@ -64,7 +64,7 @@ action :create do
       group node['tomcat']['group']
       variables(
         database: new_resource.database,
-        password: generate_password('database'),
+        password: generate_password('db_application'),
         datasource: new_resource.datasource
       )
     end
