@@ -72,6 +72,8 @@ events:
         task: start_replication
       - service: pgpool-II
         task: configure
+      - service: tomcat
+        task: restart_tomcat
 
 tasks:
   setup:
@@ -184,3 +186,10 @@ tasks:
       - service:
           name: postgresql-9.4
           action: start
+
+  restart_tomcat:
+    description: Restart tomcat service to clear deprecated database connection
+    operations:
+      - service:
+          name: tomcat7
+          action: restart
