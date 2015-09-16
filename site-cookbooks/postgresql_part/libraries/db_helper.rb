@@ -32,7 +32,9 @@ module DbHelper
 
   def primary_db?(ip)
     catalog = CloudConductor::ConsulClient::Catalog
-    primary_node = catalog.service('postgresql', tag: 'primary')
+    primary_node = catalog.service('postgresql', tag: 'primary').sort do |node1, node2|
+      node1['Address'] <=> node2['Address']
+    end
 
     if primary_node.empty?
       first_db_server['private_ip'] == ip ? true : false
