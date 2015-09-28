@@ -87,7 +87,7 @@ default['pgpool_part']['pgconf']['connect_timeout'] = 10000
 
 default['pgpool_part']['pgconf']['failover_command'] = "#{node['pgpool_part']['config']['dir']}/failover.sh %H"
 default['pgpool_part']['pgconf']['failback_command'] = ''
-default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = false
+default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = true
 default['pgpool_part']['pgconf']['search_primary_node_timeout'] = 10
 default['pgpool_part']['pgconf']['recovery_user'] = 'nobody'
 default['pgpool_part']['pgconf']['recovery_password'] = ''
