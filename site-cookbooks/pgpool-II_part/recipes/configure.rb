@@ -10,6 +10,7 @@ require 'timeout'
 extend Pgpool2Part::Helpers
 
 node.set['pgpool_part']['pgconf']['sr_check_password'] = generate_password('db_replication_check')
+node.set['pgpool_part']['pgconf']['health_check_password'] = node.set['pgpool_part']['pgconf']['sr_check_password']
 
 db_servers.each_with_index do |server, index|
   node.set['pgpool_part']['pgconf']["backend_hostname#{index}"] = primary_private_ip(server['hostname'])
