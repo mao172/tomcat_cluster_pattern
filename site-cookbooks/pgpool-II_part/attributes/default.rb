@@ -81,8 +81,8 @@ default['pgpool_part']['pgconf']['health_check_period'] = 60
 default['pgpool_part']['pgconf']['health_check_timeout'] = 20
 default['pgpool_part']['pgconf']['health_check_user'] = node['pgpool_part']['postgresql']['replication']['check_user']
 default['pgpool_part']['pgconf']['health_check_password'] = ''
-default['pgpool_part']['pgconf']['health_check_max_retries'] = 0
-default['pgpool_part']['pgconf']['health_check_retry_delay'] = 1
+default['pgpool_part']['pgconf']['health_check_max_retries'] = 3
+default['pgpool_part']['pgconf']['health_check_retry_delay'] = 5
 default['pgpool_part']['pgconf']['connect_timeout'] = 10000
 
 default['pgpool_part']['pgconf']['failover_command'] = "#{node['pgpool_part']['config']['dir']}/failover.sh %H"
