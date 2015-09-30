@@ -42,7 +42,7 @@ def group
 end
 
 def path
-  ::File.join(node[:cloudconductor][:consul][:config_dir], "#{id || name}.json")
+  ::File.join(node['cloudconductor']['consul']['config_dir'], "#{id || name}.json")
 end
 
 def to_json

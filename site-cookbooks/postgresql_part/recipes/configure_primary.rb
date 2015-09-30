@@ -37,22 +37,20 @@ pg_hba = [
   { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' },
   { type: 'host', db: 'all', user: 'postgres', addr: '0.0.0.0/0', method: 'reject' },
   { type: 'host', db: 'replication',
-    user: "#{node['postgresql_part']['replication']['user']}", addr: '127.0.0.1/32', method: 'md5' }
+    user: node['postgresql_part']['replication']['user'], addr: '127.0.0.1/32', method: 'md5' }
 ]
 
-pg_hba += db_servers.map do |_name, server|
+pg_hba += db_servers.map do |server|
   {
     type: 'host',
     db: 'replication',
-    user: "#{node['postgresql_part']['replication']['user']}",
-    addr: "#{server['private_ip']}/32", method: 'md5'
+    user: node['postgresql_part']['replication']['user'],
+    addr: "#{primary_private_ip(server['hostname'])}/32", method: 'md5'
   }
 end
 
-ap_servers = node['cloudconductor']['servers'].select { |_name, server| server['roles'].include?('ap') }
-
-pg_hba += ap_servers.map do |_name, server|
-  { type: 'host', db: 'all', user: 'all', addr: "#{server['private_ip']}/32", method: 'md5' }
+pg_hba += ap_servers.map do |server|
+  { type: 'host', db: 'all', user: 'all', addr: "#{primary_private_ip(server['hostname'])}/32", method: 'md5' }
 end
 
 node.set['postgresql']['pg_hba'] = pg_hba
@@ -66,7 +64,6 @@ template "#{node['postgresql']['dir']}/pg_hba.conf" do
     pg_hba: node['postgresql']['pg_hba']
   )
   notifies :reload, 'service[postgresql]', :delayed
-  notifies :create, 'cloudconductor_consul_service_def[postgresql]', :delayed
 end
 
 postgresql_database 'postgres' do
@@ -118,21 +115,3 @@ end
 # for tomcat session replication
 
 include_recipe 'postgresql_part::configure_tomcat_session'
-
-# postgresql_part_append_service_tag 'primary'
-
-service_info = consul_service_info('postgresql')
-
-unless service_info.nil?
-  service_info['Tags'] = [] if service_info['Tags'].nil?
-
-  service_info['Tags'] << 'primary' unless service_info['Tags'].include? 'primary'
-
-  cloudconductor_consul_service_def 'postgresql' do
-    id service_info['ID']
-    port service_info['Port']
-    tags service_info['Tags']
-    check service_info['Checks']
-    action :nothing
-  end
-end

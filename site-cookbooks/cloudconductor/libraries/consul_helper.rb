@@ -24,8 +24,12 @@ module CloudConductor
         Faraday.new(url: 'http://localhost:8500/v1', proxy: '')
       end
 
+      def secret_key
+        ENV['CONSUL_SECRET_KEY']
+      end
+
       def token
-        CGI.escape("#{ENV['CONSUL_SECRET_KEY']}")
+        CGI.escape(secret_key) unless secret_key.nil? || secret_key.empty?
       end
 
       def acl_token?

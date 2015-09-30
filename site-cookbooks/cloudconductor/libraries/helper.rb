@@ -17,24 +17,51 @@ require 'chef/recipe'
 require 'chef/resource'
 require 'chef/provider'
 
-require 'cloud_conductor_utils/consul'
-
 module CloudConductor
   module Helper
     def generate_password(key = '')
       OpenSSL::Digest::SHA256.hexdigest(node['cloudconductor']['salt'] + key)
     end
 
-    def server_info(role)
-      all_servers = CloudConductorUtils::Consul.read_servers
-      servers = all_servers.select do |_hostname, server|
-        server[:roles].include?(role)
+    def primary_private_ip(hostname)
+      return nil unless node['cloudconductor']['servers'][hostname]
+
+      if node['cloudconductor']['networks'] && node['cloudconductor']['networks'][hostname]
+        node['cloudconductor']['networks'][hostname][node['cloudconductor']['networks'][hostname].keys.first]['virtual_address']
+      else
+        return node['cloudconductor']['servers'][hostname]['private_ip']
       end
-      result = servers.map do |hostname, server|
-        server[:hostname] = hostname
-        server
+    end
+
+    def pick_servers_as_role(role)
+      if node['cloudconductor'] && node['cloudconductor']['servers']
+        servers = node['cloudconductor']['servers'].to_hash.select do |_, s|
+          s['roles'].include?(role)
+        end
+        result = servers.map do |hostname, server_info|
+          server_info['hostname'] = hostname
+          server_info
+        end
+      else
+        result = {}
       end
       result
+    end
+
+    def ap_servers
+      pick_servers_as_role('ap')
+    end
+
+    def db_servers
+      pick_servers_as_role('db')
+    end
+
+    def first_ap_server
+      ap_servers.first
+    end
+
+    def first_db_server
+      db_servers.first
     end
   end unless defined?(Helper)
 end # unless defined?(CloudConductor)

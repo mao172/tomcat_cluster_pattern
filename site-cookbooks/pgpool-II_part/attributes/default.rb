@@ -18,8 +18,8 @@ default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' }
 ]
 
-default[:pgpool_part][:wait_timeout] = 180
-default[:pgpool_part][:wait_interval] = 10
+default['pgpool_part']['wait_timeout'] = 180
+default['pgpool_part']['wait_interval'] = 10
 
 default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'
 default['pgpool_part']['pgconf']['port'] = 9999
@@ -77,17 +77,17 @@ default['pgpool_part']['pgconf']['sr_check_user'] = node['pgpool_part']['postgre
 default['pgpool_part']['pgconf']['sr_check_password'] = ''
 default['pgpool_part']['pgconf']['delay_threshold'] = 0
 default['pgpool_part']['pgconf']['follow_master_command'] = ''
-default['pgpool_part']['pgconf']['health_check_period'] = 0
+default['pgpool_part']['pgconf']['health_check_period'] = 60
 default['pgpool_part']['pgconf']['health_check_timeout'] = 20
-default['pgpool_part']['pgconf']['health_check_user'] = 'nobody'
+default['pgpool_part']['pgconf']['health_check_user'] = node['pgpool_part']['postgresql']['replication']['check_user']
 default['pgpool_part']['pgconf']['health_check_password'] = ''
-default['pgpool_part']['pgconf']['health_check_max_retries'] = 0
-default['pgpool_part']['pgconf']['health_check_retry_delay'] = 1
+default['pgpool_part']['pgconf']['health_check_max_retries'] = 3
+default['pgpool_part']['pgconf']['health_check_retry_delay'] = 5
 default['pgpool_part']['pgconf']['connect_timeout'] = 10000
 
 default['pgpool_part']['pgconf']['failover_command'] = "#{node['pgpool_part']['config']['dir']}/failover.sh %H"
 default['pgpool_part']['pgconf']['failback_command'] = ''
-default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = false
+default['pgpool_part']['pgconf']['fail_over_on_backend_error'] = true
 default['pgpool_part']['pgconf']['search_primary_node_timeout'] = 10
 default['pgpool_part']['pgconf']['recovery_user'] = 'nobody'
 default['pgpool_part']['pgconf']['recovery_password'] = ''
@@ -98,7 +98,7 @@ default['pgpool_part']['pgconf']['client_idle_limit_in_recovery'] = 0
 default['pgpool_part']['pgconf']['use_watchdog'] = true
 default['pgpool_part']['pgconf']['trusted_servers'] = ''
 default['pgpool_part']['pgconf']['ping_path'] = '/bin'
-default['pgpool_part']['pgconf']['wd_hostname'] = node[:ipaddress]
+default['pgpool_part']['pgconf']['wd_hostname'] = node['ipaddress']
 default['pgpool_part']['pgconf']['wd_port'] = 9000
 default['pgpool_part']['pgconf']['wd_authkey'] = ''
 default['pgpool_part']['pgconf']['delegate_IP'] = ''

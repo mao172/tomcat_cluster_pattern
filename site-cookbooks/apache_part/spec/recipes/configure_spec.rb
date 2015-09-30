@@ -1,4 +1,5 @@
 require_relative '../spec_helper'
+require_relative '../../../cloudconductor/libraries/helper'
 
 describe 'apache_part::configure' do
   let(:chef_run) { ChefSpec::SoloRunner.new }

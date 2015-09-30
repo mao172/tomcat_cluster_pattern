@@ -205,6 +205,7 @@ class FailoverAction
         if system('service postgresql-9.4 promote')
           logger.info('promoted to primary on successfully.')
           add_primary_tag
+          remove_standby_tag
         else
           logger.error("failed to promote to primary. returns #{$CHILD_STATUS}")
         end
@@ -284,6 +285,24 @@ class FailoverAction
       data['Service']['Tags'] = data['Service']['Tags'] - ['primary']
 
       CloudConductor::ConsulClient::Catalog.regist(data)
+    end
+
+    def remove_standby_tag
+      service_info = CloudConductor::ConsulClient.services['postgresql']
+
+      service_info['Tags'] = [] if service_info['Tags'].nil?
+      service_info['Tags'] = service_info['Tags'] - ['standby']
+
+      CloudConductor::ConsulClient.regist_service('postgresql', service_info)
+
+      service_config = CloudConductor::ConsulConfig.read('/etc/consul.d/postgresql.json')
+
+      return if service_config['service'].nil?
+
+      service_config['service']['tags'] = [] if service_config['service']['tags'].nil?
+      service_config['service']['tags'] = service_config['service']['tags'] - ['standby']
+
+      CloudConductor::ConsulConfig.write('/etc/consul.d/postgresql.json', service_config)
     end
   end
 end

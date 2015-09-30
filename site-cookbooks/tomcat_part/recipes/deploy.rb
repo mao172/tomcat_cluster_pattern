@@ -1,8 +1,5 @@
 if node['cloudconductor']['servers']
-  db_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('db') }
-  node.set['tomcat_part']['database']['host'] = db_servers.map { |_, s| s['private_ip'] }.first
-
-  ap_servers = node['cloudconductor']['servers'].select { |_, s| s['roles'].include?('ap') }
+  node.set['tomcat_part']['database']['host'] = primary_private_ip(first_db_server['hostname'])
 end
 
 if node['tomcat_part']['pgpool2'] == true
@@ -21,7 +18,7 @@ applications = node['cloudconductor']['applications'].select { |_app_name, app| 
 applications.each do |app_name, app|
   case app['protocol']
   when 'git'
-    source_path = File.join(Dir.tmpdir, "#{app_name}")
+    source_path = File.join(Dir.tmpdir, app_name)
 
     deploy app_name do
       repo app['url']
@@ -47,8 +44,8 @@ applications.each do |app_name, app|
     code "mv #{source_path} #{node['tomcat']['webapp_dir']}"
   end
 
-  app_root = "#{node['tomcat']['webapp_dir']}"
-  app_dir = "#{app_root}"
+  app_root = node['tomcat']['webapp_dir']
+  app_dir = app_root
 
   bash "pre_deploy_script_#{app_name}" do
     cwd app_dir
@@ -66,11 +63,11 @@ applications.each do |app_name, app|
 
   if node['tomcat_part']['session_replication'] == 'jdbcStore'
     tomcat_part_tables "#{app_name}_session" do
-      only_if { ap_servers.map { |_, s| s['private_ip'] }.first == node['ipaddress'] }
+      only_if { first_ap_server['private_ip'] == node['ipaddress'] }
     end
   end
 
-  tomcat_part_context "#{app_name}" do
+  tomcat_part_context app_name do
     use_db true
     database database_spec
     sessionTableName "#{app_name}_session"

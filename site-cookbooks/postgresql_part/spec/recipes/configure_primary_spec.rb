@@ -235,10 +235,10 @@ describe 'postgresql_part::configure_primary' do
         chef_run.node.set['postgresql']['config']['synchronous_commit'] = 'on'
         chef_run.converge(described_recipe)
 
-        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{generate_rep_passwd} ",
-                             "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
+        primary_conninfo = ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                            "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                            "password=#{generate_rep_passwd} ",
+                            "application_name=#{chef_run.node['postgresql_part']['replication']['application_name']}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
@@ -259,9 +259,9 @@ describe 'postgresql_part::configure_primary' do
         chef_run.node.set['postgresql_part']['replication']['application_name'] = 'application'
         chef_run.converge(described_recipe)
 
-        primary_conninfo =  ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
-                             "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
-                             "password=#{generate_rep_passwd}"].join
+        primary_conninfo = ["host=#{partner_ip} port=#{chef_run.node['postgresql']['config']['port']} ",
+                            "user=#{chef_run.node['postgresql_part']['replication']['user']} ",
+                            "password=#{generate_rep_passwd}"].join
 
         expect(chef_run.node['postgresql_part']['recovery']['primary_conninfo']).to eq(primary_conninfo)
         expect(chef_run.node['postgresql_part']['recovery']['primary_slot_name'])
@@ -295,29 +295,14 @@ describe 'postgresql_part::configure_primary' do
         :postgresql_database,
         :query,
         'postgres'
-    ).with(
-      connection: postgresql_connection_info,
-      sql: query
-    )
+      ).with(
+        connection: postgresql_connection_info,
+        sql: query
+      )
     end
 
     it 'include configure_tomcat_session recipe ' do
       expect(chef_run).to include_recipe('postgresql_part::configure_tomcat_session')
-    end
-
-    it 'create consul service def' do
-      chef_run.node.set['postgresql']['server']['service_name'] = 'postgresql'
-      chef_run.converge(described_recipe)
-
-      resource = chef_run.find_resource('cloudconductor_consul_service_def', 'postgresql')
-      expect(resource).to do_nothing
-      expect(resource.id).to eq('postgresql')
-      expect(resource.port).to eq(5432)
-      expect(resource.tags).to eq(['primary'])
-      expect(resource.check).to be_nil
-
-      expect(chef_run.template("#{chef_run.node['postgresql']['dir']}/pg_hba.conf"))
-        .to notify('cloudconductor_consul_service_def[postgresql]').to(:create).delayed
     end
   end
 end

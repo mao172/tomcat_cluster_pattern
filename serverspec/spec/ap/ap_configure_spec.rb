@@ -2,9 +2,9 @@ require 'spec_helper'
 require 'socket'
 
 def private_ip
-  Socket.getifaddrs.select do|x|
+  Socket.getifaddrs.find do|x|
     x.name == 'eth0' && x.addr.ipv4?
-  end.first.addr.ip_address
+  end.addr.ip_address
 end
 
 def servers(role)

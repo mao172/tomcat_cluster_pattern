@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+## version 1.1.0 (2015/09/30)
+
+  - Support CloudConductor v1.1.
+  - Remove the event_handler.sh, modified to control by the Metronome (task order control tool).Therefore, add the requirements(task.yml file etc.) to control from the Metronome.
+  - Fix malformed json of service definitions for consul.
+  - Remove cloud_conductor_util gem from the required gems.
+  - Change to enable JMX access port for monitoring by Zabbix.
+  - Add the requirements necessary for use in combination with vnet pattern.
+
 ## version 1.0.2 (2015/06/18)
 
   - Support to pre/post deploy script.

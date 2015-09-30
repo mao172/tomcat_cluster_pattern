@@ -1,3 +1,14 @@
+#
+# Cookbook Name:: tomcat_part
+# Provider:: table
+#
+
+def whyrun_supported?
+  true
+end
+
+use_inline_resources
+
 action :create do
   %w(session_db session_table).each do |attr|
     unless new_resource.instance_variable_get("@#{attr}")
@@ -50,4 +61,6 @@ action :create do
     sql lazy { ::File.read("#{Chef::Config[:file_cache_path]}/#{tbl_name}_createtable.sql") }
     action :query
   end
+
+  new_resource.updated_by_last_action(true)
 end
