@@ -47,6 +47,8 @@ describe 'postgresql_part::configure' do
 
     allow_any_instance_of(Chef::Recipe)
       .to receive(:generate_password).with('db_replication').and_return(generate_passwd)
+    allow_any_instance_of(Chef::Recipe)
+      .to receive(:generate_password).with('db_application').and_return(generate_passwd)
     allow_any_instance_of(Chef::Resource)
       .to receive(:generate_password).with('db_replication').and_return(generate_passwd)
     allow_any_instance_of(Chef::Resource)
@@ -80,6 +82,12 @@ describe 'postgresql_part::configure' do
       'port' => chef_run.node['postgresql']['config']['port'],
       'db_name' => 'replication',
       'user' => chef_run.node['postgresql_part']['replication']['user'],
+      'passwd' => generate_passwd
+    }, {
+      'ip' => ap_ip,
+      'port' => '9999',
+      'db_name' => '*',
+      'user' => chef_run.node['postgresql_part']['application']['user'],
       'passwd' => generate_passwd
     }]
 

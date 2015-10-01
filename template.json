@@ -300,6 +300,17 @@
       },
       "DependsOn" : "WebApSecurityGroup"
     },
+    "WebApSecurityGroupIngressFromLbSecurityGroupVia9999" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "WebApSecurityGroup" },
+        "IpProtocol" : "tcp",
+        "FromPort" : "9999",
+        "ToPort" : "9999",
+        "SourceSecurityGroupId" : { "Ref" : "DBSecurityGroup" }
+      },
+      "DependsOn" : "WebApSecurityGroup"
+    },
     "WebApSecurityGroupIngressFromLbSecurityGroupVia12345" : {
       "Type" : "AWS::EC2::SecurityGroupIngress",
       "Properties" : {

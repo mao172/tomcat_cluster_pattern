@@ -15,13 +15,14 @@ default['pgpool_part']['config']['dir'] = '/etc/pgpool-II'
 
 default['pgpool_part']['pg_hba']['auth'] = [
   { type: 'host', db: 'all', user: 'all', addr: '127.0.0.1/32', method: 'md5' },
-  { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' }
+  { type: 'host', db: 'all', user: 'all', addr: '::1/128', method: 'md5' },
+  { type: 'host', db: 'all', user: 'all', addr: '10.0.0.0/16', method: 'md5' }
 ]
 
 default['pgpool_part']['wait_timeout'] = 180
 default['pgpool_part']['wait_interval'] = 10
 
-default['pgpool_part']['pgconf']['listen_addresses'] = 'localhost'
+default['pgpool_part']['pgconf']['listen_addresses'] = '*'
 default['pgpool_part']['pgconf']['port'] = 9999
 default['pgpool_part']['pgconf']['socket_dir'] = '/tmp'
 default['pgpool_part']['pgconf']['listen_backlog_multiplier'] = 2

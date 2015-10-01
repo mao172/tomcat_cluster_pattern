@@ -28,6 +28,18 @@ pgpass = [
   }
 ]
 
+node['cloudconductor']['servers'].each do |_hostname, sv_info|
+  next unless sv_info['roles'].include?('ap')
+
+  pgpass << {
+    'ip' => sv_info['private_ip'],
+    'port' => '9999',
+    'db_name' => '*',
+    'user' => node['postgresql_part']['application']['user'],
+    'passwd' => generate_password('db_application')
+  }
+end
+
 template "#{node['postgresql_part']['home_dir']}/.pgpass" do
   source 'pgpass.erb'
   mode '0600'
