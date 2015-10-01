@@ -46,10 +46,29 @@ remove_primary_tag() {
   fi
 }
 
-if [ "${STATUS}" = "passing" ] ; then
-  ALREADY_EXISTS=$(curl http://localhost:8500/v1/catalog/services | jq '.postgresql | map(select(. == "primary")) | length')
+self_addr=$(curl -s http://localhost:8500/v1/agent/self | jq -r '.Member.Addr')
+pgpool_sv=($(curl -s http://localhost:8500/v1/catalog/service/pgpool-II | jq -r '.[] |.Address'))
+stdout=$(sudo -u postgres psql -h ${pgpool_sv[0]} -p 9999 -U application -c 'show pool_nodes;' | grep ${self_addr})
+status=$?
 
-  if [ ${ALREADY_EXISTS} -eq 0 ]; then
+if [ $status -ne 0 ]; then
+  hostname=$(curl -s http://localhost:8500/v1/agent/self | jq -r '.Member.Name')
+
+  CONSUL_SECRET_KEY=$(cat /etc/consul.d/default.json | jq -r .acl_master_token)
+  CONSUL_SECRET_KEY_ENCODED=$(python -c "import urllib; print urllib.quote('${CONSUL_SECRET_KEY}')")
+  virtual_addr=$(curl -s http://localhost:8500/v1/kv/cloudconductor/networks/${hostname}/tap1?raw\&token=${CONSUL_SECRET_KEY_ENCODED} | jq -r '.[][][][].virtual_address')
+
+  stdout=$(sudo -u postgres psql -h ${pgpool_sv[0]} -p 9999 -U application -c 'show pool_nodes;' | grep ${virtual_addr})
+  status=$?
+fi
+
+values=($(echo ${stdout} | tr -d '|'))
+db_role=$(echo ${values[5]})
+
+if [[ "${STATUS}" = "passing" ]] && [ $status -ne 0 -o "${db_role}" = "primary" ] ; then
+  ALREADY_EXISTS=$(curl http://localhost:8500/v1/catalog/services | jq '.postgresql | contains(["primary"])')
+
+  if [ "${ALREADY_EXISTS}" != "true" ]; then
     stdout=$(ls /var/lib/pgsql/**/data/recovery.done)
     status=$?
 
